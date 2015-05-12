@@ -16,8 +16,8 @@ class W2Config {
 	public static $API_KEY_IOS        = '2100023226814';
 	public static $SECRET_KEY_IOS     = 'b632046c0cewfwe985eabe00';
 
-	// public static $API_KEY            = '54d47832fd98c5dbd10001df';
-	// public static $SECRET_KEY         = 'c3a48b44a21e37210c3e3b7add5c1c7a';
+	public static $API_KEY            = '54d47832fd98c5dbd10001df';
+	public static $SECRET_KEY         = 'c3a48b44a21e37210c3e3b7add5c1c7a';
 
 	public static $Qiniu_bucket = 'test';
 	public static $Qiniu_domain = '7u2sdg.test.z0.glb.clouddn.com';
