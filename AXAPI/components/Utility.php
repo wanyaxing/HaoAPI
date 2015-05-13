@@ -186,7 +186,7 @@ class Utility
 			$tmpArr = array();
 
 			//将所有头信息和数据组合成字符串格式：%s=%s，存入上面的数组
-			foreach (array('Clientversion','Devicetype','Requesttime','Devicetoken','Userid','Logintime','Checkcode') as $_key) {
+			foreach (array('Clientversion','Devicetype','Devicetoken','Requesttime','Userid','Logintime','Checkcode') as $_key) {
 				if (array_key_exists($_key,$_HEADERS))
 				{
 					array_push($tmpArr, sprintf('%s=%s', $_key, $_HEADERS[$_key]));

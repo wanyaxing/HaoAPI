@@ -87,7 +87,8 @@
   				  </div>
           </div>
 				  <div>
-					  <button type="button" class="btn btn-success pull-right" id="btn_test_url">test</button>
+            <button type="button" class="btn btn-success pull-right" id="btn_test_url">test</button>
+            <div class="pull-right" style="line-height: 50px;"><label><input type="checkbox" id="checkbox_is_autosign" checked>auto reload</label></div>
 				  </div>
 			</form>
 	    </div>

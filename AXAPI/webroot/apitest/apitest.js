@@ -216,7 +216,7 @@ function reFormApi(i)
       reFormGroup('field',_api['request'][j]);
     }
   }
-  $('form').find('.input-group-addon').trigger('click');
+  // $('form').find('.input-group-addon').trigger('click');
 }
 
 function reFormGroupApi(i,j)
@@ -364,7 +364,10 @@ $(function(){
 
     $('#btn_test_url').click(function(){
 
-      $('form').find('.input-group-addon').trigger('click');
+      if ($('#checkbox_is_autosign').prop('checked'))
+      {
+        $('form').find('.input-group-addon').trigger('click');//每次都自动重算
+      }
 
         $('#textarea_results').val('waiting....');
         $('#div_json_view').html('waiting....');
