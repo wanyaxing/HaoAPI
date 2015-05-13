@@ -119,7 +119,7 @@ class W2String {
      * @return bool 是/否
      */
     public static function isTelephone($p_str) {
-        return (preg_match('/^1[3458]\d{9}$/',$p_str))?true:false;
+        return (preg_match('/^1[34578]\d{9}$/',$p_str))?true:false;
     }
 
     /**
