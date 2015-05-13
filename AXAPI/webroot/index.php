@@ -60,6 +60,7 @@ date_default_timezone_set('PRC');
         $results['results'] = $data;
         header('Content-Type:text/javascript; charset=utf-8');
         echo json_encode($results, JSON_UNESCAPED_UNICODE);
+        // echo Utility::ch_json_encode($results, JSON_UNESCAPED_UNICODE);
         exit;
     }
     else if (is_string($results))
