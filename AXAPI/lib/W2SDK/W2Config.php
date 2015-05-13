@@ -23,4 +23,8 @@ class W2Config {
 	public static $Qiniu_domain = '7u2sdg.test.z0.glb.clouddn.com';
 	public static $Qiniu_accessKey = '_AFIydsfaRbmMRP8aO38y3C9';
 	public static $Qiniu_secretKey = 'Uv9yBLUeqsdfafmVgAybHBRbT07Jj';
+
+	public static $SMS_USER = '1234';
+	public static $SMS_PASSWD = '1234';
+
 }

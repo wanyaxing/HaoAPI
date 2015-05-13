@@ -6,8 +6,8 @@
  * @since 1.0
  * @version 1.0
  */
-require_once(__dir__.'/../lib/qiniu/rs.php');
-require_once(__dir__.'/../lib/qiniu/io.php');
+require_once(__dir__.'/../qiniu/rs.php');
+require_once(__dir__.'/../qiniu/io.php');
 
 class W2Qiniu {
 	/**

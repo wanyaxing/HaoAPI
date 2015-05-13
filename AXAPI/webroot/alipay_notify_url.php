@@ -17,10 +17,16 @@
 
 date_default_timezone_set('PRC');
 
-require_once(__dir__.'/conf/config.php');
-require_once(__dir__.'/DBTool/DBModel.php');
-require_once(__dir__.'/../common/alipay/alipay.config.php');
-require_once(__dir__.'/../common/alipay/lib/alipay_notify.class.php');
+    //加载配置文件
+    require_once(__dir__.'/../config.php');
+    //常用常量
+    require_once(AXAPI_ROOT_PATH.'/components/constants.php');
+
+    //数据库操作工具
+    require_once(AXAPI_ROOT_PATH.'/lib/DBTool/DBModel.php');
+
+	require_once(AXAPI_ROOT_PATH.'/lib/alipay/alipay.config.php');
+	require_once(AXAPI_ROOT_PATH.'/lib/alipay/lib/alipay_notify.class.php');
 
 $tmpLog = array();
 $tmpLog['ip'] = $_SERVER['REMOTE_ADDR'];

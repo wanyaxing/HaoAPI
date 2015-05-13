@@ -6,7 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
-require_once(dirname(__FILE__) . '/../lib/' . 'Xg-Push-SDK-PHP-1.1.4/XingeApp.php');
+require_once(dirname(__FILE__) . '/../Xg-Push-SDK-PHP-1.1.4/XingeApp.php');
 
 class W2PUSH {
 
