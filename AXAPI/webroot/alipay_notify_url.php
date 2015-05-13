@@ -90,7 +90,7 @@ if($verify_result) {//验证成功
 		{
 			if ($tmpOrder['orderStatus']==26)
 			{
-				$orderFac->update(array('orderStatus'=>41));
+				$orderFac->update(array('orderStatus'=>41,'payType'=>32));
 				DBModel::instance('orderActionLog')->insert(array('userID'=>$tmpOrder['userID'],'orderDetailID'=>$tmpOrder['id'],'orderStatus'=>32,'createTime'=>date('Y-m-d H:i:s'),'modifyTime'=>date('Y-m-d H:i:s')));
 				DBModel::instance('orderActionLog')->insert(array('userID'=>$tmpOrder['userID'],'orderDetailID'=>$tmpOrder['id'],'orderStatus'=>41,'createTime'=>date('Y-m-d H:i:s'),'modifyTime'=>date('Y-m-d H:i:s')));
 			}

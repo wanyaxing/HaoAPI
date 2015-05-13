@@ -14,25 +14,25 @@ class W2Qiniu {
 	 * 存储空间对应域名  //todo
 	 * @var string
 	 */
-	public static $bucket = W2Config::$Qiniu_bucket;
+	//W2Config::$Qiniu_bucket;
 
 	/**
 	 * 存储空间对应域名（空间名和域名不一样，但是是一对，以七牛那边设置为准）  //todo
 	 * @var string
 	 */
-	public static $domain = W2Config::$Qiniu_domain;
+	//W2Config::$Qiniu_domain;
 
 	/**
 	 * 登录密钥 //todo
 	 * @var string
 	 */
-	public static $accessKey = W2Config::$Qiniu_accessKey;
+	//W2Config::$Qiniu_accessKey;
 
 	/**
 	 * 登录密钥校验 //todo
 	 * @var string
 	 */
-	public static $secretKey = W2Config::$Qiniu_secretKey;
+	//W2Config::$Qiniu_secretKey;
 
 
 	/**
@@ -43,18 +43,18 @@ class W2Qiniu {
     public static function getUploadTokenForQiniuUpload($key)
     {
 		$data = array();
-		$data['bucket'] = W2Qiniu::$bucket;
+		$data['bucket'] = W2Config::$Qiniu_bucket;
 		$data['Expires'] = 3600;
 		$data['deadline'] = time() + $data['Expires'];
 		$data['deadTime'] = date('Y-m-d H:i:s',$data['deadline']);
 		$data['SaveKey'] = null;
 
-		$scope = W2Qiniu::$bucket;
+		$scope = W2Config::$Qiniu_bucket;
 		if ($key !='')
 		{
-			$scope = W2Qiniu::$bucket .':'.$key;
+			$scope = W2Config::$Qiniu_bucket .':'.$key;
 			$data['SaveKey'] = $key;
-			$data['urlPreview'] = 'http://'.(W2Qiniu::$domain).'/'. $key;
+			$data['urlPreview'] = 'http://'.(W2Config::$Qiniu_domain).'/'. $key;
 		}
 		$data['ReturnBody'] = '{
     "urlDownload": "'.$data['urlPreview'].'",
@@ -67,8 +67,8 @@ class W2Qiniu {
     "h": $(imageInfo.height),
     "color": $(exif.ColorSpace.val)
 }';
-		Qiniu_SetKeys(W2Qiniu::$accessKey, W2Qiniu::$secretKey);
-		$putPolicy = new Qiniu_RS_PutPolicy(W2Qiniu::$bucket);
+		Qiniu_SetKeys(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
+		$putPolicy = new Qiniu_RS_PutPolicy(W2Config::$Qiniu_bucket);
 		$putPolicy ->Expires = $data['Expires'];
 		$putPolicy ->SaveKey = $data['SaveKey'];
 		$putPolicy ->ReturnBody = $data['ReturnBody'];
@@ -123,14 +123,14 @@ class W2Qiniu {
      */
 	public static function getFileInfoFromQiniu($key)
 	{
-		Qiniu_SetKeys(W2Qiniu::$accessKey, W2Qiniu::$secretKey);
+		Qiniu_SetKeys(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
 		$client = new Qiniu_MacHttpClient(null);
 
-		list($ret, $err) = Qiniu_RS_Stat($client, W2Qiniu::$bucket, $key);
+		list($ret, $err) = Qiniu_RS_Stat($client, W2Config::$Qiniu_bucket, $key);
 		if ($err !== null) {
 		    return $err;
 		} else {
-			$ret['urlPreview'] = 'http://'.(W2Qiniu::$domain).'/'. $key;
+			$ret['urlPreview'] = 'http://'.(W2Config::$Qiniu_domain).'/'. $key;
 		    return $ret;
 		}
 	}
@@ -177,10 +177,10 @@ class W2Qiniu {
 
 	public static function deleteFile($key)
 	{
-		Qiniu_SetKeys(W2Qiniu::$accessKey, W2Qiniu::$secretKey);
+		Qiniu_SetKeys(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
 		$client = new Qiniu_MacHttpClient(null);
 
-		$err = Qiniu_RS_Delete($client, W2Qiniu::$bucket, $key);
+		$err = Qiniu_RS_Delete($client, W2Config::$Qiniu_bucket, $key);
 		if ($err !== null) {
 			if (defined('IS_SQL_PRINT') && IS_SQL_PRINT)
 			{
@@ -201,8 +201,8 @@ class W2Qiniu {
 				throw new Exception('无法删除文件', 1);
 			}
 		}
-		Qiniu_SetKeys(W2Qiniu::$accessKey, W2Qiniu::$secretKey);
-		$putPolicy = new Qiniu_RS_PutPolicy( W2Qiniu::$bucket);
+		Qiniu_SetKeys(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
+		$putPolicy = new Qiniu_RS_PutPolicy( W2Config::$Qiniu_bucket);
 		$upToken = $putPolicy->Token(null);
 		list($ret, $err) = Qiniu_Put($upToken, $key, $content, null);
 		if ($err !== null) {
@@ -264,7 +264,7 @@ class W2Qiniu {
 		}
 		if ($saveas!=null)
 		{
-			$fops .= '|saveas/'.base64_encode(W2Qiniu::$bucket.':'.$saveas);
+			$fops .= '|saveas/'.base64_encode(W2Config::$Qiniu_bucket.':'.$saveas);
 		}
 		$persistentKey = 'mkzip.'.$saveas.'.pfop';
 
@@ -281,15 +281,15 @@ class W2Qiniu {
 			return W2Qiniu::getPersistentInfo($persistentId);
 		}
 
-		if (strpos($extraKey,W2Qiniu::$domain)!=false)
+		if (strpos($extraKey,W2Config::$Qiniu_domain)!=false)
 		{
-			$extraKey = str_replace('http://'.(W2Qiniu::$domain).'/','',$extraKey);
+			$extraKey = str_replace('http://'.(W2Config::$Qiniu_domain).'/','',$extraKey);
 		}
 
 		$notifyURL = "";
 		$force = 0;
 
-		$encodedBucket = urlencode(W2Qiniu::$bucket);
+		$encodedBucket = urlencode(W2Config::$Qiniu_bucket);
 		$encodedKey = urlencode($extraKey);
 		$encodedFops = urlencode($fops);
 		$encodedNotifyURL = urlencode($notifyURL);
@@ -301,7 +301,7 @@ class W2Qiniu {
 		    $requestBody .= "&force=1";
 		}
 
-		$mac = new Qiniu_Mac(W2Qiniu::$accessKey, W2Qiniu::$secretKey);
+		$mac = new Qiniu_Mac(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
 		$client = new Qiniu_MacHttpClient($mac);
 
 		list($ret, $err) = Qiniu_Client_CallWithForm($client, $apiHost . $apiPath, $requestBody);

@@ -10,11 +10,11 @@ require_once(dirname(__FILE__) . '/../Xg-Push-SDK-PHP-1.1.4/XingeApp.php');
 
 class W2PUSH {
 
-	public static $API_KEY_ANDROID    = W2Config::$API_KEY_ANDROID;
-	public static $SECRET_KEY_ANDROID = W2Config::$SECRET_KEY_ANDROID;
+	// W2Config::$API_KEY_ANDROID;
+	// W2Config::$SECRET_KEY_ANDROID;
 
-	public static $API_KEY_IOS        = W2Config::$API_KEY_IOS;
-	public static $SECRET_KEY_IOS     = W2Config::$SECRET_KEY_IOS;
+	// W2Config::$API_KEY_IOS;
+	//W2Config::$SECRET_KEY_IOS;
 
 
 	/**
@@ -43,7 +43,7 @@ class W2PUSH {
 
 		if ($device_type==4) //IOS 推送
 		{
-			$push = new XingeApp(W2PUSH::$API_KEY_IOS, W2PUSH::$SECRET_KEY_IOS);
+			$push = new XingeApp(W2Config::$API_KEY_IOS, W2Config::$SECRET_KEY_IOS);
 			$mess = new MessageIOS();
 			$mess->setExpireTime(86400);
 			//$mess->setSendTime("2014-03-13 16:00:00");
@@ -59,7 +59,7 @@ class W2PUSH {
 		}
 		else if ($device_type==3) //安卓推送
 		{
-			$push = new XingeApp(W2PUSH::$API_KEY_ANDROID, W2PUSH::$SECRET_KEY_ANDROID);
+			$push = new XingeApp(W2Config::$API_KEY_ANDROID, W2Config::$SECRET_KEY_ANDROID);
 			$mess = new Message();
 			if ($title==''){$title=$content;}
 			$mess->setType(Message::TYPE_NOTIFICATION);
