@@ -28,6 +28,7 @@ if (count($argv)<=1)
     print("\n".'-t 表名');
     print("\n".'-name 中文标题');
     print("\n".'-rm yes');
+    print("\n".'-update yes');
 	exit;
 }
 
@@ -130,22 +131,22 @@ $_apitestConfigFile = AXAPI_ROOT_PATH.'/webroot/apitest/'.$_apitestConfigName.'.
 $filesExists = array();
 if(file_exists($_handlerFile))
 {
-    print('中止，文件已存在：'.$_handlerFile."\n");
+    print('警告，文件已存在：'.$_handlerFile."\n");
     $filesExists[]=$_handlerFile;
 }
 if(file_exists($_modelFile))
 {
-    print('中止，文件已存在：'.$_modelFile."\n");
+    print('警告，文件已存在：'.$_modelFile."\n");
     $filesExists[]=$_modelFile;
 }
 if(file_exists($_controllerFile))
 {
-    print('中止，文件已存在：'.$_controllerFile."\n");
+    print('警告，文件已存在：'.$_controllerFile."\n");
     $filesExists[]=$_controllerFile;
 }
 if(file_exists($_apitestConfigFile))
 {
-    print('中止，文件已存在：'.$_apitestConfigFile."\n");
+    print('警告，文件已存在：'.$_apitestConfigFile."\n");
     $filesExists[]=$_apitestConfigFile;
 }
 if ( getValueInArgv('-rm') == 'yes')
@@ -164,9 +165,22 @@ if ( getValueInArgv('-rm') == 'yes')
     }
     exit;
 }
-if (count($filesExists)>0)
+else if ( getValueInArgv('-update') == 'yes')
+{
+    if (count($filesExists)>0)
+    {
+
+    }
+    else
+    {
+        print('失败，因为不存在目标文件，所以无法使用更新命令。'."\n");
+        exit;
+    }
+}
+else if (count($filesExists)>0)
 {
     print('可以使用以下参数删除文件： -rm yes'."\n");
+    print('可以使用以下参数更新文件： -update yes'."\n");
     exit;
 }
 
@@ -278,11 +292,45 @@ class '.$_handlerName.' extends AbstractHandler {
         return parent::saveModel($p_model);
     }
 }';
-
-file_put_contents($_handlerFile,$_handlerSrting);
-print('成功，创建文件：'.$_handlerFile."\n");
+if (!file_exists($_handlerFile))
+{
+    file_put_contents($_handlerFile,$_handlerSrting);
+    print('成功，创建文件：'.$_handlerFile."\n");
+}
+else if (getValueInArgv('-update') == 'yes')
+{
+    $_fileString = file_get_contents($_handlerFile);
+    $_fileString = preg_replace('/protected static \$tableDataKeys =.*/','protected static $tableDataKeys = '.str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))).';//对应表的常用字段数组',$_fileString);
+    file_put_contents($_handlerFile,$_fileString);
+    print('成功，已更新文件：'.$_handlerFile."\n");
+}
+else
+{
+    print('失败，目标文件已存在：'.$_handlerFile."\n");
+}
 
 //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
+$_modelFileStrings = array();
+foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
+    $_modelFileStrings[$_tableKey] = "\n".(!is_null($_fieldRow['Comment'])?'    /**'.$_fieldRow['Comment'].'**/'."\n":'').'    public $'.$_tableKey.';';
+}
+
+$_modelFucStrings = array();
+foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
+    $_modelFucStrings[$_tableKey] = "\n".'    public function get'.ucwords($_tableKey).'()
+    {
+        return $this->'.$_tableKey.';
+    }
+
+    public function set'.ucwords($_tableKey).'($'.$_tableKey.')
+    {
+        $this->'.$_tableKey.' = $'.$_tableKey.';
+
+        return $this;
+    }';
+}
+
+
 $_modelString = '<?php
 /**
  * '.$_tableName.'表 模型，支持get set 等常规数据展示和处理
@@ -298,7 +346,7 @@ class '.$_modelName.' extends AbstractModel {
     /**
      * 初始化方法，如果需要，各模型必须重写此处
      * @param int|array 如果是整数, 赋值给对象的id,如果是数组, 给对象的逐个属性赋值
-     * @return Article Article对象
+     * @return '.$_modelName.'
      */
     public static function instance($p_data=null) {
         $_o = parent::instanceModel(__class__, $p_data);
@@ -309,27 +357,43 @@ class '.$_modelName.' extends AbstractModel {
     }
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝新的模型属性在下面定义＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-';
-foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
-    $_modelString .= "\n".(!is_null($_fieldRow['Comment'])?'    /**'.$_fieldRow['Comment'].'**/'."\n":'').'    public $'.$_tableKey.';';
+'.implode(array_values($_modelFileStrings)).'
+
+'.implode(array_values($_modelFucStrings)).'
+
+}';
+
+if (!file_exists($_modelFile))
+{
+    file_put_contents($_modelFile,$_modelString);
+    print('成功，创建文件：'.$_modelFile."\n");
 }
-    $_modelString .= "\n";
-foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
-    $_modelString .= "\n".'    public function get'.ucwords($_tableKey).'()
-    {
-        return $this->'.$_tableKey.';
+else if (getValueInArgv('-update') == 'yes')
+{
+    $_fileString = file_get_contents($_modelFile);
+
+    foreach ($_modelFileStrings as $_tableKey=>$_string) {
+        if (strpos($_fileString,'public $'.$_tableKey.';')===false)
+        {
+            $_fileString = preg_replace('/([\s\S]*public \$.+)/','$1'.$_string.'//todo debug, php auto update ,pls checkit',$_fileString);
+        }
     }
 
-    public function set'.ucwords($_tableKey).'($'.$_tableKey.')
-    {
-        $this->'.$_tableKey.' = $'.$_tableKey.';
+    foreach ($_modelFucStrings as $_tableKey=>$_string) {
+        if (strpos($_fileString,'public function get'.ucwords($_tableKey).'()')===false)
+        {
+            $_fileString = preg_replace('/\}$/',$_string.'//todo debug, php auto update ,pls checkit'."\n}",$_fileString);
+        }
+    }
 
-        return $this;
-    }';
+    file_put_contents($_modelFile,$_fileString);
+    print('成功，已更新文件：'.$_modelFile."\n");
 }
-$_modelString .= "\n}";
-file_put_contents($_modelFile,$_modelString);
-print('成功，创建文件：'.$_modelFile."\n");
+else
+{
+    print('失败，目标文件已存在：'.$_modelFile."\n");
+}
+
 
 //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
 $_apitestConfigArray = array();
@@ -423,11 +487,11 @@ $_apitestConfigSingle = 'apiList[apiList.length] = {
         ,\'method\':\'get\'
         ,\'request\':[
            ';
-$_apitestConfigRequest = array();
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/list\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'page\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页，第一页为1，第二页为2，最后一页为-1\' ,\'desc\':\'\' }';
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'size\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'10\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页大小\' ,\'desc\':\'\' }';
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'iscountall\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'bool\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否统计总数 1是 0否\' ,\'desc\':\'\' }';
+$_apitestConfigRequestList = array();
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/list\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'page\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页，第一页为1，第二页为2，最后一页为-1\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'size\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'10\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页大小\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'iscountall\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'bool\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否统计总数 1是 0否\' ,\'desc\':\'\' }';
 $_controllerStringAddOrder = '';
 $_apitestConfigRequestOrderValues = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
@@ -439,30 +503,30 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_apitestConfigRequestOrderValues[] = $_orderValue . (!is_null($_orderDesc)?':'.$_orderDesc:'');
     }
 }
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'order\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'排序方式\' ,\'desc\':\'限以下值（'.implode(' , ', $_apitestConfigRequestOrderValues ).'）\' }';
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'isreverse\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否倒序 0否 1是\' ,\'desc\':\'（默认1）\' }';
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'ids\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'order\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'排序方式\' ,\'desc\':\'限以下值（'.implode(' , ', $_apitestConfigRequestOrderValues ).'）\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'isreverse\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否倒序 0否 1是\' ,\'desc\':\'（默认1）\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'ids\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }';
 $_controllerStringList = '';
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'date' )
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'start') .';';
-        $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'end') .';';
-        $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
     else if ($_fieldRow['Field']=='status')
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
-        $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
     else
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field'])) .';';
-        $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
 }
-$_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequest) .'
+$_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestList) .'
         ]
       };
 ';
@@ -478,10 +542,10 @@ $_apitestConfigSingle = 'apiList[apiList.length] = {
         ,\'method\':\'get\'
         ,\'request\':[
            ';
-$_apitestConfigRequest = array();
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/detail\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
-    $_apitestConfigRequest[] = '{'.str_pad(' \'key\':\'id\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'id\' ,\'desc\':\'\' }';
-$_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequest) .'
+$_apitestConfigRequestDetail = array();
+    $_apitestConfigRequestDetail[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/detail\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestDetail[] = '{'.str_pad(' \'key\':\'id\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'id\' ,\'desc\':\'\' }';
+$_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestDetail) .'
         ]
       };
 ';
@@ -711,11 +775,146 @@ class '.$_controllerName.' extends AbstractController{
 
 }
 ';
+if (!file_exists($_controllerFile))
+{
+    file_put_contents($_controllerFile,$_controllerString);
+    print('成功，创建文件：'.$_controllerFile."\n");
+}
+else if (getValueInArgv('-update') == 'yes')
+{
+    $_fileString = file_get_contents($_controllerFile);
 
-file_put_contents($_controllerFile,$_controllerString);
-print('成功，创建文件：'.$_controllerFile."\n");
-file_put_contents($_apitestConfigFile,implode("\n",$_apitestConfigArray));
-print('成功，创建文件：'.$_apitestConfigFile."\n");
+    print("actionAdd - admin\n");
+    $_fileAdminString = preg_replace('/[\s\S]*?actionAdd\(\)[\s\S]*?case.*?\'admin\'.*([\s\S]+?)case \'self\'[\s\S]*/','$1',$_fileString);
+    $_fileAdminStringTmp = $_fileAdminString;
+    foreach (explode("\n",$_controllerStringAdmin) as $_string) {
+        if ($_string!='' && strpos($_fileAdminStringTmp,preg_replace('/[\s\S]*?(set.*?)\([\s\S]*/','$1',$_string))===false)
+        {
+            $_fileAdminStringTmp = preg_replace('/([\s\S]*\$tmpModel    ->set.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileAdminStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileAdminString,$_fileAdminStringTmp,$_fileString);
+
+    print("actionAdd - normal\n");
+    $_fileNormalString = preg_replace('/[\s\S]*?actionAdd\(\)[\s\S]*?case.*?\'self\'.*([\s\S]+?)default:[\s\S]*/','$1',$_fileString);
+    $_fileNormalStringTmp = $_fileNormalString;
+    foreach (explode("\n",$_controllerStringNormal) as $_string) {
+        if ($_string!='' && strpos($_fileNormalStringTmp,preg_replace('/[\s\S]*?(set.*?)\([\s\S]*/','$1',$_string))===false)
+        {
+            $_fileNormalStringTmp = preg_replace('/([\s\S]*\$tmpModel.*?set.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileNormalStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileNormalString,$_fileNormalStringTmp,$_fileString);
+
+    print("actionUpdate - admin\n");
+    $_fileUpdateAdminString = preg_replace('/[\s\S]*?actionUpdate\(\)[\s\S]*?case.*?\'admin\'.*([\s\S]+?)case \'self\'[\s\S]*/','$1',$_fileString);
+    $_fileUpdateAdminStringTmp = $_fileUpdateAdminString;
+    foreach (explode("\n",$_controllerStringUpdateAdmin) as $_string) {
+        if ($_string!='' && strpos($_fileUpdateAdminStringTmp,preg_replace('/[\s\S]*?(set.*?)\([\s\S]*/','$1',$_string))===false)
+        {
+            $_fileUpdateAdminStringTmp = preg_replace('/([\s\S]*\$tmpModel    ->set.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileUpdateAdminStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileUpdateAdminString,$_fileUpdateAdminStringTmp,$_fileString);
+
+    print("actionUpdate - normal\n");
+    $_fileUpdateNormalString = preg_replace('/[\s\S]*?actionUpdate\(\)[\s\S]*?case.*?\'self\'.*([\s\S]+?)default:[\s\S]*/','$1',$_fileString);
+    $_fileUpdateNormalStringTmp = $_fileUpdateNormalString;
+    foreach (explode("\n",$_controllerStringUpdateNormal) as $_string) {
+        if ($_string!='' && strpos($_fileUpdateNormalStringTmp,preg_replace('/[\s\S]*?(set.*?)\([\s\S]*/','$1',$_string))===false)
+        {
+            $_fileUpdateNormalStringTmp = preg_replace('/([\s\S]*\$tmpModel    ->set.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileUpdateNormalStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileUpdateNormalString,$_fileUpdateNormalStringTmp,$_fileString);
+
+
+    print("actionList - p_where\n");
+    $_fileListAdminString = preg_replace('/[\s\S]*?actionList\(\)[\s\S]*?\$p_where = array\(\).*([\s\S]+?)switch \([\s\S]*/','$1',$_fileString);
+    $_fileListAdminStringTmp = $_fileListAdminString;
+    foreach (explode("\n",$_controllerStringList) as $_string) {
+        if ($_string!='' && strpos($_fileListAdminStringTmp,preg_replace('/[\s\S]*?(p_where.*?\])[\s\S]*/','$1',$_string))===false)
+        {
+            $_fileListAdminStringTmp = preg_replace('/([\s\S]*\$p_where\[.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileListAdminStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileListAdminString,$_fileListAdminStringTmp,$_fileString);
+
+
+    print("actionList - order\n");
+    $_fileOrderString = preg_replace('/[\s\S]*?actionList\(\)[\s\S]*?switch.*?\$_order.*([\s\S]+?)break[\s\S]*/','$1',$_fileString);
+    $_fileOrderStringTmp = $_fileOrderString;
+    foreach (explode("\n",$_controllerStringAddOrder) as $_string) {
+        if ($_string!='' && strpos($_fileOrderStringTmp,preg_replace('/[\s\S]*?case.*?(\'.*?\')[\s\S]*/','$1',$_string))===false)
+        {
+            $_fileOrderStringTmp = preg_replace('/([\s\S]*case.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileOrderStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileOrderString,$_fileOrderStringTmp,$_fileString);
+
+    file_put_contents($_controllerFile,$_fileString);
+    print('成功，已更新文件：'.$_controllerFile."\n");
+}
+else
+{
+    print('失败，目标文件已存在：'.$_controllerFile."\n");
+}
+
+
+if (!file_exists($_apitestConfigFile))
+{
+    file_put_contents($_apitestConfigFile,implode("\n",$_apitestConfigArray));
+    print('成功，创建文件：'.$_apitestConfigFile."\n");
+}
+else if (getValueInArgv('-update') == 'yes')
+{
+    $_fileString = file_get_contents($_apitestConfigFile);
+
+    print("apitest - add \n");
+    $_fileConfigAddString = preg_replace('/[\s\S]*?(\'key\':\'r\'.*?,\'test-value\':\'.*?\/add\'.*[\s\S]+?)      \};[\s\S]*/','$1',$_fileString);
+    $_fileConfigAddStringTmp = $_fileConfigAddString;
+    foreach (array_merge($_apitestConfigRequestAddNormal,$_apitestConfigRequestAddAdmin) as $_string) {
+        if ($_string!='' && strpos($_fileConfigAddStringTmp,preg_replace('/[\s\S]*?(\'key\':\'.*?\')[\s\S]*/','$1',$_string))===false)
+        {
+            $_fileConfigAddStringTmp = preg_replace('/([\s\S]*\'key\':\'.*)/','$1'."\n".'          ,'.$_string.'//todo debug, php auto update ,pls checkit',$_fileConfigAddStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileConfigAddString,$_fileConfigAddStringTmp,$_fileString);
+
+    print("apitest - update \n");
+    $_fileConfigUpdateString = preg_replace('/[\s\S]*?(\'key\':\'r\'.*?,\'test-value\':\'.*?\/update\'.*[\s\S]+?)      \};[\s\S]*/','$1',$_fileString);
+    $_fileConfigUpdateStringTmp = $_fileConfigUpdateString;
+    foreach (array_merge($_apitestConfigRequestUpdateNormal,$_apitestConfigRequestUpdateAdmin) as $_string) {
+        if ($_string!='' && strpos($_fileConfigUpdateStringTmp,preg_replace('/[\s\S]*?(\'key\':\'.*?\')[\s\S]*/','$1',$_string))===false)
+        {
+            $_fileConfigUpdateStringTmp = preg_replace('/([\s\S]*\'key\':\'.*)/','$1'."\n".'          ,'.$_string.'//todo debug, php auto update ,pls checkit',$_fileConfigUpdateStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileConfigUpdateString,$_fileConfigUpdateStringTmp,$_fileString);
+
+
+    print("apitest - list \n");
+    $_fileConfigListString = preg_replace('/[\s\S]*?(\'key\':\'r\'.*?,\'test-value\':\'.*?\/list\'.*[\s\S]+?)      \};[\s\S]*/','$1',$_fileString);
+    $_fileConfigListStringTmp = $_fileConfigListString;
+    foreach ($_apitestConfigRequestList as $_string) {
+        if ($_string!='' && strpos($_fileConfigListStringTmp,preg_replace('/[\s\S]*?(\'key\':\'.*?\')[\s\S]*/','$1',$_string))===false)
+        {
+            $_fileConfigListStringTmp = preg_replace('/([\s\S]*\'key\':\'.*)/','$1'."\n".'          ,'.$_string.'//todo debug, php auto update ,pls checkit',$_fileConfigListStringTmp);
+        }
+    }
+    $_fileString = str_replace($_fileConfigListString,$_fileConfigListStringTmp,$_fileString);
+    // var_export($_fileConfigListString);
+    // var_export($_fileConfigListStringTmp);
+    file_put_contents($_apitestConfigFile,$_fileString);
+    print('成功，已更新文件：'.$_apitestConfigFile."\n");
+}
+else
+{
+    print('失败，目标文件已存在：'.$_apitestConfigFile."\n");
+}
+
+
+
 
 
 print("done\n");
