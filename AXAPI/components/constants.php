@@ -19,7 +19,7 @@ define('RUNTIME_CODE_ERROR_PARAM',        3);
 define('RUNTIME_CODE_ERROR_DATA_EMPTY',        4);
 /** 没有权限 */
 define('RUNTIME_CODE_ERROR_NO_AUTH',        5);
-/** 用户验证失败，非当前用户 */
+/** 用户验证失败，非当前用户或密码已修改，需重新登录 */
 define('RUNTIME_CODE_ERROR_NOT_USER',        6);
 /** 错误的模型对象 */
 define('RUNTIME_CODE_ERROR_NOT_MODEL',        7);

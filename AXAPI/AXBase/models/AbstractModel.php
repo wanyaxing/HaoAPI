@@ -136,6 +136,16 @@ class AbstractModel {
         return $tmpDiff;
     }
 
+    /**
+     * 判断属性是否被修改过
+     * @param  string  $property 属性
+     * @return boolean           是否改动过
+     */
+    public function isProperyModified($property)
+    {
+        return array_key_exists($property,$this->propertiesModified());
+    }
+
     // ======================== variable ========================
 
     public $id;

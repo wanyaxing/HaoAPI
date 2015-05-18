@@ -206,6 +206,14 @@ class Utility
 		return urldecode($ret);
 	}
 
+	/**
+	 * 获得组装后的结果数组
+	 * @param  integer $errorCode 错误码，0为正常
+	 * @param  string  $errorStr  错误描述
+	 * @param  array   $result    返回数据
+	 * @param  array   $extraInfo 返回额外数据
+	 * @return array             结果数组
+	 */
     public static function getArrayForResults($errorCode=0,$errorStr='',$result = array(),$extraInfo=array())
     {
     	return array(
@@ -215,6 +223,40 @@ class Utility
 					'extraInfo'	=> $extraInfo,
 					'results'	=> $result
     		);
+    }
+
+    /**
+     * 判断结果数组是否正确获得结果
+     * @param  array  $tmpResult 结果数组
+     * @return boolean            是否正确获得
+     */
+    public static function isResults($tmpResult=null)
+    {
+    	return (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult) );
+    }
+
+    /**
+     * 判断结果数组是否正确获得结果
+     * @param  array  $tmpResult 结果数组
+     * @return boolean            是否正确获得
+     */
+    public static function isResultsOK($tmpResult=null)
+    {
+    	return (Utility::isResults($tmpResult) && $tmpResult['errorCode']==RUNTIME_CODE_OK);
+    }
+
+    /**
+     * 判断结果数组是否正确获得结果，并取出其中的结果
+     * @param  array  $tmpResult 结果数组
+     * @return boolean            是否正确获得
+     */
+    public static function getResults($tmpResult=null)
+    {
+    	if (Utility::isResultsOK($tmpResult))
+    	{
+    		return $tmpResult['results'];
+    	}
+    	return null;
     }
 
     public static function getAuthForApiRequest()
