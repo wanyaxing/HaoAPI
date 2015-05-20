@@ -261,7 +261,7 @@ $(function(){
           _keyString += '<tr><th>字段名</th><th>必须</th><th>格式</th><th>字段描述</th><th>测试值</th></tr>';
           for(var j in _api['request'])
           {
-            _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td>'+_api['request'][j]['title']+(_api['request'][j]['desc']!=''?'<br/>':'')+ _api['request'][j]['desc']+'</td><td>'+_api['request'][j]['test-value']+'</td></tr>'
+            _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td><span>'+_api['request'][j]['title']+'</span><span style="color:red;">'+ _api['request'][j]['desc']+'</span></td><td>'+_api['request'][j]['test-value']+'</td></tr>'
           }
           _keyString += '</table>';
         }
