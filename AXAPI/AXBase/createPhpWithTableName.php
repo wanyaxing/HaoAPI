@@ -416,7 +416,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('status','userID','level','createTime','modifyTime'));
-        $_controllerStringTmp = "\n".'                $tmpModel  ->'.str_pad('set'.ucfirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),strtolower($_fieldRow['Field'])) .');';
+        $_controllerStringTmp = "\n".'                $tmpModel  ->'.str_pad('set'.ucfirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),strtolower($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array($_fieldRow['Field'],$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
@@ -510,9 +510,9 @@ $_controllerStringList = '';
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'date' )
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'start') .';';
+        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'start') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'end') .';';
+        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'end') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
     else if ($_fieldRow['Field']=='status')
@@ -520,9 +520,14 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
+    else if ($_fieldRow['Field']=='userID')
+    {
+        //默认不支持用户筛选，只能筛选登录用户自己的数据;
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
+    }
     else
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field'])) .';';
+        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
 }
@@ -611,6 +616,10 @@ class '.$_controllerName.' extends AbstractController{
 '.$_controllerStringAdmin.'
             case \'self\'  ://作者
             case \'normal\'://正常用户
+'.(array_key_exists('userID',$_tableDataKeys)?'                if ($auther == \'normal\')
+                {
+                    $tmpModel  ->       setUserID(Utility::getCurrentUserID());//普通用户创建的数据，默认作者为自己。
+                }':'').'
 '.$_controllerStringNormal.'
                 break;
             case \'draft\'://未激活
@@ -694,12 +703,18 @@ class '.$_controllerName.' extends AbstractController{
         '.str_pad('$p_where[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
 '.$_controllerStringList.'
 
+        //根据权限不同，支持的筛选功能也可以不同
         switch ( $auther = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
         {
             case \'admin\'   : //有管理权限
-                '.(in_array('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);':'').'
+                '.(in_array('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'').'
+                '.(in_array('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'').'
             case \'self\'    : //作者
             case \'normal\'  : //正常用户
+                '.(in_array('userID',$_tableDataKeys)?'if ($auther == \'normal\')
+                {
+                    $p_where[\'userID\']           = Utility::getCurrentUserID();//普通用户，默认只能筛选自己名下数据。
+                }':'').'
             case \'draft\'   : //未激活
             case \'pending\' : //待审禁言
             case \'disabled\': //封号
@@ -738,7 +753,7 @@ class '.$_controllerName.' extends AbstractController{
     }
 
     /**
-     * load文件并给与权限判断
+     * load数据并进行读取权限判断
      */
     protected static function loadList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,&$p_countThis=null,$isDetail = false)
     {
@@ -752,13 +767,14 @@ class '.$_controllerName.' extends AbstractController{
         {
             case \'admin\'   : //有管理权限
             case \'self\'    : //作者
+                break;//仅管理员和自己可见
             case \'normal\'  : //正常用户
             case \'draft\'   : //未激活
             case \'pending\' : //待审禁言
             case \'disabled\': //封号
 
             case \'visitor\' : //游客
-                //return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'您没有权限执行该操作\');
+                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'您没有权限执行该操作\');//其他用户不可见
                 break;
             case \'empty\' : //空
                 return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,\'不存在对应数据\');

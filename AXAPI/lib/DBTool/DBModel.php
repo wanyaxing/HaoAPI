@@ -6,6 +6,8 @@
  * @since 1.0
  * @version 1.0
  */
+// v150521 selectFields/selectValues selectField/selectValue
+// v150507 useT1
 // v150317 fix 别名，（和！的情况
 // v150304 fix delele 不支持别名
 // v150228 fix count 支持别名
@@ -160,6 +162,12 @@ class DBModel{
 			return $this->fieldList;
 		}
 
+
+		//设置t1
+		public function useT1($t1='t1'){
+			$this->t1 = $t1;
+			return $this;
+		}
 
 		//设置字段
 		public function field($field){
@@ -434,6 +442,49 @@ class DBModel{
 			{
 				return null;
 			}
+		}
+
+
+		//查询单独字段的值的数组，如不指定$field，则返回首条数据的首个字段的值组成的数组
+		public function selectValues($field=null)
+		{
+			if ($field!=null )
+			{
+				$this->field($field);
+			}
+			$_data = $this->selct();
+			$_values = array();
+			if (is_array($_data ))
+			{
+				foreach ($_data as $key => $value) {
+					$_values[] = $value;
+				}
+			}
+			return $_values;
+		}
+
+		public function selectFields($field=null)
+		{
+			return $this->selectValues($field);
+		}
+
+		//查询单独数据，如不指定$field，则返回首条数据的首个字段的值
+		public function selectValue($field=null)
+		{
+			$_values = $this->limit(1)->selectValues($field);
+			if (is_array($_values) && count($_values)>0)
+			{
+				return $_values[0];
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		public function selectField($field=null)
+		{
+			return $this->selectValue($field);
 		}
 
 		//高级搜索
