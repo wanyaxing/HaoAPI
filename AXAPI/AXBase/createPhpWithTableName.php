@@ -231,12 +231,12 @@ class '.$_handlerName.' extends AbstractHandler {
 // 继承自抽象Handler类，根据开发环境对应数据库中的表而建立的工厂类
 // 不管是否规范都推荐每个handler里直接指定好相关名称，这样就省去智能识别的代码了。
     //====================关键字段，若设定为NULL则支持智能识别（需连接数据库）,所以，还是推荐创建时就手动设定好=====================
-    protected static $tableName     = \''.$_tableName.'\';   //对应表名
-    protected static $tableIdName   = \''.$_tableIdName.'\'    ;   //对应的表的主键字段
-    protected static $tableDataKeys = '.str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))).';//对应表的常用字段数组
+    public static $tableName     = \''.$_tableName.'\';   //对应表名
+    public static $tableIdName   = \''.$_tableIdName.'\'    ;   //对应的表的主键字段
+    public static $tableDataKeys = '.str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))).';//对应表的常用字段数组
 
-    protected static $modelName     = \''.$_modelName.'\';//对应的模型的类名
-    protected static $cache         = array();//类自身用缓存空间
+    public static $modelName     = \''.$_modelName.'\';//对应的模型的类名
+    public static $cache         = array();//类自身用缓存空间
     public static $isUseCache    = True;//类是否开启类缓存
     //====================常规方法，如有需要，也可以覆盖loadById 和 loadListByIds等父类方法=====================
     /**
@@ -300,7 +300,7 @@ if (!file_exists($_handlerFile))
 else if (getValueInArgv('-update') == 'yes')
 {
     $_fileString = file_get_contents($_handlerFile);
-    $_fileString = preg_replace('/protected static \$tableDataKeys =.*/','protected static $tableDataKeys = '.str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))).';//对应表的常用字段数组',$_fileString);
+    $_fileString = preg_replace('/public static \$tableDataKeys =.*/','public static $tableDataKeys = '.str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))).';//对应表的常用字段数组',$_fileString);
     file_put_contents($_handlerFile,$_fileString);
     print('成功，已更新文件：'.$_handlerFile."\n");
 }
@@ -610,13 +610,13 @@ class '.$_controllerName.' extends AbstractController{
         }
         $tmpModel =  new '.$_modelName.'();
 
-        switch ( $auther = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'add\',$tmpModel))
+        switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'add\',$tmpModel))
         {
             case \'admin\'://有管理权限
 '.$_controllerStringAdmin.'
             case \'self\'  ://作者
             case \'normal\'://正常用户
-'.(array_key_exists('userID',$_tableDataKeys)?'                if ($auther == \'normal\')
+'.(array_key_exists('userID',$_tableDataKeys)?'                if ($auth == \'normal\')
                 {
                     $tmpModel  ->       setUserID(Utility::getCurrentUserID());//普通用户创建的数据，默认作者为自己。
                 }':'').'
@@ -654,7 +654,7 @@ class '.$_controllerName.' extends AbstractController{
 
         $tmpModel = '.$_handlerName.'::loadModelById($p_id);
 
-        switch ( $auther = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'update\',$tmpModel))
+        switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'update\',$tmpModel))
         {
             case \'admin\'://有管理权限
 '.$_controllerStringUpdateAdmin.'
@@ -704,14 +704,14 @@ class '.$_controllerName.' extends AbstractController{
 '.$_controllerStringList.'
 
         //根据权限不同，支持的筛选功能也可以不同
-        switch ( $auther = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
+        switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
         {
             case \'admin\'   : //有管理权限
-                '.(in_array('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'').'
-                '.(in_array('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'').'
+                '.(array_key_exists('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'').'
+                '.(array_key_exists('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'').'
             case \'self\'    : //作者
             case \'normal\'  : //正常用户
-                '.(in_array('userID',$_tableDataKeys)?'if ($auther == \'normal\')
+                '.(array_key_exists('userID',$_tableDataKeys)?'if ($auth == \'normal\')
                 {
                     $p_where[\'userID\']           = Utility::getCurrentUserID();//普通用户，默认只能筛选自己名下数据。
                 }':'').'

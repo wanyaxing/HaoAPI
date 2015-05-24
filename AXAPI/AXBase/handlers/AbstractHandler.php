@@ -18,31 +18,31 @@ class AbstractHandler {
      * 对应的表的名称
      * @var string
      */
-	protected static $tableName = null;
+	public static $tableName = null;
 
     /**
      * 对应的表的主键字段
      * @var string
      */
-	protected static $tableIdName = null;
+	public static $tableIdName = null;
 
     /**
      * 对应表的常用字段数组
      * @var array
      */
-	protected static $tableDataKeys = null;
+	public static $tableDataKeys = null;
 
     /**
      * 对应的模型的类名
      * @var string
      */
-	protected static $modelName = null;
+	public static $modelName = null;
 
     /**
      * 进程级的查询用缓存，这是静态变量，所有的数组都放在这里。
      * @var array
      */
-    protected static $cache = array();
+    public static $cache = array();
 
     /**
      * 是否使用进程级缓存，默认为开启，如果需要的时候，可以关掉。
@@ -57,7 +57,7 @@ class AbstractHandler {
      * 获得常规的表格字段数据
      * @return array 表格字段
      */
-    protected static function getTableDataKeys(){
+    public static function getTableDataKeys(){
         if (static::$tableDataKeys == null)
         {
             $_dbModel = static::newDBModel();
@@ -70,7 +70,7 @@ class AbstractHandler {
      * 当前handler所面向的主要表名称，默认会从类名中截取字符作为表名
      * @return string 表名
      */
-    protected static function getTabelName() {
+    public static function getTabelName() {
         if (static::$tableName == null)
         {
             static::$tableName = lcfirst(str_replace('Handler','',get_called_class()));
@@ -82,7 +82,7 @@ class AbstractHandler {
      * 当前handler所面向的表的主键名，默认为表字段的第一个字段
      * @return string 表名
      */
-    protected static function getTabelIdName() {
+    public static function getTabelIdName() {
         if (static::$tableIdName == null)
         {
         	$_fieldList = static::getTableDataKeys();
@@ -98,7 +98,7 @@ class AbstractHandler {
      * 创建一个新模型操作实例
      * @return array 表格字段
      */
-    protected static function newDBModel(){
+    public static function newDBModel(){
         $_dbModel = new DBModel(static::getTabelName());
         $_dbModel->isUseCache(static::$isUseCache);
         return $_dbModel;
@@ -108,7 +108,7 @@ class AbstractHandler {
      * 当前handler所对应的模型类的类名，默认为从类名中截取字符作为模型名
      * @return string 表名
      */
-    protected static function getModelName() {
+    public static function getModelName() {
         if (static::$modelName == null)
         {
     		static::$modelName = ucfirst(str_replace('Handler','Model',get_called_class()));//取得对应的model类名
@@ -121,7 +121,7 @@ class AbstractHandler {
      * 根据数据创建对应的模型
      * @return array 表格字段
      */
-	protected static function createModel($p_data=null){
+	public static function createModel($p_data=null){
 		$_cls = static::getModelName();
         $_model = $_cls::instance($p_data);//创建model实例
     	if (is_array($p_data) && array_key_exists(static::getTabelIdName(),$p_data))
@@ -138,7 +138,7 @@ class AbstractHandler {
      * @param  string $p_key 存储key值
      * @return boolean        是/否
      */
-    protected static function cacheExsits($p_key){
+    public static function cacheExsits($p_key){
         return static::$isUseCache && array_key_exists($p_key, static::$cache);
     }
 
@@ -147,7 +147,7 @@ class AbstractHandler {
      * @param  string $p_key 存储key值
      * @return [type]        对象或数据
      */
-    protected static function cacheLoad($p_key){
+    public static function cacheLoad($p_key){
         if (static::cacheExsits($p_key))
         {
             return clone static::$cache[$p_key];
@@ -160,7 +160,7 @@ class AbstractHandler {
      * @param  string $p_key 存储key值
      * @return boolean        是/否
      */
-    protected static function cacheRemove($p_key){
+    public static function cacheRemove($p_key){
         if (static::cacheExsits($p_key))
         {
             unset(static::$cache[$p_key]);
@@ -174,7 +174,7 @@ class AbstractHandler {
      * @param  object $p_data 对象或数据
      * @return boolean         是/否
      */
-    protected static function cacheSave($p_key,$p_data)
+    public static function cacheSave($p_key,$p_data)
     {
         static::$cache[$p_key] = clone $p_data;
         return True;
@@ -456,7 +456,7 @@ class AbstractHandler {
      * @param  array  $p_where    筛选条件
      * @return array             统计结果
      */
-    protected static function _countWithDate($p_dateType,$p_where=array())
+    public static function _countWithDate($p_dateType,$p_where=array())
     {
         $format = '';
         switch ($p_dateType) {
@@ -486,6 +486,12 @@ class AbstractHandler {
         $dbFacotory = static::newDBModel();
         $result = $dbFacotory->useT1(null)->field('DATE_FORMAT(createTime, \''.$format.'\') AS CountDateTime , COUNT(id) AS CountNum')->where($p_where)->group('CountDateTime')->order('CountDateTime')->select();
         return $result;
+    }
+
+    public static function countAll($p_where)
+    {
+        $_dbModel = static::newDBModel();
+        return $_dbModel->where($p_where)->countAll();
     }
 
 }

@@ -6,7 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
-require_once(dirname(__FILE__) . '/../Xg-Push-SDK-PHP-1.1.4/XingeApp.php');
+require_once(dirname(__FILE__) . '/../Xg-Push-SDK-PHP-1.1.5/XingeApp.php');
 
 class W2PUSH {
 
@@ -32,11 +32,11 @@ class W2PUSH {
      * @param  string  $content      留言正文
      * @param  int     $customtype   自定义类型,t
      * @param  string  $customvalue  自定义值,v
-     * @param  string  $p_deviceToken 用户推送ID，百度里是buserid
+     * @param  string  $p_deviceTokens 用户推送ID，百度里是buserid
      * @param  string  $tag_name     指定标签
      * @return array                 results
      */
-    public static function pushMessage($push_type ,$device_type , $title='', $content,$customtype=null,$customvalue = null ,$p_deviceToken=null ,$tag_name=null)
+    public static function pushMessage($push_type ,$device_type , $title='', $content,$customtype=null,$customvalue = null ,$p_deviceTokens=null ,$tag_name=null)
     {
 		$push = null;
 		$mess = null;
@@ -73,7 +73,7 @@ class W2PUSH {
 
 			$action = new ClickAction();
 			$action->setActionType(ClickAction::TYPE_ACTIVITY);
-			$action->setActivity(' ');//扯淡的xinge sdk有点问题
+			$action->setActivity(' ');//扯淡的xinge sdk，isValid()方法判断m_activity默认值有点问题
 			$mess->setAction($action);
 
 			if (isset($customtype,$customvalue))
@@ -92,31 +92,53 @@ class W2PUSH {
     	switch($push_type)
     	{
     		case 1://指定token
-    			$p_deviceToken = is_array($p_deviceToken)?$p_deviceToken:explode(',',$p_deviceToken);
-    			if (count($p_deviceToken)==0 || (count($p_deviceToken)==1 && $p_deviceToken[0]==null))
+    			$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
+    			if (count($p_deviceTokens)==0 || (count($p_deviceTokens)==1 && $p_deviceTokens[0]==null))
     			{
 	    			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请传入正确的用户推送token');
     			}
-    			foreach ($p_deviceToken as $token) {
-    				if ($device_type==4) //IOS 推送
+    			if (count($p_deviceTokens)>5)//设备多的话，就用大批量推送
+    			{
+    				$retMulti = $push->CreateMultipush($mess,$device_type==3?0:(static::$DEPLOY_STATUS==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV));
+					$ret[] = array(
+								'action'=>'CreateMultipush'
+								,'ret'=>$retMulti
+								);
+    				if (is_array($retMulti) && array_key_exists('result',$retMulti) && array_key_exists('push_id',$retMulti['result']) )
     				{
-    					$ret[] = array(
-    								'action'=>'PushSingleDevice'
-    								,'token'=>$token
-    								,'ret'=>$push->PushSingleDevice($token, $mess,static::$DEPLOY_STATUS==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
-    								);
+						$maxCount = 1000;//每次最大传输设备量
+						for ($i=0; $i < count($p_deviceTokens) ; $i+= $maxCount)
+						{
+							$ret[] = array(
+	    								'action'=>'PushDeviceListMultiple'
+	    								,'token'=>$p_deviceTokens
+	    								,'ret'=>$push->PushDeviceListMultiple($retMulti['result']['push_id'], array_slice($p_deviceTokens,$i, $maxCount))
+	    								);
+						}
     				}
-					else if ($device_type==3) //安卓推送
-					{
 
-						$ret[] = array(
-									'action'=>'PushSingleDevice'
-									,'token'=>$token
-									,'ret'=>$push->PushSingleDevice($token, $mess)
-									);
-					}
-					// var_export($mess);
-					// print("\n");
+    			}
+    			else//设备少的话，就单独推送吧
+    			{
+	    			foreach ($p_deviceTokens as $token) {
+	    				if ($device_type==4) //IOS 推送
+	    				{
+	    					$ret[] = array(
+	    								'action'=>'PushSingleDevice'
+	    								,'token'=>$token
+	    								,'ret'=>$push->PushSingleDevice($token, $mess,static::$DEPLOY_STATUS==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
+	    								);
+	    				}
+						else if ($device_type==3) //安卓推送
+						{
+
+							$ret[] = array(
+										'action'=>'PushSingleDevice'
+										,'token'=>$token
+										,'ret'=>$push->PushSingleDevice($token, $mess)
+										);
+						}
+	    			}
     			}
 
     			break;

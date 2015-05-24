@@ -452,12 +452,15 @@ class DBModel{
 			{
 				$this->field($field);
 			}
-			$_data = $this->selct();
+			$_data = $this->select();
 			$_values = array();
 			if (is_array($_data ))
 			{
-				foreach ($_data as $key => $value) {
-					$_values[] = $value;
+				foreach ($_data as $_d) {
+					foreach ($_d as $key => $value) {
+						$_values[] = $value;
+						break;
+					}
 				}
 			}
 			return $_values;
