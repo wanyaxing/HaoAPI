@@ -24,6 +24,152 @@ class W2PUSH {
 	public static $DEPLOY_STATUS = 1;
 
 
+	/**
+	 * 获得推送对象
+	 */
+	public static function getPush($device_type)
+	{
+		$push = null;
+		if ($device_type==4) //IOS 推送
+		{
+			$push = new XingeApp(W2Config::$API_KEY_IOS, W2Config::$SECRET_KEY_IOS);
+		}
+		else if ($device_type==3) //安卓推送
+		{
+			$push = new XingeApp(W2Config::$API_KEY_ANDROID, W2Config::$SECRET_KEY_ANDROID);
+		}
+		return $push;
+	}
+
+	/**
+	 * 查询token的信息 (信鸽独有)
+	 */
+	public static function QueryInfoOfToken($p_deviceToken,$device_type)
+	{
+		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		return $push->QueryInfoOfToken($p_deviceToken);
+	}
+
+	/**
+	 * 查询token的tag (信鸽独有)
+	 */
+	public static function queryTokenTags($p_deviceToken,$device_type)
+	{
+		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		// var_export($device_type);
+		$ret = $push->QueryTokenTags($p_deviceToken);
+		if (is_array($ret) && array_key_exists('result', $ret))
+		{
+			return $ret['result']['tags'];
+		}
+		return null;
+	}
+
+	/**
+	 * 以keyvalue的组合方式来重设tag，（先删除已有的keyvalue)
+     * @param  string  $p_deviceTokens 用户推送ID，百度里是buserid，支持数组或逗号隔开的字符串
+     * @param  int   $device_type 设备类型 1：浏览器设备 2：pc设备 3：Android设备 4：ios设备 5：windows phone设备
+	 * @param string $tag_key        key
+	 * @param string $tag_values     value值，若为空，则删除所有key数据
+	 */
+	public static function BatchSetTagValue($p_deviceTokens,$device_type,$tag_key,$tag_values)
+	{
+		$newTagnames = array();
+		$addTagnames = array();
+		$delTagnames = array();
+		$ret = array();
+		$tag_values = is_array($tag_values)?$tag_values:explode(',',$tag_values);
+		foreach ($tag_values as $tag_value) {
+			if ($tag_value!=null)
+			{
+				$newTagnames[] = $tag_key . $tag_value;
+			}
+		}
+		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
+		foreach ($p_deviceTokens as $p_deviceToken) {
+			$tagnames = W2PUSH::queryTokenTags($p_deviceToken,$device_type);
+			if (is_array($tagnames))
+			{
+				$addTagnames = array_diff($newTagnames,$tagnames);
+				foreach ($tagnames as $tagname) {
+					if (strpos($tagname,$tag_key)===0 && !in_array($tagname,$newTagnames))
+					{
+						$delTagnames[] = $tagname;
+					}
+				}
+			}
+			$ret[] = W2PUSH::BatchAddTag($p_deviceToken,$device_type,$addTagnames);
+			$ret[] = W2PUSH::BatchDelTag($p_deviceToken,$device_type,$delTagnames);
+		}
+		return $ret;
+	}
+
+
+	/**
+	 * 批量为token添加标签 (信鸽独有)
+	 */
+	public static function BatchAddTag($p_deviceTokens,$device_type,$tag_names)
+	{
+		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$pairs = array();
+		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
+		$tag_names      = is_array($tag_names)?$tag_names:explode(',',$tag_names);
+		foreach ($p_deviceTokens as $p_deviceToken) {
+			if ($p_deviceToken != null)
+			{
+				foreach ($tag_names as $tag_name) {
+					if ($tag_name!=null)
+					{
+						array_push($pairs,new TagTokenPair($tag_name,$p_deviceToken));
+					}
+				}
+			}
+		}
+		$ret = array();
+		$maxCount = 20;
+		for ($i=0; $i < count($pairs) ; $i+= $maxCount)
+		{
+			$ret[] = array(
+						'action'=>'BatchSetTag(add)'
+						,'ret'=>$push->BatchSetTag(array_slice($p_deviceTokens,$i, $maxCount))
+						);
+		}
+		return $ret;
+	}
+
+
+	/**
+	 * 批量为token删除标签 (信鸽独有)
+	 */
+	public static function BatchDelTag($p_deviceTokens,$device_type,$tag_names)
+	{
+		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$pairs = array();
+		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
+		$tag_names      = is_array($tag_names)?$tag_names:explode(',',$tag_names);
+		foreach ($p_deviceTokens as $p_deviceToken) {
+			if ($p_deviceToken != null)
+			{
+				foreach ($tag_names as $tag_name) {
+					if ($tag_name!=null)
+					{
+						array_push($pairs,new TagTokenPair($tag_name,$p_deviceToken));
+					}
+				}
+			}
+		}
+		$ret = array();
+		$maxCount = 20;
+		for ($i=0; $i < count($pairs) ; $i+= $maxCount)
+		{
+			$ret[] = array(
+						'action'=>'BatchDelTag(add)'
+						,'ret'=>$push->BatchDelTag(array_slice($p_deviceTokens,$i, $maxCount))
+						);
+		}
+		return $ret;
+	}
+
     /**
      * 推送接口
      * @param  int     $push_type       1单个设备 2部分人（*常用）
@@ -41,9 +187,9 @@ class W2PUSH {
 		$push = null;
 		$mess = null;
 
+		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
 		if ($device_type==4) //IOS 推送
 		{
-			$push = new XingeApp(W2Config::$API_KEY_IOS, W2Config::$SECRET_KEY_IOS);
 			$mess = new MessageIOS();
 			$mess->setExpireTime(86400);
 			//$mess->setSendTime("2014-03-13 16:00:00");
@@ -59,7 +205,6 @@ class W2PUSH {
 		}
 		else if ($device_type==3) //安卓推送
 		{
-			$push = new XingeApp(W2Config::$API_KEY_ANDROID, W2Config::$SECRET_KEY_ANDROID);
 			$mess = new Message();
 			if ($title==''){$title=$content;}
 			$mess->setType(Message::TYPE_NOTIFICATION);

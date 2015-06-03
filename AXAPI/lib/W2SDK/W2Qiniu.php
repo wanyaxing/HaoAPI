@@ -93,7 +93,16 @@ class W2Qiniu {
 	{
 		$key = $md5.'_'.$filesize.'.'.$filetype;
 
-		return W2Qiniu::getUploadTokenForQiniuUpload($key);
+		$data = W2Qiniu::getUploadTokenForQiniuUpload($key);
+
+		if (is_array($data))
+		{
+			$data['md5'] = $md5;
+			$data['filesize'] = $filesize;
+			$data['filetype'] = $filetype;
+		}
+
+		return $data;
 
 	}
 
