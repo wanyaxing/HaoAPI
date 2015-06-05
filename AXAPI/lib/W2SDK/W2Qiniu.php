@@ -243,23 +243,27 @@ class W2Qiniu {
 	public static function getZipInfo($fileList=array(),$saveas='')
 	{
 
-		require_once(__dir__.'/../lib/qiniu/http.php');
-		require_once(__dir__.'/../lib/qiniu/auth_digest.php');
-		require_once(__dir__.'/../lib/qiniu/utils.php');
+		require_once(__dir__.'/../qiniu/http.php');
+		require_once(__dir__.'/../qiniu/auth_digest.php');
+		require_once(__dir__.'/../qiniu/utils.php');
 
 		$fops ='mkzip/2';
 		$extraKey = null;
+		// var_export($fileList);
 		foreach ($fileList as $key => $value) {
 			if (preg_match('/^http:\/\//', $value))
 			{
 				if (is_int($key))
 				{
-					$fops .= '/url/'.base64_encode($value);
+					$fops .= '/url/'.Qiniu_Encode($value);
 				}
 				else
 				{
-					$fops .= '/url/'.base64_encode($value);
-					$fops .= '/alias/'.base64_encode($key);
+					$fops .= '/url/'.Qiniu_Encode($value);
+					// $fops .= '/alias/'.Qiniu_Encode($key);
+					// var_export($key);
+					// var_export(Qiniu_Encode($key));
+					$fops .= '/alias/'.Qiniu_Encode($key);
 				}
 				if ($extraKey==null)
 				{
@@ -273,7 +277,7 @@ class W2Qiniu {
 		}
 		if ($saveas!=null)
 		{
-			$fops .= '|saveas/'.base64_encode(W2Config::$Qiniu_bucket.':'.$saveas);
+			$fops .= '|saveas/'.Qiniu_Encode(W2Config::$Qiniu_bucket.':'.$saveas);
 		}
 		$persistentKey = 'mkzip.'.$saveas.'.pfop';
 
