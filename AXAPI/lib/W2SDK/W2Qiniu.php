@@ -47,19 +47,26 @@ class W2Qiniu {
 		$data['Expires'] = 3600;
 		$data['deadline'] = time() + $data['Expires'];
 		$data['deadTime'] = date('Y-m-d H:i:s',$data['deadline']);
-		$data['SaveKey'] = null;
 
 		$scope = W2Config::$Qiniu_bucket;
 		if ($key !='')
 		{
 			$scope = W2Config::$Qiniu_bucket .':'.$key;
 			$data['SaveKey'] = $key;
-			$data['urlPreview'] = 'http://'.(W2Config::$Qiniu_domain).'/'. $key;
+			$data['urlPreview'] = W2Qiniu::getBaseUrl($key);
+			$data['urlDownload'] = W2Qiniu::getPrivateUrl($data['urlPreview']);
+		}
+		else
+		{
+			$data['SaveKey'] = null;
+			$data['urlPreview'] = W2Qiniu::getBaseUrl('$(fname).$(ext)');
+			$data['urlDownload'] = $data['urlPreview'];
 		}
 		$data['ReturnBody'] = '{
-    "urlDownload": "'.$data['urlPreview'].'",
+    "urlDownload": "'.$data['urlDownload'].'",
     "urlPreview": "'.$data['urlPreview'].'",
     "name": $(fname),
+    "ext": $(ext),
     "size": $(fsize),
     "type": $(mimeType),
     "hash": $(etag),
@@ -136,12 +143,37 @@ class W2Qiniu {
 		$client = new Qiniu_MacHttpClient(null);
 
 		list($ret, $err) = Qiniu_RS_Stat($client, W2Config::$Qiniu_bucket, $key);
-		if ($err !== null) {
+		if ($err !== null)
+		{
 		    return $err;
 		} else {
-			$ret['urlPreview'] = 'http://'.(W2Config::$Qiniu_domain).'/'. $key;
+			$ret['urlPreview'] = W2Qiniu::getBaseUrl($key);
+			$ret['urlDownload'] = W2Qiniu::getPrivateUrl($ret['urlPreview']);
 		    return $ret;
 		}
+	}
+
+	public static function getBaseUrl($key)
+	{
+		return Qiniu_RS_MakeBaseUrl(W2Config::$Qiniu_domain, $key);
+	}
+
+	public static function getPrivateUrlOfKey($key)
+	{
+		return W2Qiniu::getPrivateUrl(W2Qiniu::getBaseUrl($key));
+	}
+
+	public static function getPrivateUrl($baseUrl)
+	{
+		Qiniu_SetKeys(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
+
+		$getPolicy = new Qiniu_RS_GetPolicy();
+
+		$getPolicy->Expires = 3600;
+
+		$privateUrl = $getPolicy->MakeRequest($baseUrl, null);
+
+		return $privateUrl;
 	}
 
 	/**
