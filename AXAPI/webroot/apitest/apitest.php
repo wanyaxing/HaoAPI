@@ -22,9 +22,9 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title> API：测试工具 </title>
-	<link href="http://sae.wanyaxing.com/cdn/bootstrap/bootstrap.css" rel="stylesheet">
-  <link href="http://sae.wanyaxing.com/cdn/pretty-json/pretty-json.css" rel="stylesheet">
-  <!-- <link href="http://sae.wanyaxing.com/cdn.css?v=150106.4" rel="stylesheet"> -->
+	<link href="http://wanyaxing.sinaapp.com/cdn/bootstrap/bootstrap.css" rel="stylesheet">
+  <link href="http://wanyaxing.sinaapp.com/cdn/pretty-json/pretty-json.css" rel="stylesheet">
+  <!-- <link href="http://wanyaxing.sinaapp.com/cdn.css?v=150106.4" rel="stylesheet"> -->
 	<link href="apitest.css" rel="stylesheet">
 </head>
 <body>
@@ -107,13 +107,13 @@
   </div>
 	</div>
 </body>
-<script src="http://sae.wanyaxing.com/cdn/jquery/jquery.min.js"></script>
-<script src="http://sae.wanyaxing.com/cdn/bootstrap/bootstrap.js"></script>
-<script src="http://sae.wanyaxing.com/cdn/md5/md5.js"></script>
-<script type="text/javascript" src="http://sae.wanyaxing.com/cdn/pretty-json/underscore-min.js" ></script>
-<script type="text/javascript" src="http://sae.wanyaxing.com/cdn/pretty-json/backbone-min.js" ></script>
-<script type="text/javascript" src="http://sae.wanyaxing.com/cdn/pretty-json/pretty-json-min.js" ></script>
-<!-- <script type="text/javascript" src="http://sae.wanyaxing.com/cdn.js?v=150106.10" ></script> -->
+<script src="http://wanyaxing.sinaapp.com/cdn/jquery/jquery.min.js"></script>
+<script src="http://wanyaxing.sinaapp.com/cdn/bootstrap/bootstrap.js"></script>
+<script src="http://wanyaxing.sinaapp.com/cdn/md5/md5.js"></script>
+<script type="text/javascript" src="http://wanyaxing.sinaapp.com/cdn/pretty-json/underscore-min.js" ></script>
+<script type="text/javascript" src="http://wanyaxing.sinaapp.com/cdn/pretty-json/backbone-min.js" ></script>
+<script type="text/javascript" src="http://wanyaxing.sinaapp.com/cdn/pretty-json/pretty-json-min.js" ></script>
+<!-- <script type="text/javascript" src="http://wanyaxing.sinaapp.com/cdn.js?v=150106.10" ></script> -->
 <script type="text/javascript" src="apitest.js" ></script>
 <?php
   if (file_exists('apitest-config.js'))

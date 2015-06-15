@@ -457,7 +457,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('status','userID','level','createTime','modifyTime'));
-        $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.ucfirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),strtolower($_fieldRow['Field'])) .');';
+        $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.ucfirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),strtolower($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
