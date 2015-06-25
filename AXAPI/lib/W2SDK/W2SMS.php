@@ -32,5 +32,22 @@ class W2SMS {
     	}
 		return $_r;
     }
-
+	 /**
+	  * 获取短信余额
+	  * @return int 数量
+	  */
+	 public static function GetBalance()
+	 {
+			$user = W2Config::$SMS_USER;
+			$passwd = W2Config::$SMS_PASSWD;
+			$strPasswd = md5($user.$passwd);
+			$strUrl = 'http://api5.nashikuai.cn/GetBalance.aspx?user='.$user.'&passwd='.$strPasswd.'&dtype=1';
+			$results = file_get_contents($strUrl);
+			$results = simplexml_load_string($results);
+			if ($results->overqty)
+			{
+				return $results->overqty;
+			}
+		return false;
+	 }
 }
