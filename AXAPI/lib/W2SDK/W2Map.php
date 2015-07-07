@@ -37,10 +37,10 @@ class W2Map {
 	 */
 	 public static function returnSquarePoint($lng, $lat,$distance = 0.5){
 
-	    $dlng =  2 * asin(sin($distance / (2 * EARTH_RADIUS)) / cos(deg2rad($lat)));
+	    $dlng =  2 * asin(sin($distance / (2 * W2Map::EARTH_RADIUS)) / cos(deg2rad($lat)));
 	    $dlng = rad2deg($dlng);
 
-	    $dlat = $distance/EARTH_RADIUS;
+	    $dlat = $distance/W2Map::EARTH_RADIUS;
 	    $dlat = rad2deg($dlat);
 
 	    return array(
