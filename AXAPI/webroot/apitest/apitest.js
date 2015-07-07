@@ -347,7 +347,7 @@ $(function(){
       data = $(this).val();
       try{ json = JSON.parse(data); }
       catch(e){
-          $('#div_json_view').html('<pre>'+data+'</pre>');
+          $('#div_json_view').html(data);
           $('#div_frames>ul>li').eq(1).trigger("click");
           return;
       }

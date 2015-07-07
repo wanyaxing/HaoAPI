@@ -235,7 +235,7 @@ class AbstractController {
             return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$savedModel);
         }else
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DB,'数据库异常');
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DB,'数据库异常',$savedModel);
         }
     }
 }
