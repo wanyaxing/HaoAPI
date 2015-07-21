@@ -47,8 +47,8 @@ W2Config::$Qiniu_domain       = '7u2sdg.test.z0.glb.clouddn.com';  /** 七牛配
 W2Config::$Qiniu_accessKey    = '_AFIydsfaRbmMRP8aO38y3C9';        /** 七牛配置 */
 W2Config::$Qiniu_secretKey    = 'Uv9yBLUeqsdfafmVgAybHBRbT07Jj';   /** 七牛配置 */
 
-W2Config::$SMS_USER    		  = 'SHTWW';  						   /** SMS用户名 */
-W2Config::$SMS_PASSWD         = '500100';   					   /** SMS密码 */
+W2Config::$SMS_USER    		  = 'USERNAME';  						   /** SMS用户名 */
+W2Config::$SMS_PASSWD         = '123456';   					   /** SMS密码 */
 
 // 默认分页数据量
 define("DEFAULT_PAGE_SIZE", 10);
