@@ -769,7 +769,7 @@ class DBModel{
 				throw new Exception('DBModel.php: NO update data without where, if you want to do this, pls use updateAll.', 1);
 			}
 			//mysql里，delete 不支持 别名
-			$_where = preg_replace_callback('/(^|\s|\()([^\.\s\(]+\.)([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is|not|in|like|between))/', function($matches){return $matches[1].$matches[3].$matches[4];}, $this->where);
+			$_where = preg_replace_callback('/(^|\s|\()([^\.\s\(]+\.)([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is |not |in |like |between ))/', function($matches){return $matches[1].$matches[3].$matches[4];}, $this->where);
 
 			$sql='DELETE FROM '
 				         . $this->tableName

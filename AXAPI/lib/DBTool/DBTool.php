@@ -96,7 +96,7 @@ class DBTool
 				if (is_int($p_strFormat) && $p_value!==null)
 				{
 					$GLOBALS['t1tmpfordbtool'] = $t1;
-					$p_value = preg_replace_callback('/(^|\s|\()([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is|not|in|like|between))/', function($matches){return $matches[1].$GLOBALS['t1tmpfordbtool'].'.'.$matches[2].$matches[3];}, $p_value);
+					$p_value = preg_replace_callback('/(^|\s|\()([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is |not |in |like |between ))/', function($matches){return $matches[1].$GLOBALS['t1tmpfordbtool'].'.'.$matches[2].$matches[3];}, $p_value);
 				}
 				else if($p_strFormat!==null && !preg_match('/^[^\.\s]+\.[^\.\s]+/', $p_strFormat ) )
 				{
@@ -154,7 +154,7 @@ class DBTool
 					}
 
 				}
-				else if ( preg_match('/^.+\s+([=\>\<]|is|not|in|like)\s*$/', $p_strFormat ) )
+				else if ( preg_match('/^.+\s+([=\>\<]|is |not |in |like |between )\s*$/', $p_strFormat ) )
 				{
 					$conditions[] =  $p_strFormat . $p_value;
 				}
