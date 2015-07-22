@@ -1,3 +1,4 @@
+var currentUrl;
 var xhrTestingApi = null;
 
 Date.prototype.format = function(format)
@@ -183,13 +184,35 @@ function reFormGroup(_formType,_formRequest)
   $('#div_headerfield').scrollTop(99999);
 }
 
+function changePlan (p_plan) {
+    var planList = p_plan.split('|');
+    console.log(planList);
+    switch(planList[0]){
+        case '#api':
+            var i = parseInt(planList[1]);
+            if (i>=0)
+            {
+              if (apiList[i] &&( apiList[i]['title']==planList[2]))
+              {
+                $('#btn_api_title_'+i).trigger('click');
+              }
+            }
+            break;
+
+        case 'help':
+            break;
+    }
+}
+
 function reFormApi(i)
 {
   var _api = apiList[i];
   document.getElementsByTagName('title')[0].innerHTML = _api['title']+'　　/　　API:测试工具';
+  self.location = '#api'+'|'+i+'|'+apiList[i]['title'];
+  currentUrl = self.location.href;
   if (_api['action'].indexOf('http')<0)
   {
-    _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/\/[^\/]+$/g,'')+'/') + _api['action'];
+    _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/\/[^\/]*$/g,'')+'/') + _api['action'];
     _api['action'] = _api['action'].replace(/\/[^\/]+\/\.\.\//g,'/');
   }
   $('#link_api_url').val(_api['action']);
@@ -268,7 +291,7 @@ $(function(){
       var _panelString ='<div class="panel panel-default">\
           <div class="panel-heading">\
             <h4 class="panel-title">\
-              <a data-toggle="collapse" data-parent="#list_api_btns" href="#collapseDiv'+i+'" onclick="reFormApi('+i+');">'+_api['title']+'</a>\
+              <a id="btn_api_title_'+i+'" data-toggle="collapse" data-parent="#list_api_btns" href="#collapseDiv'+i+'" onclick="reFormApi('+i+');">'+_api['title']+'</a>\
               <span class="span-method">'+_api['method']+'</span>\
             </h4>\
           </div>\
@@ -364,13 +387,10 @@ $(function(){
 
     $('#btn_test_url').click(function(){
 
-      if ($('#checkbox_is_autosign').prop('checked'))
-      {
-        $('form').find('.input-group-addon').trigger('click');//每次都自动重算
-      }
-
-        $('#textarea_results').val('waiting....');
-        $('#div_json_view').html('waiting....');
+        if ($('#checkbox_is_autosign').prop('checked'))
+        {
+          $('form').find('.input-group-addon').trigger('click');//每次都自动重算
+        }
 
         if (xhrTestingApi){xhrTestingApi.abort();}
 
@@ -378,19 +398,29 @@ $(function(){
 
         var _link = $('#link_api_url').val();
 
+        if (_link=='')
+        {
+          alert('API URL NO FOUND');
+          $('#link_api_url').focus();
+          return false;
+        }
+
         var _method = $('#switch_method .btn-primary').html().toLowerCase();
 
         var _data=null;
         if (_method=='get')
         {
           var _getValues = getValues();
-            _link = _link + (_link.indexOf('?')>0?'&':'?') + _getValues.join('&');
+          _link = _link + (_link.indexOf('?')>0?'&':'?') + _getValues.join('&');
         }
         else if (_method=='post')
         {
              // _data = getPosts();
              _data = new FormData($('form')[0]);
         }
+
+        $('#textarea_results').val('waiting....');
+        $('#div_json_view').html('waiting....');
         // console.log(_getValues)
         // console.log(_data)
         xhrTestingApi = $.ajax({
@@ -424,4 +454,14 @@ $(function(){
         });
 
     });
+    // //url 监控
+    setInterval(function(){
+        var _currentUrl = self.location.href;
+        if (currentUrl != _currentUrl) {
+            console.log(currentUrl,_currentUrl)
+            currentUrl = _currentUrl;
+            var _plan = currentUrl.replace(/^.*#/g,'#');
+            changePlan(_plan);
+        };
+    }, 100);
 });

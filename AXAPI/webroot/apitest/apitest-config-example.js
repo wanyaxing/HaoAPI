@@ -1,3 +1,10 @@
+var SECRET_HAX_BROWSER   = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_PC        = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_ANDROID   = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_IOS       = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_WINDOWS   = 'secret=RESET_WHEN_NEW_PROJECT';
+var USER_COOKIE_RANDCODE = 'RESET_WHEN_NEW_PROJECT';
+
 var headerList =[
   {
     "key":'Clientversion'
@@ -84,7 +91,7 @@ var headerList =[
     ,"test-value":""
     ,"click":function(){
       var _headers = getHeaders();
-      $(this).siblings("input").val(hex_md5(_headers['Userid']+hex_md5(_headers['Logintime']+'f9823r2ioeoi')));
+      $(this).siblings("input").val(hex_md5(_headers['Userid']+hex_md5(_headers['Logintime']+USER_COOKIE_RANDCODE)));
     }
   }
   ,{
@@ -129,7 +136,24 @@ var headerList =[
         }
       }
 
-      tmpArr.push('secret=apitestisbest987654321');
+      switch(_headers['Devicetype'])
+      {
+        case '1':
+          tmpArr.push(SECRET_HAX_BROWSER);
+          break;
+        case '2':
+          tmpArr.push(SECRET_HAX_PC);
+          break;
+        case '3':
+          tmpArr.push(SECRET_HAX_ANDROID);
+          break;
+        case '4':
+          tmpArr.push(SECRET_HAX_IOS);
+          break;
+        case '5':
+          tmpArr.push(SECRET_HAX_WINDOWS);
+          break;
+      }
       tmpArr = tmpArr.sort();
       var tmpArrString = tmpArr.join('');
       var tmpArrMd5 = hex_md5( tmpArrString );
@@ -151,7 +175,7 @@ var apiList = [
       {
         "title":'example:test'
         ,"desc":''
-        ,"action":'apitest.php'
+        ,"action":'index.php'
         ,"method":"post"
         ,"request":[
           {
