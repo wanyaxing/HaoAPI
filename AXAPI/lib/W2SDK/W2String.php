@@ -310,9 +310,9 @@ class W2String {
      * @param  string $p_string 逗号组成的多个网址string
      * @return string           逗号组成的多个网址string
      */
-    public static function getArrayStrings($p_string)
+    public static function getArrayStrings($p_string,$p_delimiter=',')
     {
-        return implode(',', W2String::getStringsArray($p_string));
+        return implode($p_delimiter, W2String::getStringsArray($p_string));
     }
 
     /**
@@ -320,10 +320,10 @@ class W2String {
      * @param  string $p_string 逗号组成的多个网址string
      * @return string           逗号组成的多个网址string
      */
-    public static function getStringsArray($p_string)
+    public static function getStringsArray($p_string,$p_delimiter=',')
     {
         $p_stringList = array();
-        foreach (explode(',', $p_string) as $s) {
+        foreach (explode($p_delimiter, $p_string) as $s) {
             if ($s!=null)
             {
                 $p_stringList[] = $s;
@@ -337,16 +337,16 @@ class W2String {
      * @param  string $p_string 逗号组成的多个网址string
      * @return string           逗号组成的多个网址string
      */
-    public static function getHttpStrings($p_string)
+    public static function getHttpStrings($p_string,$p_delimiter=',')
     {
         $p_stringList = array();
-        foreach (explode(',', $p_string) as $s) {
+        foreach (explode($p_delimiter, $p_string) as $s) {
             if (W2String::isURL($s))
             {
                 $p_stringList[] = $s;
             }
         }
-        return implode(',', $p_stringList);
+        return implode($p_delimiter, $p_stringList);
     }
 
     /**
@@ -354,9 +354,9 @@ class W2String {
      * @param  string $p_string 逗号组成的多个网址string
      * @return string[] $p_string 多个网址string组成的数组
      */
-    public static function getHttpArray($p_string)
+    public static function getHttpArray($p_string,$p_delimiter=',')
     {
-        return explode(',', W2String::getHttpStrings($p_string));
+        return W2String::getStringsArray( W2String::getHttpStrings($p_string) , $p_delimiter);
     }
 
     /**
