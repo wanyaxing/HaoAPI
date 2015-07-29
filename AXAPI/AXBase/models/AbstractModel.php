@@ -146,6 +146,16 @@ class AbstractModel {
         return array_key_exists($property,$this->propertiesModified());
     }
 
+    /**
+     * 取出初始化时的元素数据
+     * @param  string  $property 属性
+     * @return string            值
+     */
+    public function properyOriginal($property)
+    {
+        return $this->snapshot[$property];
+    }
+
     // ======================== variable ========================
 
     public $id;
