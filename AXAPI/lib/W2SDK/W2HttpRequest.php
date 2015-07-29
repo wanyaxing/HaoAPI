@@ -196,6 +196,22 @@ class W2HttpRequest {
         return $_r;
     }
 
+    /**
+     * 从http请求中获得匹配正则的字符串
+     * @param string key
+     * @param string reg 如 '/^[\s\S]*$/
+     * @param bool 允许空白
+     * @return null|string value
+     */
+    public static function getRequestMatch($p_key, $p_match='/^[\s\S]*$/', $p_allowBlank=true,$p_default=null){
+        $_r = $p_default;
+        $_v = array_key_exists($p_key, $_REQUEST) ? $_REQUEST[$p_key] : null;
+        if (isset($_v) && ($p_allowBlank || preg_match($p_match,$_v))) {
+            $_r = $_v;
+        }
+        return $_r;
+    }
+
 
     /**
      * 从http请求中获得Email格式字符串
