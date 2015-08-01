@@ -28,6 +28,12 @@ class Utility
 	protected static $_HEADERS = null;
 
 	/**
+	 * 静态变量，存储当前用户ID
+	 * @var array
+	 */
+	protected static $_CURRENTUSERID = null;
+
+	/**
 	 * 将用户和登陆时间组成加密字符
 	 * @param  integer $p_userID 用户ID
 	 * @param  string  $p_time   时间戳
@@ -81,49 +87,59 @@ class Utility
 		}
 		return null;
 	}
+
+	public static function setCurrentUserID($p_userID=null)
+	{
+		static::$_CURRENTUSERID = $p_userID;
+	}
+
 	public static function getCurrentUserID()
 	{
-		$p_userID = null;
-		$infoHeader = getallheaders();
-		if(Utility::getCheckCode(Utility::getHeaderValue('Userid'),Utility::getHeaderValue('Logintime')) == Utility::getHeaderValue('Checkcode'))
+		if (is_null(static::$_CURRENTUSERID))
 		{
-			$p_userID = Utility::getHeaderValue('Userid');
-		}
-		if ($p_userID>0)
-		{
-			$_clsHandler = USERHANDLER_NAME;
-			$tmpModel =  $_clsHandler::loadModelById($p_userID);
-			if (is_object($tmpModel) && W2Time::getTimeBetweenDateTime($tmpModel->getLastLoginTime())<-60*5)
+			$p_userID = null;
+			$infoHeader = getallheaders();
+			if(Utility::getCheckCode(Utility::getHeaderValue('Userid'),Utility::getHeaderValue('Logintime')) == Utility::getHeaderValue('Checkcode'))
 			{
-				if (method_exists($tmpModel,'setLastLoginTime'))
+				$p_userID = Utility::getHeaderValue('Userid');
+			}
+			if ($p_userID>0)
+			{
+				$_clsHandler = USERHANDLER_NAME;
+				$tmpModel =  $_clsHandler::loadModelById($p_userID);
+				if (is_object($tmpModel) && W2Time::getTimeBetweenDateTime($tmpModel->getLastLoginTime())<-60*5)
 				{
-					$tmpModel->setLastLoginTime(W2Time::timetostr());
-					$tmpModel = $_clsHandler::saveModel($tmpModel);
+					if (method_exists($tmpModel,'setLastLoginTime'))
+					{
+						$tmpModel->setLastLoginTime(W2Time::timetostr());
+						$tmpModel = $_clsHandler::saveModel($tmpModel);
+					}
 				}
-			}
-			if (is_object($tmpModel))
-			{
-	            if (method_exists($tmpModel,'getStatus'))
-                {
-			        switch($tmpModel->getStatus())
-			        {
-			            case STATUS_DRAFT:    //未激活
-			                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'未激活');
-			                break;
-			            case STATUS_PENDING:  //待审禁言
-			                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'禁言用户');
-			                break;
-			            case STATUS_DISABLED: //封号
-			            	$p_userID = null;
-			                break;
-			            default:
-			                break;
-			        }
-                }
+				if (is_object($tmpModel))
+				{
+		            if (method_exists($tmpModel,'getStatus'))
+	                {
+				        switch($tmpModel->getStatus())
+				        {
+				            case STATUS_DRAFT:    //未激活
+				                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'未激活');
+				                break;
+				            case STATUS_PENDING:  //待审禁言
+				                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'禁言用户');
+				                break;
+				            case STATUS_DISABLED: //封号
+				            	$p_userID = null;
+				                break;
+				            default:
+				                break;
+				        }
+	                }
 
+				}
+				static::setCurrentUserID($p_userID);
 			}
 		}
-		return $p_userID ;
+		return static::$_CURRENTUSERID ;
 	}
 
 	public static function getHeaderAuthInfoForUserID($p_userID)
@@ -239,7 +255,7 @@ class Utility
 				}
 			}
 
-			if (abs($_HEADERS['Requesttime'] - time()) > 7*24*60*60 )//300
+			if (abs($_HEADERS['Requesttime'] - time()) > 5*60 )//300
 			{
 				return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'该操作已过期，请重试。');
 			}
