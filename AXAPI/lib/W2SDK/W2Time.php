@@ -149,7 +149,15 @@ class W2Time {
         while ($timeThis<=$timeEnd)
         {
             $results[] = date($p_format,$timeThis);
+            if ($timeThis == $timeEnd)
+            {
+                break;
+            }
             $timeThis = W2Time::getTimeAdded($timeThis,$p_step);
+            if ($timeThis > $timeEnd)
+            {
+                $timeThis = $timeEnd;
+            }
         }
         array_unique($results);
         return $results;
