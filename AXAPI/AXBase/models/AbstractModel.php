@@ -56,6 +56,15 @@ class AbstractModel {
      * @return array 类的所用属性
      */
     public function properties($p_foundDeepModelList=array(),$p_exclude=null) {
+        $_classid = get_class($this).'.'.$this->getId();
+        if (in_array($_classid,$p_foundDeepModelList))
+        {
+            return null;
+        }
+        else
+        {
+            $p_foundDeepModelList[] =$_classid;
+        }
         $_ps = array();
         if (is_string($p_exclude))
         {
@@ -76,16 +85,7 @@ class AbstractModel {
                     $data = $result;
                     if (is_object($result) && is_subclass_of($result,'AbstractModel'))
                     {
-                        $_classid = get_class($result).'.'.$result->getId();
-                        if (!in_array($_classid,$p_foundDeepModelList))
-                        {
-                            // $p_foundDeepModelList[]=$_classid;
-                            $data = $result->properties(array_merge($p_foundDeepModelList,array($_classid)));
-                        }
-                        else
-                        {
-                            $data = null;
-                        }
+                        $data = $result->properties($p_foundDeepModelList);
                     }
                     else if (is_array($result) && array_key_exists(0, $result))
                     {
@@ -93,16 +93,7 @@ class AbstractModel {
                         foreach ($result as $_key => $_value) {
                             if (is_object($_value) && is_subclass_of($_value,'AbstractModel'))
                             {
-                                $_classid = get_class($_value).'.'.$_value->getId();
-                                if (!in_array($_classid,$p_foundDeepModelList))
-                                {
-                                    // $p_foundDeepModelList[]=$_classid;
-                                    $data[$_key] = $_value->properties(array_merge($p_foundDeepModelList,array($_classid)));
-                                }
-                                else
-                                {
-                                    $data[$_key] = null;
-                                }
+                                $data[$_key] = $_value->properties(array_merge($p_foundDeepModelList,array($_classid)));
                             }
                             else
                             {
