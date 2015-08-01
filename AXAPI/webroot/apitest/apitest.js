@@ -140,9 +140,22 @@ function getPosts()
 
 function reFormGroup(_formType,_formRequest)
 {
-  var _firstNode = $('form').find('[form-type='+_formType+']').first().closest(".form-group");
-  $('form').find('[form-type='+_formType+']').last().closest(".form-group").after(_firstNode.clone(true));
-  var _inputs = $('form').find('[form-type='+_formType+']').last().closest(".form-group").attr('is-required',_formRequest['required']?'true':'false').trigger('mouseenter').trigger('mouseleave').attr('title',_formRequest['title']+"<br/>"+_formRequest['desc']).attr('data-html',"true").tooltip().show().find('input');
+  var _formGroup = null;
+  $('form').find('[form-type='+_formType+']').each(function(){
+    if ($(this).val()==_formRequest['key'])
+    {
+      _formGroup = $(this).closest(".form-group");
+    }
+  });
+  if (_formGroup == null)
+  {
+    var _firstNode = $('form').find('[form-type='+_formType+']').first().closest(".form-group");
+    $('form').find('[form-type='+_formType+']').last().closest(".form-group").after(_firstNode.clone(true));
+    _formGroup = $('form').find('[form-type='+_formType+']').last().closest(".form-group");
+  }
+
+  _formGroup.attr('is-required',_formRequest['required']?'true':'false').trigger('mouseenter').trigger('mouseleave').attr('title',_formRequest['title']+"<br/>"+_formRequest['desc']).attr('data-html',"true").tooltip().show();
+  var _inputs = _formGroup.find('input');
   _inputs.eq(0).val(_formRequest['key']);
   if (_formRequest['type']=='file')
   {
@@ -185,6 +198,7 @@ function reFormGroup(_formType,_formRequest)
 }
 
 function changePlan (p_plan) {
+    p_plan = decodeURI(p_plan);
     var planList = p_plan.split('|');
     console.log(planList);
     switch(planList[0]){
@@ -192,7 +206,7 @@ function changePlan (p_plan) {
             var i = parseInt(planList[1]);
             if (i>=0)
             {
-              if (apiList[i] &&( apiList[i]['title']==planList[2]))
+              if (apiList[i])
               {
                 $('#btn_api_title_'+i).trigger('click');
               }
@@ -204,12 +218,17 @@ function changePlan (p_plan) {
     }
 }
 
+function setCurrentUrl(_href)
+{
+  self.location = _href;
+  currentUrl = self.location.href;
+}
+
 function reFormApi(i)
 {
   var _api = apiList[i];
   document.getElementsByTagName('title')[0].innerHTML = _api['title']+'　　/　　API:测试工具';
-  self.location = '#api'+'|'+i+'|'+apiList[i]['title'];
-  currentUrl = self.location.href;
+  setCurrentUrl('#api'+'|'+i+'|'+apiList[i]['title']);
   if (_api['action'].indexOf('http')<0)
   {
     _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/\/[^\/]*$/g,'')+'/') + _api['action'];
@@ -244,17 +263,7 @@ function reFormApi(i)
 
 function reFormGroupApi(i,j)
 {
-  var isExist = false;
-  $('form').find('[form-type=field]').each(function(){
-    if ($(this).val()==apiList[i]['request'][j]['key'])
-    {
-      isExist = true;
-    }
-  });
-  if (!isExist)
-  {
-    reFormGroup('field', apiList[i]['request'][j]);
-  }
+  reFormGroup('field', apiList[i]['request'][j]);
 }
 
 function reFormHeader()
@@ -291,7 +300,7 @@ $(function(){
       var _panelString ='<div class="panel panel-default">\
           <div class="panel-heading">\
             <h4 class="panel-title">\
-              <a id="btn_api_title_'+i+'" data-toggle="collapse" data-parent="#list_api_btns" href="#collapseDiv'+i+'" onclick="reFormApi('+i+');">'+_api['title']+'</a>\
+              <a id="btn_api_title_'+i+'" href="#api'+'|'+i+'|'+encodeURI(apiList[i]['title'])+'" data-toggle="collapse" data-parent="#list_api_btns" data-target="#collapseDiv'+i+'" onclick="reFormApi('+i+');">'+_api['title']+'</a>\
               <span class="span-method">'+_api['method']+'</span>\
             </h4>\
           </div>\
@@ -429,6 +438,8 @@ $(function(){
 
             url: _link,
 
+            headers: _headers,
+
             data:_data,
 
             dataType:"text",
@@ -446,7 +457,6 @@ $(function(){
                   $('#div_frames>ul>li').eq(0).trigger("click");
             },
 
-            headers: _headers,
             //Options to tell jQuery not to process data or worry about content-type.
             cache: (_method=='get'),
             contentType: false,
