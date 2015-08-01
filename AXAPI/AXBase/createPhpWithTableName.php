@@ -507,6 +507,8 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'isreverse\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否倒序 0否 1是\' ,\'desc\':\'（默认1）\' }';
     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'ids\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }';
 $_controllerStringList = '';
+$_controllerKeySearchList = '';
+$_controllerKeyFieldList = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'date' )
     {
@@ -530,7 +532,15 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
+
+    if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'string')
+    {
+        $_controllerKeySearchList .= "\n".'            '.str_pad('$keyWhere[] = sprintf(\''.$_fieldRow['Field'].' like \\\'%%%s%%\\\'\',',40,' ',STR_PAD_RIGHT).'$keyWord);'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerKeyFieldList[] = $_fieldRow['Field'];
+    }
 }
+$_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'keyword\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'检索关键字\' ,\'desc\':\''.'\' }';//.(implode(' ',$_controllerKeyFieldList))
+
 $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestList) .'
         ]
       };
@@ -702,6 +712,14 @@ class '.$_controllerName.' extends AbstractController{
         $p_where = array();
         '.str_pad('$p_where[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
 '.$_controllerStringList.'
+'.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestString(\'keyword\',false);
+        if ($keyWord!=null)
+        {
+            $keyWhere = array();
+            $keyWord = preg_replace(\'/\s+/\',\'%\',$keyWord);
+'.$_controllerKeySearchList.'
+            $p_where[] = \'(\'.implode(\' or \',$keyWhere).\')\';
+        }':'').'
 
         //根据权限不同，支持的筛选功能也可以不同
         switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
