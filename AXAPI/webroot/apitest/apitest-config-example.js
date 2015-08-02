@@ -164,11 +164,26 @@ var headerList =[
   ,{
     "key":'Is_sql_printX'//参数key值
     ,"type":'string'//参数key值类型
-    ,"title":'Is_sql_printx'//参数标题
+    ,"title":'change the key in field to IS_SQL_PRINT for printing log.'//参数标题
     ,"desc":''//参数描述
     ,"required":true
-    ,"test-value":"change the key in left with IS_SQL_PRINT to print log"
-    ,"click":null
+    ,"test-value":" "
+    ,"click":function(e){
+        if (!e.isTrigger)
+        {
+           var fieldNode = $(this).closest('.form-group').find('input[form-type=header]');
+           if ( fieldNode.val()=='Is_sql_print')
+           {
+              fieldNode.val('Is_sql_printX');
+              $(this).html('DEBUG OFF');
+           }
+           else
+           {
+              fieldNode.val('Is_sql_print');
+              $(this).html('DEBUG ON');
+           }
+        }
+    }
   }
 ];
 var apiList = [
