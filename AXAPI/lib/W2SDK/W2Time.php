@@ -218,6 +218,53 @@ class W2Time {
     }
 
     /**
+     * 将N秒转化成其他单位的字符串
+     * @param  [type] $p_time 待转换时间
+     * @return [string]           对应关系，如5分钟前
+     */
+    public static function secondsToStr($_interval=null,$p_format='Y年m月d天H小时i分钟s秒'){
+        $_r = $p_format;
+
+        if( strpos($_r,'Y')!==false ){
+            $_y         = intval($_interval/60/60/24/30/12);
+            $_interval -= $_y * 60*60*24*30*12;
+            $_r         = str_replace('Y',sprintf('%02d',$_y),$_r);
+        }
+
+        if( strpos($_r,'m')!==false ){
+            $_y         = intval($_interval/60/60/24/30);
+            $_interval -= $_y * 60*60*24*30;
+            $_r         = str_replace('m',sprintf('%02d',$_y),$_r);
+        }
+
+        if( strpos($_r,'d')!==false ){
+            $_y         = intval($_interval/60/60/24);
+            $_interval -= $_y * 60*60*24;
+            $_r         = str_replace('d',sprintf('%02d',$_y),$_r);
+        }
+
+        if( strpos($_r,'H')!==false ){
+            $_y         = intval($_interval/60/60);
+            $_interval -= $_y * 60*60;
+            $_r         = str_replace('H',sprintf('%02d',$_y),$_r);
+        }
+
+        if( strpos($_r,'i')!==false ){
+            $_y         = intval($_interval/60);
+            $_interval -= $_y * 60;
+            $_r         = str_replace('i',sprintf('%02d',$_y),$_r);
+        }
+
+        if( strpos($_r,'s')!==false ){
+            $_y         = intval($_interval);
+            $_interval -= $_y;
+            $_r         = str_replace('s',sprintf('%02d',$_y),$_r);
+        }
+
+        return $_r;
+    }
+
+    /**
      * 获得指定时间所在当月的最后一天的日期 Y-m-d
      * @param  [type] $p_time [description]
      * @return string             格式 Y-m-d
