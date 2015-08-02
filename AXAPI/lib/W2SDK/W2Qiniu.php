@@ -153,18 +153,46 @@ class W2Qiniu {
 		}
 	}
 
+	/**
+	 * 根据七牛文件的key值，组装文件地址
+	 * @param  string $key 文件名
+	 * @return string   url
+	 */
 	public static function getBaseUrl($key)
 	{
 		return Qiniu_RS_MakeBaseUrl(W2Config::$Qiniu_domain, $key);
 	}
 
+	/**
+	 * 根据七牛文件的key值，追加下载授权
+	 * @param  string $key 文件名
+	 * @return string   url
+	 */
 	public static function getPrivateUrlOfKey($key)
 	{
 		return W2Qiniu::getPrivateUrl(W2Qiniu::getBaseUrl($key));
 	}
 
-	public static function getPrivateUrl($baseUrl)
+	/**
+	 * 根据七牛文件地址，追加下载授权
+	 * @param  url $baseUrl 文件地址
+	 * @param  string $attname 下载后另存为的文件名
+	 * @return url          含下载授权的文件地址
+	 */
+	public static function getPrivateUrl($baseUrl,$attname=null)
 	{
+		if (!is_null($attname))
+		{
+			if (strpos($baseUrl,'attname=')!==false)
+			{
+				$baseUrl = preg_replace('/attname=[^&]*/','attname='.rawurlencode($attname));
+			}
+			else
+			{
+				$baseUrl .= (strpos($baseUrl, '?')!==false?'&':'?').'attname='.rawurlencode($attname);
+			}
+		}
+
 		Qiniu_SetKeys(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
 
 		$getPolicy = new Qiniu_RS_GetPolicy();
@@ -208,7 +236,8 @@ class W2Qiniu {
 				$putExtra->Crc32 = 1;
 				list($ret, $err) = Qiniu_PutFile($uploadToken['uploadToken'], $uploadToken['SaveKey'], $filePath, $putExtra);
 				if ($err !== null) {
-				    throw new Exception($err, 1);
+					// var_dump($err);
+				    throw new Exception($err->Err, 1);
 				} else {
 				    return $uploadToken['urlPreview'];
 				}
