@@ -181,15 +181,60 @@ class AbstractController {
         return $isDetail ? (count($resultList)>0?$resultList[0]:null) : $resultList;
     }
 
-    protected static function aList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,&$p_countThis=null,$isDetail = false)
+    protected static function aList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,$p_countThis=-1,$isDetail = false)
     {
-        $p_countThis=-1;
-        $tmpResult = static::loadList($p_where,$p_order,$p_pageIndex=null,$p_pageSize=null,$p_countThis,$isDetail = false);
+        if (count($_POST)>0)
+        {
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处不接受POST数据。');
+        }
+        if ($p_where===null)
+        {
+            $p_where = array();
+            $p_where['id in (%s)'] = W2HttpRequest::getRequestArrayString('ids');
+        }
+
+        if ($p_order===null)
+        {
+            $p_order = 'id';
+        }
+
+        $_isReverse = W2HttpRequest::getRequestBool('isreverse',true);
+        if ($_isReverse && strpos($p_order,' ')===false)
+        {
+            $p_order .=' desc';
+        }
+
+
+        if ($p_pageIndex===null)
+        {
+            $p_pageIndex = W2HttpRequest::getRequestInt('page',null,false,true,1);
+        }
+
+        if ($p_pageSize===null)
+        {
+            $p_pageSize = W2HttpRequest::getRequestInt('size',null,false,true,DEFAULT_PAGE_SIZE);
+        }
+
+        if ($p_pageIndex<0)
+        {
+            $p_countThis = 0;
+        }
+        else if ($p_countThis===-1)
+        {
+            $p_countThis = W2HttpRequest::getRequestInt('iscountall',null,false,true,-1);
+        }
+
+
+        $tmpResult = static::loadList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis,$isDetail);
         if (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult))
         {
             return $tmpResult;
         }
-        return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$tmpResult,array('countTotal'=>$p_countThis));
+
+        $pageMax = ($p_countThis>0 && $p_pageSize>0)?(intval(($p_countThis-1)/$p_pageSize)+1):-1;
+        $p_pageIndex = ($p_pageIndex<0 && $pageMax>0)?($pageMax + $p_pageIndex + 1):$p_pageIndex;
+
+        return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$tmpResult,$isDetail ? null : array('page'=>$p_pageIndex,'size'=>$p_pageSize,'pageMax'=>$pageMax,'countTotal'=>$p_countThis));
     }
 
     protected static function detail()
@@ -197,13 +242,8 @@ class AbstractController {
         $p_where = array();
         $p_where['id'] = W2HttpRequest::getRequestInt('id',null,false,false);
 
-        $p_countThis=null;
-        $tmpResult = static::loadList($p_where,$p_order='id',$p_pageIndex=1,$p_pageSize=1,$p_countThis,$isDetail = true);
-        if (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult))
-        {
-            return $tmpResult;
-        }
-        return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$tmpResult);
+        return static::aList($p_where,$p_order='id',$p_pageIndex=1,$p_pageSize=1,$p_countThis=-1,$isDetail = true);
+
     }
 
     //保存
