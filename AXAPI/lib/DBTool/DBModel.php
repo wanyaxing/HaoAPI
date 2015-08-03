@@ -609,7 +609,7 @@ class DBModel{
 				$count = $this->count();
 				$pageIndexMax = (intval(($count-1)/$pageSize)+1); //总页数
 			}
-			return $pageIndex;
+			return $pageIndexMax;
 		}
 
 		//获得真实的pageindex,如传入-1，则返回符合条件的最后一页的页码
@@ -617,7 +617,7 @@ class DBModel{
 		{
 			if ($pageIndex < 0 && $pageSize>0)
 			{
-				$pageIndexMax = $this->realPageMax();
+				$pageIndexMax = $this->realPageMax($pageSize);
 				$pageIndex += $pageIndexMax+1; //分页从1开始，第一页就是1.
 			}
 			return $pageIndex;
