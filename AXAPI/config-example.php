@@ -6,7 +6,7 @@
 * @version 0.1
 */
 
-if (!defined('DB_HOST'))
+if (!defined('AXAPI_ROOT_PATH'))
 {
     define('AXAPI_ROOT_PATH', __dir__ );
 }
@@ -49,6 +49,8 @@ W2Config::$Qiniu_secretKey    = 'Uv9yBLUeqsdfafmVgAybHBRbT07Jj';   /** 七牛配
 
 W2Config::$SMS_USER    		  = 'USERNAME';  						   /** SMS用户名 */
 W2Config::$SMS_PASSWD         = '123456';   					   /** SMS密码 */
+
+W2Config::$LOG_PATH           = AXAPI_ROOT_PATH . '/logs/';   	   /** 日志存储目录 */
 
 // 默认分页数据量
 define("DEFAULT_PAGE_SIZE", 10);
