@@ -456,7 +456,7 @@ $_controllerStringUpdateNormal = '';
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
-        $_isAdmin = in_array($_fieldRow['Field'],array('status','userID','level','createTime','modifyTime'));
+        $_isAdmin = in_array($_fieldRow['Field'],array('userID','level','createTime','modifyTime'));
         $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.ucfirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),strtolower($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
@@ -522,15 +522,15 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
-    else if ($_fieldRow['Field']=='userID')
-    {
-        //默认不支持用户筛选，只能筛选登录用户自己的数据;
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
-    }
+    // else if ($_fieldRow['Field']=='userID')
+    // {
+    //     //默认不支持用户筛选，只能筛选登录用户自己的数据;
+    //     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
+    // }
     else
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
 
     if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'string')
@@ -626,10 +626,12 @@ class '.$_controllerName.' extends AbstractController{
 '.$_controllerStringAdmin.'
             case \'self\'  ://作者
             case \'normal\'://正常用户
-'.(array_key_exists('userID',$_tableDataKeys)?'                if ($auth == \'normal\')
+'
+.(array_key_exists('userID',$_tableDataKeys)?'                if ($auth == \'normal\' || $tmpModel->properyValue(\'userID\')===null)
                 {
                     $tmpModel  ->       setUserID(Utility::getCurrentUserID());//普通用户创建的数据，默认作者为自己。
-                }':'').'
+                }':'')
+.'
 '.$_controllerStringNormal.'
                 break;
             case \'draft\'://未激活
@@ -729,10 +731,12 @@ class '.$_controllerName.' extends AbstractController{
                 '.(array_key_exists('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'').'
             case \'self\'    : //作者
             case \'normal\'  : //正常用户
-                '.(array_key_exists('userID',$_tableDataKeys)?'if ($auth == \'normal\')
-                {
-                    $p_where[\'userID\']           = Utility::getCurrentUserID();//普通用户，默认只能筛选自己名下数据。
-                }':'').'
+                '
+// .(array_key_exists('userID',$_tableDataKeys)?'if ($auth == \'normal\')
+//                 {
+//                     $p_where[\'userID\']           = Utility::getCurrentUserID();//普通用户，默认只能筛选自己名下数据。
+//                 }':'')
+.'
             case \'draft\'   : //未激活
             case \'pending\' : //待审禁言
             case \'disabled\': //封号
@@ -785,7 +789,7 @@ class '.$_controllerName.' extends AbstractController{
         {
             case \'admin\'   : //有管理权限
             case \'self\'    : //作者
-                break;//仅管理员和自己可见
+                break;//可见
             case \'normal\'  : //正常用户
             case \'draft\'   : //未激活
             case \'pending\' : //待审禁言
