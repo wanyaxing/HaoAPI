@@ -15,7 +15,7 @@ class W2Log {
     /**
      * 获取日志内容
      */
-    private static function buildLog($p_args, $p_showTrace=true){
+    private static function buildLog($p_args, $p_showTrace=true ,$p_showFilePath = false){
         $_logMessage = '';
         if (count($p_args)>0) {
             $_format = array_shift($p_args);
@@ -50,20 +50,20 @@ class W2Log {
      */
     private static function log($p_level, $p_logArgs, $p_showTrace=false){
         $_logLevel = defined('LOG_LEVEL')?LOG_LEVEL:'info';
-        $_logFile = null;
-        if (defined('LOG_FILE')) {
-            $_logFile = LOG_FILE;
+        $_fileName = null;
+        if (!is_null(W2Config::$LOG_FILENAME)) {
+            $_fileName = W2Config::$LOG_FILENAME;
         } else {
             $_dbt = debug_backtrace();
             foreach ($_dbt as $_i => $_d) {
-                if(!array_key_exists('file', $_d) || $_d['file']=='' || pathinfo($_d['file'],PATHINFO_BASENAME) == 'w2-php-sdk.php'|| pathinfo($_d['file'],PATHINFO_BASENAME) == 'DbConn.php'|| strpos($_d['file'],'/dbio') !== false || $_d['file']==__file__){
+                if(!array_key_exists('file', $_d) || $_d['file']=='' || pathinfo($_d['file'],PATHINFO_BASENAME) == 'w2-php-sdk.php'|| pathinfo($_d['file'],PATHINFO_BASENAME) == 'DbConn.php'|| $_d['file']==__file__){
                     continue;
                 }
-                $_logFile = sprintf('%s.log', pathinfo($_d['file'],PATHINFO_FILENAME));
+                $_fileName = pathinfo($_d['file'],PATHINFO_FILENAME);
                 break;
             }
         }
-        if(!isset($_logFile)) {
+        if(!isset($_fileName)) {
             return;
         }
         $_s = array_search(strtolower($_logLevel), W2Log::$LOG_LEVELS);
@@ -71,29 +71,15 @@ class W2Log {
             return;
         }
         $_ms = microtime(true);
-        $_ms = floor(($_ms-floor($_ms))*1000);
-        $_log = sprintf("%s.%-03s %7s %s\n", strftime('%F %T'), $_ms, '['.strtoupper(W2Log::$LOG_LEVELS[$p_level]).']', W2Log::buildLog($p_logArgs, $p_showTrace));
-        if (defined('LOG_PATH'))
-        {
-            $_logFile = sprintf('%s/%s-%s.%s',LOG_PATH, pathinfo($_logFile,PATHINFO_FILENAME), strftime('%Y%m%d'), pathinfo($_logFile,PATHINFO_EXTENSION));
-        }
-        else
-        {
-            $_logFile = sprintf('%s/log/%s-%s.%s', pathinfo($_logFile,PATHINFO_DIRNAME), pathinfo($_logFile,PATHINFO_FILENAME), strftime('%Y%m%d'), pathinfo($_logFile,PATHINFO_EXTENSION));
-        }
-        // var_dump($_logFile);exit;
 
+        $_ms = floor(($_ms-floor($_ms))*1000);
+
+        $_log = sprintf("%s.%-03s %7s %s\n", strftime('%F %T'), $_ms, '['.strtoupper(W2Log::$LOG_LEVELS[$p_level]).']', W2Log::buildLog($p_logArgs, $p_showTrace) );
+
+        $_logFile = sprintf('%s/%s-%s.log',W2Config::$LOG_PATH, $_fileName, strftime('%Y%m%d'));
 
         if(isset($_logFile)) {
-            $_fp = @fopen($_logFile,'a');
-            if ($_fp == false) {
-                return;
-            }
-            fwrite($_fp, $_log);
-            fclose($_fp);
-        }
-        if(defined('LOG_IMMEDIATE_OUTPUT') && LOG_IMMEDIATE_OUTPUT===true){
-            print($_log);
+            file_put_contents($_logFile,$_log,FILE_APPEND);
         }
     }
 

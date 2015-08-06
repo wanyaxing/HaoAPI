@@ -96,7 +96,7 @@ class AbstractHandler {
 
     /**
      * 创建一个新模型操作实例
-     * @return array 表格字段
+     * @return DBModel
      */
     public static function newDBModel(){
         $_dbModel = new DBModel(static::getTabelName());

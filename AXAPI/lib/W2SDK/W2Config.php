@@ -27,4 +27,7 @@ class W2Config {
 	public static $SMS_USER = '1234';
 	public static $SMS_PASSWD = '1234';
 
+	public static $LOG_PATH = '/tmp/logs/';
+	public static $LOG_FILENAME = null;
+
 }
