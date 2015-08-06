@@ -3,12 +3,12 @@ ini_set('display_errors',1);            //错误信息
 ini_set('display_startup_errors',1);    //php启动错误信息
 error_reporting(-1);                    //打印出所有的 错误信息
 
-date_default_timezone_set('PRC');
+date_default_timezone_set('PRC');//设定时区
 
-    // define('IS_SQL_PRINT',True);//打印sql语句
+    //是否开启debug
     if (array_key_exists('Is_sql_print', getallheaders()))
     {
-        define('IS_SQL_PRINT',True);//打印sql语句
+        define('IS_SQL_PRINT',True);
     }
 
     //加载配置文件
@@ -24,11 +24,26 @@ date_default_timezone_set('PRC');
     require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
 
 
+    //接口格式校验
     $results = Utility::getAuthForApiRequest();
     if ($results['errorCode']==RUNTIME_CODE_OK)
     {
+        //调用对应接口方法
         try {
             list ($apiController, $apiAction) = explode ("/", W2HttpRequest::getRequestString('r',false,'/'), 2);
+
+            //记录接口日志
+            file_put_contents(sprintf('%s/access-%s.log',AXAPI_ROOT_PATH.'/logs/',strftime('%Y%m%d'))
+                                ,sprintf("[%s] [%s] [%d] [%s] [%s/%s]: %s\n"
+                                            ,DateTime::createFromFormat('U.u', microtime(true))->setTimeZone(new DateTimeZone('+8'))->format('Y-m-d H:i:s.u e')
+                                            ,$_SERVER['REMOTE_ADDR']
+                                            ,Utility::getCurrentUserID()
+                                            ,count($_POST)>0?'POST':'GET'
+                                            ,$apiController, $apiAction
+                                            ,count($_POST)>0?json_encode($_POST, JSON_UNESCAPED_UNICODE):json_encode($_GET, JSON_UNESCAPED_UNICODE)
+                                        )
+                                ,FILE_APPEND);
+
             $method = new ReflectionMethod($apiController.'Controller', 'action'.$apiAction);
             $results = $method->invoke(null,0);
         } catch (Exception $e) {
@@ -36,6 +51,7 @@ date_default_timezone_set('PRC');
         }
     }
 
+    //打印接口返回的数据
     if (is_array($results) && array_key_exists('errorCode',$results))
     {
         $data = $results['results'];
