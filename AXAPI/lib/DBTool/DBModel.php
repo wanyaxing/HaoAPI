@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v150805 默认$t1 = null;，如果有join 则t1 = t1
 // v150521 selectFields/selectValues selectField/selectValue
 // v150507 useT1
 // v150317 fix 别名，（和！的情况
@@ -84,7 +85,7 @@ class DBModel{
 			}
 			else
 			{
-				$t1 = 't1';
+				$t1 = null;
 			}
 			$this->tableName=$tableName;
 			$this->t1=$t1;
@@ -258,6 +259,7 @@ class DBModel{
 		 */
 		public function joinWhere($p_tableJoined,$p_onWhere=array())
 		{
+			if ($this->t1==null){$this->useT1('t1');}
 			if (strpos($p_tableJoined,' ')!==false)
 			{
 				list ($p_tableJoined,$t2) = explode(' ',$p_tableJoined,2);
