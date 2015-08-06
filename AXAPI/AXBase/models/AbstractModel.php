@@ -144,7 +144,17 @@ class AbstractModel {
      */
     public function properyOriginal($property)
     {
-        return $this->snapshot[$property];
+        return (isset($this->snapshot[$property]))?$this->snapshot[$property]:null;
+    }
+
+    /**
+     * 取出有效的值
+     * @param  string  $property 属性
+     * @return string            值
+     */
+    public function properyValue($property)
+    {
+        return ($this->$property===null && isset($this->snapshot[$property]))?($this->snapshot[$property]):($this->$property);
     }
 
     // ======================== variable ========================
