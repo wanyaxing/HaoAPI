@@ -28,6 +28,79 @@ Date.prototype.format = function(format)
     }
     return format;
 }
+
+//'2012-11-16 10:36:50';
+function datetime_to_unix(datetime){
+  if (datetime=='')
+  {
+    return 0;
+  }
+  else if (parseInt(datetime) == datetime)
+  {
+    return parseInt(datetime);
+  }
+  var tmp_datetime = datetime.replace(/:/g,'-');
+  tmp_datetime = tmp_datetime.replace(/ /g,'-');
+  var arr = tmp_datetime.split("-");
+  var now = new Date(Date.UTC(arr[0],arr[1]-1,arr[2],arr[3]-8,arr[4],arr[5]));
+  return parseInt(now.getTime()/1000);
+}
+
+//'2012-11-16 10:36:50';
+function unix_to_datetime(unix) {
+  var now = new Date(parseInt(unix) * 1000);
+  return now.toLocaleString().replace(/年|月/g, "-").replace(/日/g, " ");
+}
+
+function range_to_badge(range)
+{
+  var s = '';
+  if (range<0)
+  {
+  }
+  else if (range< 60*5)
+  {
+    s = '<span class="badge">刚才</span>';
+  }
+  else if (range< 60*60*24)
+  {
+    s = '<span class="badge">今天</span>';
+  }
+  else if (range< 60*60*24*2)
+  {
+    s = '<span class="badge">昨天</span>';
+  }
+  else if (range< 60*60*24*3)
+  {
+    s = '<span class="badge">前天</span>';
+  }
+  else if (range< 60*60*24*365)
+  {
+    s = '<span class="badge">'+(parseInt(range/60/60/24)-1)+'天前</span>';
+  }
+  // else if (range< 60*60*24*7)
+  // {
+  //   s = '<span class="badge">本周</span>';
+  // }
+  // else if (range< 60*60*24*15)
+  // {
+  //   s = '<span class="badge">半月内</span>';
+  // }
+  // else if (range< 60*60*24*2)
+  // {
+  //   s = '<span class="badge">今天</span>';
+  // }
+  // else if (range< 60*60*24*2)
+  // {
+  //   s = '<span class="badge">今天</span>';
+  // }
+  // else if (range< 60*60*24*2)
+  // {
+  //   s = '<span class="badge">今天</span>';
+  // }
+  return s;
+}
+
 /**
  * 自定义pretty-json展开方案，Local结尾的key不展开
  */
@@ -72,7 +145,7 @@ function searchApiKey(_this,_isSelect)
 function changeKeyType(_this)
 {
     $(_this).addClass("btn-primary").siblings().removeClass("btn-primary");
-    var _keyType = $(_this).html();
+    var _keyType = $(_this).attr('keytype');
     filterApiList(_keyType);
 }
 
@@ -276,32 +349,70 @@ function reFormHeader()
 
 $(function(){
     var _listNode = $('#list_api_btns');
-    var _keyTypes = {'所有':1};
+    var _keyTypes = {};
+    var _now = (new Date()).getTime()/1000;
+
+    for (var i in apiList)
+    {
+      if (apiList[i]['time'])
+      {
+        apiList[i]['timeunix'] = datetime_to_unix(apiList[i]['time']);
+      }
+      else
+      {
+        apiList[i]['timeunix'] = 1;
+      }
+    }
+
+    apiList.sort(function compare(a,b){
+        return a['timeunix'] <= b['timeunix']?1:-1;
+    });
+
     for (var i in apiList)
     {
       var _api = apiList[i];
+
       var _keyString = '';
       _keyString = '';
       if (_api['desc']!='')
       {
         _keyString = _api['desc'].replace('\n','<br/>').replace(/[\n\r]/g,'<br/>')+'<br/><br/>';
       }
-      _keyString += 'url    : '+_api['action']+'<br/>';
-        if (_api['request'].length>0)
+      _keyString += 'url    : '+_api['action'];
+      if (_api['time'] && _api['time']!='')
+      {
+        _keyString += '<span class="span-time">'+_api['time']+'</span>';
+      }
+      _keyString +='<br/>';
+      if (_api['request'].length>0)
+      {
+        _keyString += '<table class="table table-striped">';
+        _keyString += '<tr><th>字段名</th><th>必须</th><th>格式</th><th>字段描述</th><th>测试值</th></tr>';
+        for(var j in _api['request'])
         {
-          _keyString += '<table class="table table-striped">';
-          _keyString += '<tr><th>字段名</th><th>必须</th><th>格式</th><th>字段描述</th><th>测试值</th></tr>';
-          for(var j in _api['request'])
+          var requestTime = 1;
+          if (_api['request'][j]['time'])
           {
-            _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td><span>'+_api['request'][j]['title']+'</span><span style="color:red;">'+ _api['request'][j]['desc']+'</span></td><td>'+_api['request'][j]['test-value']+'</td></tr>'
+            requestTime = datetime_to_unix(_api['request'][j]['time']);
+            if (requestTime > _api['timeunix'])
+            {
+              _api['timeunix'] = requestTime;
+            }
           }
-          _keyString += '</table>';
+          _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+(range_to_badge(_now - requestTime))+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td><span>'+_api['request'][j]['title']+'</span><span style="color:red;">'+ _api['request'][j]['desc']+'</span></td><td>'+_api['request'][j]['test-value']+'</td></tr>'
         }
+        _keyString += '</table>';
+      }
+
       var _panelString ='<div class="panel panel-default">\
           <div class="panel-heading">\
             <h4 class="panel-title">\
-              <a id="btn_api_title_'+i+'" href="#api'+'|'+i+'|'+encodeURI(apiList[i]['title'])+'" data-toggle="collapse" data-parent="#list_api_btns" data-target="#collapseDiv'+i+'" onclick="reFormApi('+i+');">'+_api['title']+'</a>\
-              <span class="span-method">'+_api['method']+'</span>\
+              <a id="btn_api_title_'+i+'" href="#api'+'|'+i+'|'+encodeURI(apiList[i]['title'])+'" data-toggle="collapse" data-parent="#list_api_btns" data-target="#collapseDiv'+i+'" onclick="reFormApi('+i+');" style="width: 100%;display: inline-block;">'
+              +(range_to_badge(_now - _api['timeunix']))
+              +_api['title']
+              +'<span class="span-method">'+_api['method']+'</span>'
+              +'</a>'
+              +'\
             </h4>\
           </div>\
           <div id="collapseDiv'+i+'" class="panel-collapse collapse">\
@@ -312,18 +423,40 @@ $(function(){
       if (_api['title'].match(/[：:]/g))
       {
         var _keyType = _api['title'].replace(/([：:]).*/g,'$1');
-        _keyTypes[_keyType]=1;
+        if(!_keyTypes[_keyType])
+        {
+          _keyTypes[_keyType]=1;
+        }
+        if (_api['timeunix']>_keyTypes[_keyType])
+        {
+          _keyTypes[_keyType] = _api['timeunix'];
+        }
       }
     }
     _listNode.collapse();
 
     reFormHeader();
 
+    // console.log(_keyTypes);
+    var _keyTypeArray = [];
     for(var _keyType in _keyTypes)
     {
-      $('#switch_examples').append('<button type="button" class="btn btn-default" onclick="changeKeyType(this);">'+_keyType+'</button>');
+      _keyTypeArray.push({'keyType':_keyType,'timeunix':_keyTypes[_keyType]});
     }
-    $('#switch_examples').append('<input id="input_search" type="text" class="btn btn-default" onkeyup="searchApiKey(this);" onclick="searchApiKey(this,1);" placeholder="search"/>');
+    _keyTypeArray.sort(function compare(a,b){
+        return a['timeunix'] <= b['timeunix']?1:-1;
+    });
+    _keyTypeArray.unshift({'keyType':'所有','timeunix':1})
+    for(var i in _keyTypeArray)
+    {
+      var _keyType = _keyTypeArray[i]['keyType'];
+      var _timeunix = _keyTypeArray[i]['timeunix'];
+      $('#switch_examples').append('<button type="button" class="btn btn-default" onclick="changeKeyType(this);" keytype="'+_keyType+'">'
+                                  +_keyType
+                                  + range_to_badge(_now - _timeunix)
+                                  +'</button>');
+    }
+    $('<input id="input_search" type="text" class="btn btn-default" onkeyup="searchApiKey(this);" onclick="searchApiKey(this,1);" placeholder="search"/>').insertAfter($('#switch_examples button').eq(0));
 
     $('#switch_examples').children().eq(0).trigger('click');
 

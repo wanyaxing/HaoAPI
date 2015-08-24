@@ -8,6 +8,10 @@ iframe{
   display: block;
   color:lightgrey;
 }
+.span-time{
+  float:right;
+  color: lightgrey;
+}
 .a_clicked {
     border: 3px dotted blue!important;
 }
@@ -67,7 +71,7 @@ iframe{
     margin: 10px;
 }
 #input_search{
-    border-radius: 0 4px 4px 0;
+    /*border-radius: 0 4px 4px 0;*/
     width: 100px;
 }
 #list_api_btns tr:hover td{

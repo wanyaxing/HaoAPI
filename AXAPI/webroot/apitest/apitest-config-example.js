@@ -190,6 +190,7 @@ var apiList = [
       {
         "title":'example:test'
         ,"desc":''
+        ,'time':'2015-8-11 12:36:00'
         ,"action":'index.php'
         ,"method":"post"
         ,"request":[
