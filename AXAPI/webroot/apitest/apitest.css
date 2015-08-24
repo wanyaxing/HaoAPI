@@ -29,6 +29,32 @@ iframe{
 .btn_del:hover{
     color: black;
 }
+#div_apilist .panel{
+    border-radius: 0px;
+}
+#div_apilist .panel-heading{
+    position: relative;
+}
+#list_api_btns{
+    padding-top: 10px;
+}
+#div_switchgroup .badge , #div_apilist .panel-heading .badge {
+    position: absolute;
+    top: -10px;
+    z-index: 2;
+    background-color: white;
+    left: -8px;
+    color: gray;
+}
+#div_switchgroup .badge-today , #div_apilist .panel-heading .badge-today {
+    color:red;
+}
+#div_switchgroup .badge-yesterday , #div_apilist .panel-heading .badge-yesterday {
+    color:#E66A6A;
+}
+#div_switchgroup .badge-beforeyester , #div_apilist .panel-heading .badge-beforeyester {
+    color:#A26F6F;
+}
 #main{
     margin: 0 auto;
 }

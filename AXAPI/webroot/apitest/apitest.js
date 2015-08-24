@@ -60,23 +60,23 @@ function range_to_badge(range)
   }
   else if (range< 60*5)
   {
-    s = '<span class="badge">刚才</span>';
+    s = '<span class="badge badge-alart">刚才</span>';
   }
   else if (range< 60*60*24)
   {
-    s = '<span class="badge">今天</span>';
+    s = '<span class="badge badge-today">今天</span>';
   }
   else if (range< 60*60*24*2)
   {
-    s = '<span class="badge">昨天</span>';
+    s = '<span class="badge badge-yesterday">昨天</span>';
   }
   else if (range< 60*60*24*3)
   {
-    s = '<span class="badge">前天</span>';
+    s = '<span class="badge badge-beforeyester">前天</span>';
   }
   else if (range< 60*60*24*365)
   {
-    s = '<span class="badge">'+(parseInt(range/60/60/24)-1)+'天前</span>';
+    s = '<span class="badge">'+(parseInt(range/60/60/24))+'天前</span>';
   }
   // else if (range< 60*60*24*7)
   // {
