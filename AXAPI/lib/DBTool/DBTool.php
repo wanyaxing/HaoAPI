@@ -219,11 +219,16 @@ class DBTool
 			            while ($_row = $_resultSet->fetch_assoc()) {
 
 			                foreach ($_row as $_key => $_value) {
-			                    if ($_fields[$_key] < 4 && isset($_value)) {
-			                        $_row[$_key] = intval($_value);
-			                    } else if ($_fields[$_key] == 4 && isset($_value)) {
-			                        $_row[$_key] = floatval($_value);
-			                    }
+			                	if (isset($_value))
+			                	{
+				                    if ($_fields[$_key] <= 3 || $_fields[$_key] == 8)
+				                    {
+				                        $_row[$_key] = intval($_value);
+				                    } else if ($_fields[$_key] == 4 || $_fields[$_key] == 5)
+				                    {
+				                        $_row[$_key] = floatval($_value);
+				                    }
+			                	}
 			                }
 
 			                array_push($_tmpData, $_row);
