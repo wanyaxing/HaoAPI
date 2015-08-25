@@ -190,7 +190,7 @@ class W2HttpRequest {
     public static function getRequestString($p_key, $p_allowBlank=true,$p_default=null){
         $_r = $p_default;
         $_v = array_key_exists($p_key, $_REQUEST) ? $_REQUEST[$p_key] : null;
-        if (isset($_v) && ($p_allowBlank || strlen(trim($_v))>0)) {
+        if (isset($_v) && (($p_allowBlank && is_null($_v)) || strlen(trim($_v))>0)) {
             $_r = $_v;
         }
         return $_r;
@@ -206,7 +206,7 @@ class W2HttpRequest {
     public static function getRequestMatch($p_key, $p_match='/^[\s\S]*$/', $p_allowBlank=true,$p_default=null){
         $_r = $p_default;
         $_v = array_key_exists($p_key, $_REQUEST) ? $_REQUEST[$p_key] : null;
-        if (isset($_v) && ($p_allowBlank || preg_match($p_match,$_v))) {
+        if (isset($_v) && (($p_allowBlank && is_null($_v)) || preg_match($p_match,$_v))) {
             $_r = $_v;
         }
         return $_r;
@@ -222,7 +222,7 @@ class W2HttpRequest {
     public static function getRequestEmail($p_key, $p_allowBlank=true,$p_default=null){
         $_r = $p_default;
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && ($p_allowBlank || W2String::isEmail($_v))) {
+        if (isset($_v) && (($p_allowBlank && is_null($_v)) || W2String::isEmail($_v))) {
             $_r = $_v;
         }
         return $_r;
@@ -237,7 +237,7 @@ class W2HttpRequest {
     public static function getRequestTelephone($p_key, $p_allowBlank=true,$p_default=null){
         $_r = $p_default;
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && ($p_allowBlank || W2String::isTelephone($_v))) {
+        if (isset($_v) && (($p_allowBlank && is_null($_v)) || W2String::isTelephone($_v))) {
             $_r = $_v;
         }
         return $_r;
@@ -252,7 +252,7 @@ class W2HttpRequest {
     public static function getRequestIP($p_key, $p_allowBlank=true,$p_default=null){
         $_r = $p_default;
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && ($p_allowBlank || W2String::isIP($_v))) {
+        if (isset($_v) && (($p_allowBlank && is_null($_v)) || W2String::isIP($_v))) {
             $_r = $_v;
         }
         return $_r;
@@ -267,7 +267,7 @@ class W2HttpRequest {
     public static function getRequestURL($p_key, $p_allowBlank=true,$p_default=null){
         $_r = $p_default;
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && ($p_allowBlank || W2String::isURL($_v))) {
+        if (isset($_v) && (($p_allowBlank && is_null($_v)) || W2String::isURL($_v))) {
             $_r = $_v;
         }
         return $_r;
