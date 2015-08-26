@@ -46,6 +46,9 @@ iframe{
     left: -8px;
     color: gray;
 }
+#div_switchgroup .badge-soon , #div_apilist .panel-heading .badge-soon {
+    color:red;
+}
 #div_switchgroup .badge-today , #div_apilist .panel-heading .badge-today {
     color:red;
 }

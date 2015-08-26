@@ -1,5 +1,6 @@
 var currentUrl;
 var xhrTestingApi = null;
+var todayPassedTime = null;
 
 Date.prototype.format = function(format)
 {
@@ -60,44 +61,54 @@ function range_to_badge(range)
   }
   else if (range< 60*5)
   {
-    s = '<span class="badge badge-alart">刚才</span>';
+    s = '<span class="badge badge-soon">刚才</span>';
   }
-  else if (range< 60*60*24)
+  else
   {
-    s = '<span class="badge badge-today">今天</span>';
+    if (!todayPassedTime)
+    {
+      todayPassedTime = (new Date()).getTime()/1000 - datetime_to_unix((new Date().format('yyyy-MM-dd 00:00:00')));
+    }
+
+    range = range + 60*60*24 - todayPassedTime;
+
+    if (range< 60*60*24)
+    {
+      s = '<span class="badge badge-today">今天</span>';
+    }
+    else if (range< 60*60*24*2)
+    {
+      s = '<span class="badge badge-yesterday">昨天</span>';
+    }
+    else if (range< 60*60*24*3)
+    {
+      s = '<span class="badge badge-beforeyester">前天</span>';
+    }
+    else if (range< 60*60*24*365)
+    {
+      s = '<span class="badge">'+(parseInt(range/60/60/24))+'天前</span>';
+    }
+    // else if (range< 60*60*24*7)
+    // {
+    //   s = '<span class="badge">本周</span>';
+    // }
+    // else if (range< 60*60*24*15)
+    // {
+    //   s = '<span class="badge">半月内</span>';
+    // }
+    // else if (range< 60*60*24*2)
+    // {
+    //   s = '<span class="badge">今天</span>';
+    // }
+    // else if (range< 60*60*24*2)
+    // {
+    //   s = '<span class="badge">今天</span>';
+    // }
+    // else if (range< 60*60*24*2)
+    // {
+    //   s = '<span class="badge">今天</span>';
+    // }
   }
-  else if (range< 60*60*24*2)
-  {
-    s = '<span class="badge badge-yesterday">昨天</span>';
-  }
-  else if (range< 60*60*24*3)
-  {
-    s = '<span class="badge badge-beforeyester">前天</span>';
-  }
-  else if (range< 60*60*24*365)
-  {
-    s = '<span class="badge">'+(parseInt(range/60/60/24))+'天前</span>';
-  }
-  // else if (range< 60*60*24*7)
-  // {
-  //   s = '<span class="badge">本周</span>';
-  // }
-  // else if (range< 60*60*24*15)
-  // {
-  //   s = '<span class="badge">半月内</span>';
-  // }
-  // else if (range< 60*60*24*2)
-  // {
-  //   s = '<span class="badge">今天</span>';
-  // }
-  // else if (range< 60*60*24*2)
-  // {
-  //   s = '<span class="badge">今天</span>';
-  // }
-  // else if (range< 60*60*24*2)
-  // {
-  //   s = '<span class="badge">今天</span>';
-  // }
   return s;
 }
 
@@ -354,13 +365,27 @@ $(function(){
 
     for (var i in apiList)
     {
-      if (apiList[i]['time'])
+      var _api = apiList[i];
+
+      if (_api['time'])
       {
-        apiList[i]['timeunix'] = datetime_to_unix(apiList[i]['time']);
+        _api['timeunix'] = datetime_to_unix(_api['time']);
       }
       else
       {
-        apiList[i]['timeunix'] = 1;
+        _api['timeunix'] = 1;
+      }
+      for(var j in _api['request'])
+      {
+        var requestTime = 1;
+        if (_api['request'][j]['time'])
+        {
+          _api['request'][j]['timeunix'] = datetime_to_unix(_api['request'][j]['time']);
+          if (_api['request'][j]['timeunix'] > _api['timeunix'])
+          {
+            _api['timeunix'] = _api['request'][j]['timeunix'];
+          }
+        }
       }
     }
 
@@ -391,13 +416,9 @@ $(function(){
         for(var j in _api['request'])
         {
           var requestTime = 1;
-          if (_api['request'][j]['time'])
+          if (_api['request'][j]['timeunix'])
           {
-            requestTime = datetime_to_unix(_api['request'][j]['time']);
-            if (requestTime > _api['timeunix'])
-            {
-              _api['timeunix'] = requestTime;
-            }
+            requestTime = _api['request'][j]['timeunix'];
           }
           _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+(range_to_badge(_now - requestTime))+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td><span>'+_api['request'][j]['title']+'</span><span style="color:red;">'+ _api['request'][j]['desc']+'</span></td><td>'+_api['request'][j]['test-value']+'</td></tr>'
         }
@@ -419,19 +440,15 @@ $(function(){
             <div class="panel-body">'+_keyString+'</div>\
           </div>\
         </div>';
-      _listNode.append(_panelString);
       if (_api['title'].match(/[：:]/g))
       {
         var _keyType = _api['title'].replace(/([：:]).*/g,'$1');
         if(!_keyTypes[_keyType])
         {
-          _keyTypes[_keyType]=1;
-        }
-        if (_api['timeunix']>_keyTypes[_keyType])
-        {
-          _keyTypes[_keyType] = _api['timeunix'];
+          _keyTypes[_keyType]=_api['timeunix'];
         }
       }
+      _listNode.append(_panelString);
     }
     _listNode.collapse();
 
