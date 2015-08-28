@@ -59,7 +59,7 @@ function range_to_badge(range)
   if (range<0)
   {
   }
-  else if (range< 60*5)
+  else if (range< 60*60)
   {
     s = '<span class="badge badge-soon">刚才</span>';
   }

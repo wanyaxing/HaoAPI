@@ -38,6 +38,9 @@ iframe{
 #list_api_btns{
     padding-top: 10px;
 }
+#div_apilist .panel .panel-title > a {
+    position: relative;
+}
 #div_switchgroup .badge , #div_apilist .panel-heading .badge {
     position: absolute;
     top: -10px;
@@ -45,6 +48,14 @@ iframe{
     background-color: white;
     left: -8px;
     color: gray;
+}
+#div_apilist .panel-heading .badge {
+    top: 0px;
+    left: 0px;
+    position: relative;
+}
+#div_apilist .panel-collapse {
+    position: relative;
 }
 #div_switchgroup .badge-soon , #div_apilist .panel-heading .badge-soon {
     color:red;
