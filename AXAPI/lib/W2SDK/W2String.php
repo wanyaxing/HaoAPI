@@ -322,8 +322,12 @@ class W2String {
      */
     public static function getStringsArray($p_string,$p_delimiter=',')
     {
+        if (!is_array($p_string))
+        {
+            $p_string = explode($p_delimiter, $p_string);
+        }
         $p_stringList = array();
-        foreach (explode($p_delimiter, $p_string) as $s) {
+        foreach ($p_string as $s) {
             if ($s!=null)
             {
                 $p_stringList[] = $s;
