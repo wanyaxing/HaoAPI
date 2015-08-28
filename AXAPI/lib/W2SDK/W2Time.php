@@ -87,13 +87,14 @@ class W2Time {
      * 取得两个时间点之间的时间数组
      * @param  [string | int] $p_time1    [description]
      * @param  [string | int] $p_time2    [description]
-     * @param  string $p_stepType 分隔方案 second minute hour day year
+     * @param  string $p_stepType 分隔方案 second minute hour day week year
+     * @param  string $p_format 时间串格式化方案，可以不传
      * @return array             格式化后的时间字符串数组
      */
-    public static function getTimesArrayBetweenDateTime($p_time1=null,$p_time2=null,$p_stepType=null)
+    public static function getTimesArrayBetweenDateTime($p_time1=null,$p_time2=null,$p_stepType=null,$p_format=null)
     {
         $_interval = abs(W2Time::getTimeBetweenDateTime($p_time1,$p_time2));
-        if ($p_stepType=null)
+        if ($p_stepType==null)
         {
             if($_interval<60){
                 $p_stepType = 'second';
@@ -107,39 +108,44 @@ class W2Time {
                 $p_stepType = 'year';
             }
         }
+        $tmp_format = null;
         switch ($p_stepType) {
             case 'second':
                 $p_step   = '+1 second';
-                $p_format = 'Y-m-d H:i:s';
+                $tmp_format = 'Y-m-d H:i:s';
                 break;
             case 'minute':
                 $p_step   = '+1 minute';
-                $p_format = 'Y-m-d H:i';
+                $tmp_format = 'Y-m-d H:i';
                 break;
             case 'hour':
                 $p_step   = '+1 hour';
-                $p_format = 'Y-m-d H';
+                $tmp_format = 'Y-m-d H';
                 break;
             case 'day':
                 $p_step   = '+1 day';
-                $p_format = 'Y-m-d';
+                $tmp_format = 'Y-m-d';
                 break;
             case 'week':
                 $p_step   = '+1 week';
-                $p_format = 'Y-m-d(W)';
+                $tmp_format = 'Y-m-d(W)';
                 break;
             case 'month':
                 $p_step   = '+1 month';
-                $p_format = 'Y-m';
+                $tmp_format = 'Y-m';
                 break;
             case 'year':
                 $p_step   = '+1 year';
-                $p_format = 'Y';
+                $tmp_format = 'Y';
                 break;
             default:
                 $p_step   = '+1 day';
-                $p_format = 'Y-m-d';
+                $tmp_format = 'Y-m-d';
                 break;
+        }
+        if ($p_format==null)
+        {
+            $p_format = $tmp_format;
         }
         $results = array();
 
@@ -159,8 +165,8 @@ class W2Time {
                 $timeThis = $timeEnd;
             }
         }
-        array_unique($results);
-        return $results;
+
+        return array_unique($results);
     }
 
     /**
@@ -265,6 +271,16 @@ class W2Time {
     }
 
     /**
+     * 获得指定时间所在当月的第一天的日期 Y-m-d
+     * @param  [type] $p_time [description]
+     * @return string             格式 Y-m-d
+     */
+    public static function getFirstDayInSameMonth($p_time=null)
+    {
+        return W2Time::timetostr($p_time,'Y-m-1');
+    }
+
+    /**
      * 获得指定时间所在当月的最后一天的日期 Y-m-d
      * @param  [type] $p_time [description]
      * @return string             格式 Y-m-d
@@ -272,6 +288,16 @@ class W2Time {
     public static function getLastDayInSameMonth($p_time=null)
     {
         return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-1'),'+1 month') - 1),'Y-m-d');
+    }
+
+    /**
+     * 获得指定时间所在当年的第一天的日期 Y-m-d
+     * @param  [type] $p_time [description]
+     * @return string             格式 Y-m-d
+     */
+    public static function getFirstDayInSameYear($p_time=null)
+    {
+        return W2Time::timetostr($p_time,'Y-1-1');
     }
 
     /**
@@ -283,4 +309,25 @@ class W2Time {
     {
         return W2Time::getLastDayInSameMonth(W2Time::timetostr($p_time,'Y-12-1'));
     }
+
+    /**
+     * 获得指定时间所在当周的第一天的日期 Y-m-d
+     * @param  [type] $p_time [description]
+     * @return string             格式 Y-m-d
+     */
+    public static function getFirstDayInSameWeek($p_time=null)
+    {
+        return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-d'),'-'.(W2Time::timetostr($p_time,'w')).' day')),'Y-m-d');
+    }
+
+    /**
+     * 获得指定时间所在当周的最后一天的日期 Y-m-d
+     * @param  [type] $p_time [description]
+     * @return string             格式 Y-m-d
+     */
+    public static function getLastDayInSameWeek($p_time=null)
+    {
+        return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-d'),'+'.(7-W2Time::timetostr($p_time,'w')).' day'))-1,'Y-m-d');
+    }
+
 }
