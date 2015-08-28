@@ -8,6 +8,12 @@
  */
 
 class W2SMS {
+	/**
+	 * 发送短信，使用的是悦可短信平台
+	 * @param  string $p_telephone 手机号码
+	 * @param  string $p_msg       短信内容
+	 * @return string              结果
+	 */
     public static function sendMessage($p_telephone, $p_msg)
     {
     	$_r = null ;
@@ -32,22 +38,64 @@ class W2SMS {
     	}
 		return $_r;
     }
-	 /**
-	  * 获取短信余额
-	  * @return int 数量
-	  */
-	 public static function GetBalance()
-	 {
-			$user = W2Config::$SMS_USER;
-			$passwd = W2Config::$SMS_PASSWD;
-			$strPasswd = md5($user.$passwd);
-			$strUrl = 'http://api5.nashikuai.cn/GetBalance.aspx?user='.$user.'&passwd='.$strPasswd.'&dtype=1';
-			$results = file_get_contents($strUrl);
-			$results = simplexml_load_string($results);
-			if ($results->overqty)
-			{
-				return $results->overqty;
-			}
-		return false;
-	 }
+	/**
+	* 获取短信余额
+	* @return int 数量
+	*/
+	public static function GetBalance()
+	{
+		$user = W2Config::$SMS_USER;
+		$passwd = W2Config::$SMS_PASSWD;
+		$strPasswd = md5($user.$passwd);
+		$strUrl = 'http://api5.nashikuai.cn/GetBalance.aspx?user='.$user.'&passwd='.$strPasswd.'&dtype=1';
+		$results = file_get_contents($strUrl);
+		$results = simplexml_load_string($results);
+		if ($results->overqty)
+		{
+			return $results->overqty;
+		}
+	return false;
+	}
+
+	/**
+	 * 发送短信，使用的是云之讯ucpaas.com
+	 * @param  string $p_telephone 		  手机号码
+	 * @param  string $p_verifyCode       验证码
+	 * @return array              		  结果
+	 */
+    public static function sendVerifyCodeWithUcpaas($p_telephone, $p_verifyCode)
+    {
+    	$BaseUrl          = 'https://api.ucpaas.com/';
+    	$SoftVersion      = '2014-06-30';
+    	$accountSid       = W2Config::$UCPASS_ACCOUNTSID;
+    	$token            = W2Config::$UCPASS_TOKEN;
+    	$appId            = W2Config::$UCPASS_APPID;
+    	$templateId       = W2Config::$UCPASS_TEMPLATEID;
+    	$timestamp = date("YmdHis") + 7200;
+    	$authorization = trim(base64_encode($accountSid . ":" . $timestamp));
+    	$_r = null ;
+    	if (W2String::isTelephone($p_telephone))
+    	{
+    		$sigParameter = strtoupper(md5($accountSid . $token . $timestamp));
+	        $url = $BaseUrl . $SoftVersion . '/Accounts/' . $accountSid . '/Messages/templateSMS?sig=' . $sigParameter;
+            $body_json = array('templateSMS'=>array(
+                'appId'=>$appId,
+                'templateId'=>$templateId,
+                'to'=>$p_telephone,
+                'param'=>$p_verifyCode
+            ));
+            $body = json_encode($body_json);
+
+            $header = array(
+                'Accept:' . 'application/json',
+                'Content-Type:' . 'application/json' . ';charset=utf-8',
+                'Authorization:' . $authorization,
+            );
+
+	        $_r = W2Web::loadStringByUrl($url,'post',$body,$header);
+    	}
+		return $_r;
+    }
+
+
 }
