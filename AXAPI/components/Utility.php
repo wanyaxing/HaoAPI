@@ -260,10 +260,35 @@ class Utility
 				return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'该操作已过期，请重试。');
 			}
 
+			//加密版本2.0，支持应用识别码和debug模式
+			if (!isset($_REQUEST['r']))
+			{
+				foreach (array('Clientinfo','Isdebug') as $_key) {
+					if (array_key_exists($_key,$_HEADERS))
+					{
+						array_push($tmpArr, sprintf('%s=%s', $_key, $_HEADERS[$_key]));
+					}
+					else
+					{
+						return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请求信息错误',array('errorContent'=>'缺少头信息：'.$_key));
+					}
+				}
+
+				array_push($tmpArr, sprintf('%s=%s%s', 'link', $_SERVER['HTTP_HOST'],preg_replace ("/(\/*[\?#].*$|[\?#].*$|\/*$)/", '', $_SERVER['REQUEST_URI'])));
+			}
+		    //是否开启debug
+		    if (isset($_HEADERS['Isdebug']) && $_HEADERS['Isdebug']=='1')
+		    {
+		        define('IS_SQL_PRINT',True);
+		        define('IS_AX_DEBUG',True);
+		    }
+
 			//同样的，将所有表单数据也组成字符串后，放入数组。（注：file类型不包含）
 			foreach ($_REQUEST as $_key => $_value) {
 				array_push($tmpArr, sprintf('%s=%s', $_key, $_value));
 			}
+
+			// array_push($tmpArr, sprintf('%s=%s', $_SERVER['HTTP_HOST'], preg_replace ("/(\/*[\?#].*$|[\?#].*$|\/*$)/", '', $_SERVER['REQUEST_URI'])));
 
 			//最后，将一串约定好的密钥字符串也放入数组。（不同的项目甚至不同的版本中，可以使用不同的密钥）
 			switch ($_HEADERS['Devicetype']) {

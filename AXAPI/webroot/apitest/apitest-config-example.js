@@ -7,6 +7,15 @@ var USER_COOKIE_RANDCODE = 'RESET_WHEN_NEW_PROJECT';
 
 var headerList =[
   {
+    "key":'Clientinfo'
+    ,"type":'string'
+    ,"title":'应用信息'
+    ,"desc":''
+    ,"required":true
+    ,"test-value":"teacher"
+    ,"click":null
+  }
+  ,{
     "key":'Clientversion'
     ,"type":'string'
     ,"title":'版本号'
@@ -68,7 +77,7 @@ var headerList =[
     ,"title":'Userid'
     ,"desc":'当前用户ID，登录后可获得。'
     ,"required":true
-    ,"test-value":"3"
+    ,"test-value":"0"
     ,"click":null
   }
   ,{
@@ -98,7 +107,7 @@ var headerList =[
     "key":'Signature'
     ,"type":'string'
     ,"title":'接口加密校验'
-    ,"desc":'取头信息里Clientversion,Devicetype,Requesttime,Devicetoken,Userid,Logintime,Checkcode  和 表单数据 \n每个都使用key=value（空则空字符串）格式组合成字符串然后放入同一个数组 \n 并放入私钥字符串后自然排序 \n 连接为字符串后进行MD5加密，获得Signature \n 将Signature也放入头信息，进行传输。'
+    ,"desc":'取头信息里Clientversion,Devicetype,Requesttime,Devicetoken,Userid,Logintime,Checkcode,Clientinfo,Isdebug  和 表单数据 \n每个都使用key=value（空则空字符串）格式组合成字符串然后放入同一个数组 \n 再放入请求地址（去除http://和末尾/?#之后的字符）后\n 并放入私钥字符串后自然排序 \n 连接为字符串后进行MD5加密，获得Signature \n 将Signature也放入头信息，进行传输。'
     ,"required":true
     ,"test-value":""
     ,"click":function(){
@@ -115,12 +124,17 @@ var headerList =[
         }
       }
 
+      var isVersion1 = false;
       $('form').find('[form-type=field]').each(function(){
         var _key = $(this).val();
         if (_key!='' && $(this).parent().siblings().find("input[type=text]").length>0)
         {
           var _val = $(this).parent().siblings().find("input").val();
           tmpArr.push(_key+'='+_val);
+          if (_key=='r')
+          {
+            isVersion1 = true;
+          }
         }
       });
 
@@ -134,6 +148,19 @@ var headerList =[
         {
           tmpArr.push(_keyValues[i]);
         }
+      }
+
+      if (isVersion1==false)
+      {
+        var _headerKeys2 = ['Clientinfo','Isdebug'];
+        for (var i in _headerKeys2)
+        {
+          if (_headers[_headerKeys2[i]]!==null)
+          {
+            tmpArr.push(_headerKeys2[i]+'='+_headers[_headerKeys2[i]]);
+          }
+        }
+        tmpArr.push('link='+_link.replace(/^http.*?:\/\/(.*?)(\/*[\?#].*$|[\?#].*$|\/*$)/g,'$1'));
       }
 
       switch(_headers['Devicetype'])
@@ -162,26 +189,26 @@ var headerList =[
     }
   }
   ,{
-    "key":'Is_sql_printX'//参数key值
+    "key":'Isdebug'//参数key值
     ,"type":'string'//参数key值类型
-    ,"title":'change the key in field to IS_SQL_PRINT for printing log.'//参数标题
+    ,"title":'是否输出调试信息'//参数标题
     ,"desc":''//参数描述
     ,"required":true
-    ,"test-value":" "
+    ,"test-value":"0"
     ,"click":function(e){
         if (!e.isTrigger)
         {
-           var fieldNode = $(this).closest('.form-group').find('input[form-type=header]');
-           if ( fieldNode.val()=='Is_sql_print')
-           {
-              fieldNode.val('Is_sql_printX');
-              $(this).html('DEBUG OFF');
-           }
-           else
-           {
-              fieldNode.val('Is_sql_print');
-              $(this).html('DEBUG ON');
-           }
+          var isdebug = $(this).siblings("input").val();
+          if (isdebug=='1')
+          {
+            $(this).siblings("input").val(0);
+            $(this).html('DEBUG OFF');
+          }
+          else
+          {
+            $(this).siblings("input").val(1);
+            $(this).html('DEBUG ON');
+          }
         }
     }
   }
@@ -190,7 +217,6 @@ var apiList = [
       {
         "title":'example:test'
         ,"desc":''
-        ,'time':'2015-8-11 12:36:00'
         ,"action":'index.php'
         ,"method":"post"
         ,"request":[
