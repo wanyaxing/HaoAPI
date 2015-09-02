@@ -402,12 +402,13 @@ $_apitestConfigArray = array();
 $_apitestConfigSingleAdd = 'apiList[apiList.length] = {
         \'title\':\''.($_tableNameCN.':'.'新建').'\'
         ,\'desc\':\'\'
-        ,\'action\':\'../index.php\'
+        ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
+        ,\'action\':\''.strtolower($_tableName).'/add\'
         ,\'method\':\'post\'
         ,\'request\':[
            ';
 $_apitestConfigRequestAdd = array();
-    $_apitestConfigRequestAdd[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/add\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
+    // $_apitestConfigRequestAdd[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/add\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
 $_apitestConfigRequestAddAdmin = array();
 $_apitestConfigRequestAddNormal = array();
 $_controllerStringAdmin = '';
@@ -434,20 +435,21 @@ $_apitestConfigSingleAdd .= implode("\n".'          ,',array_merge($_apitestConf
         ]
       };
 ';
-$_apitestConfigArray[] = $_apitestConfigSingleAdd;
+$_apitestConfigArray[] = "/*\n".$_apitestConfigSingleAdd."\n*/";
 
 
 //update
 $_apitestConfigSingleUpdate = 'apiList[apiList.length] = {
         \'title\':\''.($_tableNameCN.':'.'更新').'\'
         ,\'desc\':\'\'
-        ,\'action\':\'../index.php\'
+        ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
+        ,\'action\':\''.strtolower($_tableName).'/update\'
         ,\'method\':\'post\'
         ,\'request\':[
            ';
 $_apitestConfigRequestUpdate = array();
-    $_apitestConfigRequestUpdate[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/update\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
-    $_apitestConfigRequestUpdate[] = '{'.str_pad(' \'key\':\'id\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'id\' ,\'desc\':\'\' }';
+    // $_apitestConfigRequestUpdate[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/update\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestUpdate[] = '{'.str_pad(' \'key\':\'id\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'id\' ,\'desc\':\'\' }';
 
 $_apitestConfigRequestUpdateAdmin = array();
 $_apitestConfigRequestUpdateNormal = array();
@@ -458,7 +460,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('userID','level','createTime','modifyTime'));
         $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.ucfirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),strtolower($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
+        $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
             $_apitestConfigRequestUpdateAdmin[]   =  $_apitestConfigRequestUpdateTmp;
@@ -476,22 +478,23 @@ $_apitestConfigSingleUpdate .= implode("\n".'          ,',array_merge($_apitestC
       };
 ';
 
-$_apitestConfigArray[] = $_apitestConfigSingleUpdate;
+$_apitestConfigArray[] = "/*\n".$_apitestConfigSingleUpdate."\n*/";
 
 
 //list
 $_apitestConfigSingle = 'apiList[apiList.length] = {
         \'title\':\''.($_tableNameCN.':'.'列表').'\'
         ,\'desc\':\'\'
-        ,\'action\':\'../index.php\'
+        ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
+        ,\'action\':\''.strtolower($_tableName).'/list\'
         ,\'method\':\'get\'
         ,\'request\':[
            ';
 $_apitestConfigRequestList = array();
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/list\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'page\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页，第一页为1，第二页为2，最后一页为-1\' ,\'desc\':\'\' }';
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'size\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'10\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页大小\' ,\'desc\':\'\' }';
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'iscountall\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'bool\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否统计总数 1是 0否\' ,\'desc\':\'\' }';
+    // $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/list\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'page\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页，第一页为1，第二页为2，最后一页为-1\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'size\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\'10\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'分页大小\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'iscountall\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'bool\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否统计总数 1是 0否\' ,\'desc\':\'\' }';
 $_controllerStringAddOrder = '';
 $_apitestConfigRequestOrderValues = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
@@ -503,9 +506,9 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_apitestConfigRequestOrderValues[] = $_orderValue . (!is_null($_orderDesc)?':'.$_orderDesc:'');
     }
 }
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'order\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'排序方式\' ,\'desc\':\'限以下值（'.implode(' , ', $_apitestConfigRequestOrderValues ).'）\' }';
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'isreverse\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否倒序 0否 1是\' ,\'desc\':\'（默认1）\' }';
-    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'ids\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'order\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'排序方式\' ,\'desc\':\'限以下值（'.implode(' , ', $_apitestConfigRequestOrderValues ).'）\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'isreverse\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'是否倒序 0否 1是\' ,\'desc\':\'（默认1）\' }';
+    $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'ids\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }';
 $_controllerStringList = '';
 $_controllerKeySearchList = '';
 $_controllerKeyFieldList = array();
@@ -513,24 +516,24 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'date' )
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'start') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field']).'end') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
     else if ($_fieldRow['Field']=='status')
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
     // else if ($_fieldRow['Field']=='userID')
     // {
     //     //默认不支持用户筛选，只能筛选登录用户自己的数据;
-    //     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
+    //     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
     // }
     else
     {
         $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),strtolower($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.strtolower($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
 
     if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'string')
@@ -539,13 +542,13 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_controllerKeyFieldList[] = $_fieldRow['Field'];
     }
 }
-$_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'keyword\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'检索关键字\' ,\'desc\':\''.'\' }';//.(implode(' ',$_controllerKeyFieldList))
+$_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'keyword\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'检索关键字\' ,\'desc\':\''.'\' }';//.(implode(' ',$_controllerKeyFieldList))
 
 $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestList) .'
         ]
       };
 ';
-$_apitestConfigArray[] = $_apitestConfigSingle;
+$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
 
 
 //详情
@@ -553,18 +556,19 @@ $_apitestConfigArray[] = $_apitestConfigSingle;
 $_apitestConfigSingle = 'apiList[apiList.length] = {
         \'title\':\''.($_tableNameCN.':'.'详情').'\'
         ,\'desc\':\'\'
-        ,\'action\':\'../index.php\'
+        ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
+        ,\'action\':\''.strtolower($_tableName).'/detail\'
         ,\'method\':\'get\'
         ,\'request\':[
            ';
 $_apitestConfigRequestDetail = array();
-    $_apitestConfigRequestDetail[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/detail\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
-    $_apitestConfigRequestDetail[] = '{'.str_pad(' \'key\':\'id\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'id\' ,\'desc\':\'\' }';
+    // $_apitestConfigRequestDetail[] = '{'.str_pad(' \'key\':\'r\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\''.strtolower($_tableName).'/detail\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'必须：接口关键字\' ,\'desc\':\'\' }';
+    $_apitestConfigRequestDetail[] = '{'.str_pad(' \'key\':\'id\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'int\'',20,' ',STR_PAD_RIGHT).' ,\'required\': true ,\'time\':\'\' '.str_pad(',\'test-value\':\'1\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'id\' ,\'desc\':\'\' }';
 $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestDetail) .'
         ]
       };
 ';
-$_apitestConfigArray[] = $_apitestConfigSingle;
+$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
 
 
 $_controllerString = '<?php
@@ -702,7 +706,12 @@ class '.$_controllerName.' extends AbstractController{
         return static::save($tmpModel);
     }
 
-    //保存
+    /**
+     * 保存或更新数据
+     * @param  '.$_modelName.'  $tmpModel 更改后的模型对象
+     * @param  boolean       $isAdd    新增还是更新
+     * @return array                    Utility::getArrayForResults
+     */
     public static function save($tmpModel,$isAdd=false)
     {
         return parent::save($tmpModel,$isAdd);
@@ -727,8 +736,12 @@ class '.$_controllerName.' extends AbstractController{
         switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
         {
             case \'admin\'   : //有管理权限
-                '.(array_key_exists('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'').'
-                '.(array_key_exists('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'').'
+                '
+                .(array_key_exists('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'')
+                .'
+                '
+                // .(array_key_exists('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'')
+                .'
             case \'self\'    : //作者
             case \'normal\'  : //正常用户
                 '
