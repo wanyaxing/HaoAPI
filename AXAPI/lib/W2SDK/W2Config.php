@@ -30,4 +30,10 @@ class W2Config {
 	public static $LOG_PATH = '/tmp/logs/';
 	public static $LOG_FILENAME = null;
 
+
+	/** @var string 云之讯短信账号的配置 */
+	public static $UCPASS_ACCOUNTSID = 'dec24d3bfb0b62d45f992b52d7285a2f';
+	public static $UCPASS_TOKEN      = 'd6b63af5c800a8ab433782f2ee2cbf2e';
+	public static $UCPASS_APPID      = '1d19d3d36ef94dac81019061889a0f96';
+	public static $UCPASS_TEMPLATEID      = '11646';
 }

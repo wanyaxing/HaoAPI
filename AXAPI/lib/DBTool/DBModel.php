@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v150806 新增whereAdd方法，重整了where相关的逻辑
 // v150805 默认$t1 = null;，如果有join 则t1 = t1
 // v150521 selectFields/selectValues selectField/selectValue
 // v150507 useT1
@@ -48,7 +49,7 @@ class DBModel{
 		public $fieldList=array();
 
 		//查询条件
-		private $where='';
+		private $where=array();
 		private $limit='';
 		private $field='*';
 		private $order='';
@@ -114,7 +115,7 @@ class DBModel{
 		//清空前置情况
 		public function init()
 		{
-			$this->where            =  ''     ;
+			$this->where            =  array()     ;
 			$this->limit            =  ''     ;
 			$this->field            =  '*'    ;
 			$this->order            =  ''     ;
@@ -186,22 +187,53 @@ class DBModel{
 			return $this;
 		}
 
-		//条件限定
-		//支持 array('id>0') , array('id > %d'=>0) ,array('id > '=>0);
-		public function where($where)
+		/**
+		 * 返回组装好的where字符串
+		 * @return string 内部方法
+		 */
+		protected function whereToStr($isUseT1 = true)
 		{
-			if(empty($where))
+			$tmpWhere = $this->where;
+
+			if ( !is_array($tmpWhere) )
 			{
-				$this->where='';
-				return $this;
-			}
-			if ( !is_array($where) )
-			{
-				$where = array($where);
+				$tmpWhere = array($tmpWhere);
 			}
 
-			$arr=array();
-			foreach($where as $key=>$value)
+			$strWhereList=array();
+			foreach($tmpWhere as $key=>$value)
+			{
+				DBTool::conditions_push($strWhereList,$key,$value,($isUseT1?$this->t1:null));
+			}
+
+			$condition='';
+			if(count($strWhereList)>0){
+				$condition=' where ' . join(' and ',$strWhereList);
+			}
+
+			return $condition;
+		}
+
+		/**
+		 * 确定查询条件
+		 * @param  string|array  $where 查询数组
+		 * @param  boolean $isAdd 是否追加，否则覆盖
+		 * @return DBModel
+		 */
+		public function where($p_where,$isAdd=false)
+		{
+			if(empty($p_where))
+			{
+				return $this;
+			}
+			if ( !is_array($p_where) )
+			{
+				$p_where = array($p_where);
+			}
+
+			$arr = $isAdd ? $this->where : array();
+
+			foreach($p_where as $key=>$value)
 			{
 				if (strtolower($key) == 'joinlist')
 				{
@@ -222,19 +254,30 @@ class DBModel{
 				}
 				else
 				{
-					DBTool::conditions_push($arr,$key,$value,$this->t1);
+					if (is_int($key))
+					{
+						$arr[]=$value;
+					}
+					else
+					{
+						$arr[$key]=$value;
+					}
 				}
 			}
 
-			$condition='';
-			if(count($arr)>0){
-				$condition=' where ' . join(' and ',$arr);
-			}
-
-			$this->where=$condition;
+			$this->where=$arr;
 
 			return $this;
+		}
 
+		/**
+		 * 追加查询条件
+		 * @param  [type] $p_where [description]
+		 * @return [type]        [description]
+		 */
+		public function whereAdd($p_where=array())
+		{
+			return $this->where($p_where,true);
 		}
 
 		//限制条件
@@ -393,7 +436,7 @@ class DBModel{
 						. ' ' .$this->t1
 						. $this->join
 						. implode(' ',$this->joinList)
-						. $this->where
+						. $this->whereToStr()
 						. $this->group
 						. $this->order
 						. $this->limit;
@@ -538,14 +581,7 @@ class DBModel{
 	                array_push($clause ,'(' . implode(' or ', $_c) . ')');
 	            }
 
-	            if ($this->where=='')
-	            {
-	            	$this->where =  ' where ' . implode(" and ",$clause);
-	            }
-	            else
-	            {
-	            	$this->where .= ' and ' . '('.implode(" and ",$clause).')';
-	            }
+            	$this->whereAdd('('.implode(" and ",$clause).')');
 
 	            if ($this->field=='')
 	            {
@@ -581,7 +617,7 @@ class DBModel{
 									. ' ' .$this->t1
 									. $this->join
 									. implode(' ',$this->joinList)
-									. $this->where
+									. $this->whereToStr()
 									. $this->group;
 				}
 			    $_dataCount = DBTool::queryData($_sqlCount);
@@ -631,7 +667,7 @@ class DBModel{
 			$methods=array('avg', 'max', 'min','sum');
 			if (in_array(strtolower($method),$methods))
 			{
-				$sql="select $method({$param[0]}) as num from {$this->tableName} {$this->t1} {$this->where}";
+				$sql="select $method({$param[0]}) as num from {$this->tableName} {$this->t1} {".$this->whereToStr()."}";
 			    $_dataCount = DBTool::queryData($sql);
 			    return $_dataCount[0]['num'];
 			}
@@ -695,15 +731,14 @@ class DBModel{
 		/**
 		 * 执行修改，必须指定where才能执行。
 		 * @param $data array 需要更新的数据
-		 * @param $where array 条件，关联数组
+		 * @param $p_where array 条件，关联数组
 		 */
-		public function update($data,$where=null)
+		public function update($data,$p_where=null)
 		{
-
-			if (isset($where)){
-				$this->where($where);
+			if (isset($p_where)){
+				$this->where($p_where);
 			}
-			else if (empty($this->where))
+			else if (empty($this->whereToStr()))
 			{
 				print("DBModel.php: NO update data without where, if you want to do this, pls use updateAll.");exit();
 				return null;
@@ -740,7 +775,7 @@ class DBModel{
 					         .$this->tableName
 					         . ' ' .$this->t1
 					         .' set ' . $str
-					         . $this->where
+					         . $this->whereToStr()
 					         . $this->limit;
 				return	DBTool::executeSql($sql);
 			}
@@ -753,7 +788,7 @@ class DBModel{
 		/**
 		 * 针对全表执行修改，慎用。
 		 * @param $data array 需要更新的数据
-		 * @param $where array 条件，关联数组
+		 * @param $p_where array 条件，关联数组
 		 */
 		public function updateAll($data)
 		{
@@ -761,21 +796,19 @@ class DBModel{
 		}
 
 		//删除符合条件的数据。必须指定where才能执行。
-		public function delete($where=null)
+		public function delete($p_where=null)
 		{
-			if (isset($where)){
-				$this->where($where);
+			if (isset($p_where)){
+				$this->where($p_where);
 			}
-			else if (empty($this->where))
+			else if (empty($this->whereToStr()))
 			{
-				throw new Exception('DBModel.php: NO update data without where, if you want to do this, pls use updateAll.', 1);
+				throw new Exception('DBModel.php: NO update data without where, if you want to do this, pls use deleteAll.', 1);
 			}
-			//mysql里，delete 不支持 别名
-			$_where = preg_replace_callback('/(^|\s|\()([^\.\s\(]+\.)([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is |not |in |like |between ))/', function($matches){return $matches[1].$matches[3].$matches[4];}, $this->where);
 
 			$sql='DELETE FROM '
 				         . $this->tableName
-				         . $_where
+				         . $this->whereToStr(false)//mysql里，delete 不支持 别名
 				         . $this->limit;
 			return	DBTool::executeSql($sql);
 		}
@@ -801,8 +834,8 @@ class DBModel{
 			// $data['positionSourceCount']
 			// $datas =  $modelObj->insert($datass);
 			// $datass=array('sourceCount'=>99999699);
-			// $where = array('sourceID'=>47,'sourceName'=>'wwwww');
-			// $datas =  $modelObj->update($datass,$where);
+			// $p_where = array('sourceID'=>47,'sourceName'=>'wwwww');
+			// $datas =  $modelObj->update($datass,$p_where);
 			// $datas =  $modelObj->count();
 			// $datas =  $modelObj->sum(sourceID);
 			// echo '<pre>';
