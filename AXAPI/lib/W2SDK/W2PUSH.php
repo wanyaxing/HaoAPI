@@ -6,16 +6,14 @@
  * @since 1.0
  * @version 1.0
  */
-require_once(dirname(__FILE__) . '/../Xg-Push-SDK-PHP-1.1.5/XingeApp.php');
+require_once(dirname(__FILE__) . '/../Xg-Push-SDK-PHP/XingeApp.php');
 
 class W2PUSH {
 
-	// W2Config::$API_KEY_ANDROID;
-	// W2Config::$SECRET_KEY_ANDROID;
-
-	// W2Config::$API_KEY_IOS;
-	//W2Config::$SECRET_KEY_IOS;
-
+	public static $API_KEY_IOS        = null;
+	public static $SECRET_KEY_IOS     = null;
+	public static $API_KEY_ANDROID    = null;
+	public static $SECRET_KEY_ANDROID = null;
 
 	/**
 	 * 推送模式（iOS）,1是开发模式  2是正式环境
@@ -32,11 +30,25 @@ class W2PUSH {
 		$push = null;
 		if ($device_type==4) //IOS 推送
 		{
-			$push = new XingeApp(W2Config::$API_KEY_IOS, W2Config::$SECRET_KEY_IOS);
+			if (static::$API_KEY_IOS==null)
+			{
+				static::$API_KEY_IOS    = W2Config::$API_KEY_IOS;
+				static::$SECRET_KEY_IOS = W2Config::$SECRET_KEY_IOS;
+			}
+			$push = new XingeApp(static::$API_KEY_IOS, static::$SECRET_KEY_IOS);
 		}
 		else if ($device_type==3) //安卓推送
 		{
-			$push = new XingeApp(W2Config::$API_KEY_ANDROID, W2Config::$SECRET_KEY_ANDROID);
+			if (static::$API_KEY_IOS==null)
+			{
+				static::$API_KEY_ANDROID    = W2Config::$API_KEY_ANDROID;
+				static::$SECRET_KEY_ANDROID = W2Config::$SECRET_KEY_ANDROID;
+			}
+			$push = new XingeApp(static::$API_KEY_ANDROID, static::$SECRET_KEY_ANDROID);
+		}
+		if (defined('IS_AX_DEBUG'))
+		{
+			print_r($push);
 		}
 		return $push;
 	}
@@ -87,7 +99,7 @@ class W2PUSH {
 		}
 		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
 		foreach ($p_deviceTokens as $p_deviceToken) {
-			$tagnames = W2PUSH::queryTokenTags($p_deviceToken,$device_type);
+			$tagnames = static::queryTokenTags($p_deviceToken,$device_type);
 			if (is_array($tagnames))
 			{
 				$addTagnames = array_diff($newTagnames,$tagnames);
@@ -98,8 +110,8 @@ class W2PUSH {
 					}
 				}
 			}
-			$ret[] = W2PUSH::BatchAddTag($p_deviceToken,$device_type,$addTagnames);
-			$ret[] = W2PUSH::BatchDelTag($p_deviceToken,$device_type,$delTagnames);
+			$ret[] = static::BatchAddTag($p_deviceToken,$device_type,$addTagnames);
+			$ret[] = static::BatchDelTag($p_deviceToken,$device_type,$delTagnames);
 		}
 		return $ret;
 	}
@@ -180,13 +192,15 @@ class W2PUSH {
      * @param  string  $customvalue  自定义值,v
      * @param  string  $p_deviceTokens 用户推送ID，百度里是buserid
      * @param  string  $tag_name     指定标签
+     * @param  int     $deploy_status     1是开发模式  2是正式环境
      * @return array                 results
      */
-    public static function pushMessage($push_type ,$device_type , $title='', $content,$customtype=null,$customvalue = null ,$p_deviceTokens=null ,$tag_name=null)
+    public static function pushMessage($push_type ,$device_type , $title='', $content,$customtype=null,$customvalue = null ,$p_deviceTokens=null ,$tag_name=null,$deploy_status=2)
     {
 		$push = null;
 		$mess = null;
 
+		/** @var XingeApp */
 		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
 		if ($device_type==4) //IOS 推送
 		{
@@ -231,7 +245,7 @@ class W2PUSH {
 		{
 			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请传入正确的设备类型，iOS 还是 安卓');
 		}
-		$params['production_mode']= static::$DEPLOY_STATUS==2;//是否正式环境
+		$params['production_mode']= $deploy_status==2;//是否正式环境
 
 		$ret = array();
     	switch($push_type)
@@ -244,7 +258,7 @@ class W2PUSH {
     			}
     			if (count($p_deviceTokens)>5)//设备多的话，就用大批量推送
     			{
-    				$retMulti = $push->CreateMultipush($mess,$device_type==3?0:(static::$DEPLOY_STATUS==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV));
+    				$retMulti = $push->CreateMultipush($mess,$device_type==3?0:($deploy_status==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV));
 					$ret[] = array(
 								'action'=>'CreateMultipush'
 								,'ret'=>$retMulti
@@ -271,7 +285,8 @@ class W2PUSH {
 	    					$ret[] = array(
 	    								'action'=>'PushSingleDevice'
 	    								,'token'=>$token
-	    								,'ret'=>$push->PushSingleDevice($token, $mess,static::$DEPLOY_STATUS==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
+	    								,'device_type'=>$device_type
+	    								,'ret'=>$push->PushSingleDevice($token, $mess,$deploy_status==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
 	    								);
 	    				}
 						else if ($device_type==3) //安卓推送
@@ -280,6 +295,7 @@ class W2PUSH {
 							$ret[] = array(
 										'action'=>'PushSingleDevice'
 										,'token'=>$token
+										,'device_type'=>$device_type
 										,'ret'=>$push->PushSingleDevice($token, $mess)
 										);
 						}
@@ -293,7 +309,8 @@ class W2PUSH {
 					$ret[] = array(
 								'action'=>'PushAllDevices'
 								,'token'=>'0'
-								,'ret'=>$push->PushAllDevices(0, $mess,static::$DEPLOY_STATUS==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
+								,'device_type'=>$device_type
+								,'ret'=>$push->PushAllDevices(0, $mess,$deploy_status==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
 							);
 				}
 				else if ($device_type==3) //安卓推送
@@ -301,6 +318,7 @@ class W2PUSH {
 					$ret[] = array(
 								'action'=>'PushAllDevices'
 								,'token'=>'0'
+								,'device_type'=>$device_type
 								,'ret'=>$push->PushAllDevices(0, $mess)
 							);
 				}
