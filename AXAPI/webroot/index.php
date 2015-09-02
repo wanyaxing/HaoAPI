@@ -5,11 +5,6 @@ error_reporting(-1);                    //打印出所有的 错误信息
 
 date_default_timezone_set('PRC');//设定时区
 
-    //是否开启debug
-    if (array_key_exists('Is_sql_print', getallheaders()))
-    {
-        define('IS_SQL_PRINT',True);
-    }
 
     //加载配置文件
     require_once(__dir__.'/../config.php');
@@ -30,7 +25,30 @@ date_default_timezone_set('PRC');//设定时区
     {
         //调用对应接口方法
         try {
-            list ($apiController, $apiAction) = explode ("/", W2HttpRequest::getRequestString('r',false,'/'), 2);
+            $apiPaths = explode('/', preg_replace ("/(\/*[\?#].*$|[\?#].*$|\/*$)/", '', $_SERVER['REQUEST_URI']));
+            if (count($apiPaths)<3)
+            {
+                list ($apiController, $apiAction) = explode ("/", W2HttpRequest::getRequestString('r',false,'/'), 2);
+                // $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误的请求地址，请使用正确的[/对象/方法]地址。');
+            }
+            else
+            {
+                $apiController = $apiPaths[1];
+                $apiAction = $apiPaths[2];
+            }
+
+            //记录接口日志
+            file_put_contents(sprintf('%s/access-%s.log',AXAPI_ROOT_PATH.'/logs/',strftime('%Y%m%d'))
+                                ,sprintf("[%s] [%s] [%d] [%s] [%s/%s]: %s\n"
+                                            ,DateTime::createFromFormat('U.u', microtime(true))->setTimeZone(new DateTimeZone('+8'))->format('Y-m-d H:i:s.u e')
+                                            ,$_SERVER['REMOTE_ADDR']
+                                            ,Utility::getCurrentUserID()
+                                            ,count($_POST)>0?'POST':'GET'
+                                            ,$apiController, $apiAction
+                                            ,count($_POST)>0?json_encode($_POST, JSON_UNESCAPED_UNICODE):json_encode($_GET, JSON_UNESCAPED_UNICODE)
+                                        )
+                                ,FILE_APPEND);
+
 
             //记录接口日志
             file_put_contents(sprintf('%s/access-%s.log',AXAPI_ROOT_PATH.'/logs/',strftime('%Y%m%d'))
@@ -75,7 +93,14 @@ date_default_timezone_set('PRC');//设定时区
         }
         $results['results'] = $data;
         header('Content-Type:text/javascript; charset=utf-8');
-        echo json_encode($results, JSON_UNESCAPED_UNICODE);
+        if (defined('IS_AX_DEBUG'))
+        {
+            print_r($results);
+        }
+        else
+        {
+            echo json_encode($results, JSON_UNESCAPED_UNICODE);
+        }
         exit;
     }
     else if (is_string($results))
