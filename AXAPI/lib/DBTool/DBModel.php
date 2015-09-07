@@ -405,8 +405,8 @@ class DBModel{
 		}
 
 
-		//查询数据
-		public function select()
+		//返回对应的sql语句
+		public function sqlOfselect()
 		{
 			if ($this->limitPageIndex != 0 && $this->limitPageSize>0)
 			{
@@ -441,23 +441,28 @@ class DBModel{
 						. $this->order
 						. $this->limit;
 
-			// var_dump($sql);
-			// var_dump($this);exit;
+			return $sql;
+		}
+
+		//查询数据
+		public function select()
+		{
+			$sql = $this->sqlOfselect();
+
 			$list = null;
 			$cacheKey = md5($sql);
 			if ($this->isUseCache)
 			{
 				if (array_key_exists($cacheKey, self::$cache))
 				{
-					// echo 'cache';
-					$list = self::$cache[md5($sql)];
+					$list = self::$cache[$cacheKey];
 				}
 			}
 			if (!isset($list))
 			{
 				$list = DBTool::queryData($sql);
 				$this->isSelectQueryRun = true;
-				self::$cache[md5($sql)] = $list;
+				self::$cache[$cacheKey] = $list;
 			}
 			if ($this->isCheckNextPage  && $this->limitPageIndex>0 && $this->limitPageSize>0 )
 			{
@@ -667,9 +672,7 @@ class DBModel{
 			$methods=array('avg', 'max', 'min','sum');
 			if (in_array(strtolower($method),$methods))
 			{
-				$sql="select $method({$param[0]}) as num from {$this->tableName} {$this->t1} {".$this->whereToStr()."}";
-			    $_dataCount = DBTool::queryData($sql);
-			    return $_dataCount[0]['num'];
+				return $this->selectField($method.'('.$param[0].')');
 			}
 		}
 
