@@ -84,6 +84,41 @@ class W2Time {
     }
 
     /**
+     * 获得指定时间类型的时间格式（MYSQL用）
+     * @param  string $p_dateType 时间类型
+     * @return string             时间格式
+     */
+    public static function getFormatOfMysqlWithDateType($p_dateType)
+    {
+        $format = '';
+        switch ($p_dateType) {
+            case 'year':
+                $format = '%Y';
+                break;
+            case 'month':
+                $format = '%Y-%m';
+                break;
+            case 'week':
+                $format = '%Y %u';
+                break;
+            case 'hour':
+                $format = '%Y-%m-%d %H';
+                break;
+            case 'minute':
+                $format = '%Y-%m-%d %H:%i';
+                break;
+            case 'second':
+                $format = '%Y-%m-%d %H:%i:%s';
+                break;
+            case 'day':
+            default:
+                $format = '%Y-%m-%d';
+                break;
+        }
+        return $format;
+    }
+
+    /**
      * 取得两个时间点之间的时间数组
      * @param  [string | int] $p_time1    [description]
      * @param  [string | int] $p_time2    [description]
@@ -128,7 +163,7 @@ class W2Time {
                 break;
             case 'week':
                 $p_step   = '+1 week';
-                $tmp_format = 'Y-m-d(W)';
+                $tmp_format = 'Y W';
                 break;
             case 'month':
                 $p_step   = '+1 month';
@@ -311,23 +346,27 @@ class W2Time {
     }
 
     /**
-     * 获得指定时间所在当周的第一天的日期 Y-m-d
+     * 获得指定时间所在当周的第一天(星期一)的日期 Y-m-d
      * @param  [type] $p_time [description]
      * @return string             格式 Y-m-d
      */
     public static function getFirstDayInSameWeek($p_time=null)
     {
-        return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-d'),'-'.(W2Time::timetostr($p_time,'w')).' day')),'Y-m-d');
+        $w = W2Time::timetostr($p_time,'w');
+        $w = ($w==0?7:$w);
+        return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-d'),'-'.(($w-1)).' day')),'Y-m-d');
     }
 
     /**
-     * 获得指定时间所在当周的最后一天的日期 Y-m-d
+     * 获得指定时间所在当周的最后一天(星期日)的日期 Y-m-d
      * @param  [type] $p_time [description]
      * @return string             格式 Y-m-d
      */
     public static function getLastDayInSameWeek($p_time=null)
     {
-        return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-d'),'+'.(7-W2Time::timetostr($p_time,'w')).' day'))-1,'Y-m-d');
+        $w = W2Time::timetostr($p_time,'w');
+        $w = ($w==0?7:$w);
+        return W2Time::timetostr((W2Time::getTimeAdded(W2Time::timetostr($p_time,'Y-m-d'),'+'.(7-($w-1)).' day'))-1,'Y-m-d');
     }
 
 }
