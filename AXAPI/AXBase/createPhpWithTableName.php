@@ -715,6 +715,14 @@ class '.$_controllerName.' extends AbstractController{
     public static function save($tmpModel,$isAdd=false)
     {
         return parent::save($tmpModel,$isAdd);
+        // $tmpResult =  parent::save($tmpModel,$isAdd);
+        // if (Utility::isResultsOK($tmpResult))
+        // {
+        //     /** @var '.$_modelName.' */
+        //     $savedModel = Utility::getResults($tmpResult);
+        //     $tmpResult[\'extraInfo\'][\'example\']=\'example\';
+        // }
+        // return $tmpResult;
     }
 
     //列表
@@ -731,6 +739,12 @@ class '.$_controllerName.' extends AbstractController{
 '.$_controllerKeySearchList.'
             $p_where[] = \'(\'.implode(\' or \',$keyWhere).\')\';
         }':'').'
+
+                //两表一对一用关联查询
+                //$p_where[\'joinList\'] = array();
+                //$p_where[\'joinList\'][] = array(\'tbl_example t2\',array(\'t2.teacherID = t1.userID\',\'t2.id\'=>$keyWord));
+                //两表一对多用exists查询
+                //$p_where[] = \'exists (select t2.id from tbl_example t2 where t2.teacherID = '.$_tableIdName.'.userID limit 1)\';
 
         //根据权限不同，支持的筛选功能也可以不同
         switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
