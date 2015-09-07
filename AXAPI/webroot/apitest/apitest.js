@@ -315,7 +315,7 @@ function reFormApi(i)
   setCurrentUrl('#api'+'|'+i+'|'+apiList[i]['title']);
   if (_api['action'].indexOf('http')<0)
   {
-    _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/\/[^\/]*$/g,'')+'/') + _api['action'];
+    _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/(\/apitest\/|\/)[^\/]*$/g,'')+'/') + _api['action'];
     _api['action'] = _api['action'].replace(/\/[^\/]+\/\.\.\//g,'/');
   }
   $('#link_api_url').val(_api['action']);
