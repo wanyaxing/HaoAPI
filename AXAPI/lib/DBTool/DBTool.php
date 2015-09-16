@@ -158,6 +158,10 @@ class DBTool
 				{
 					$conditions[] =  $p_strFormat . $p_value;
 				}
+				else if ( (in_array(strtolower($p_value),array('now()','null'))) )
+				{
+					$conditions[] =  sprintf('%s = NULL',$p_strFormat);
+				}
 				else if ( null !== $p_value )
 				{
 					$conditions[] =  sprintf('%s = \'%s\'',$p_strFormat,$p_value);

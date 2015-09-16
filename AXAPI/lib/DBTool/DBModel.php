@@ -705,7 +705,7 @@ class DBModel{
 					continue;
 				}
 				$fieldList[] =  $keyTmp;
-				if ($valueTmp=='now()')
+				if (in_array(strtolower($valueTmp),array('now()','null')))
 				{
 					$valueList[] =  DBTool::wrap2Sql($valueTmp,false);//不带引号
 				}
@@ -750,26 +750,26 @@ class DBModel{
 			foreach($data as $key=>$value)
 			{
 				//注意 这里没做安全过滤哦
-				if (is_int($key))//key是数字，则就当value是xx=xx了
-				{
+				// if (is_int($key))//key是数字，则就当value是xx=xx了
+				// {
 					DBTool::conditions_push($arr,$key,$value,$this->t1);
-				}
-				else if (strpos($key,' ')!==false)//key是xx＝
-				{
-					DBTool::conditions_push($arr,$key,$value,$this->t1);
-				}
-				else if ($value === null)
-				{
-					continue;
-				}
-				else
-				{
-					// 做字段安全过滤
-					if(!in_array($key,$this->getMeta())){
-						continue;
-					}
-					$arr[] =  sprintf('%s = \'%s\'',$key,DBTool::wrap2Sql($value));
-				}
+				// }
+				// else if (strpos($key,' ')!==false)//key是xx＝
+				// {
+					// DBTool::conditions_push($arr,$key,$value,$this->t1);
+				// }
+				// else if ($value === null)
+				// {
+				// 	continue;
+				// }
+				// else
+				// {
+				// 	// 做字段安全过滤
+				// 	if(!in_array($key,$this->getMeta())){
+				// 		continue;
+				// 	}
+				// 	$arr[] =  sprintf('%s = \'%s\'',$key,DBTool::wrap2Sql($value));
+				// }
 			}
 			if (count($arr)>0)
 			{
