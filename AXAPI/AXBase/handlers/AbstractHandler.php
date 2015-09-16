@@ -180,6 +180,32 @@ class AbstractHandler {
         return True;
     }
 
+    /**
+     * 临时开关缓存
+     * @param  string $p_key  存储key值
+     * @param  object $p_data 对象或数据
+     * @return boolean         是/否
+     */
+    // public static function cacheEnable($p_isEnable=true)
+    // {
+    //     static::$isUseCacheTmp = static::$isUseCache;
+    //     static::$isUseCache = $p_isEnable;
+    //     return $p_isEnable;
+    // }
+
+    /**
+     * 取消临时开关
+     */
+    // public static function cacheEnableRestore()
+    // {
+    //     if (static::$isUseCacheTmp!==null)
+    //     {
+    //         static::$isUseCache = static::$isUseCacheTmp;
+    //         static::$isUseCacheTmp = null;
+    //     }
+    //     return $p_isEnable;
+    // }
+
 	//====================常规方法=====================
 
     /**
@@ -309,6 +335,7 @@ class AbstractHandler {
         }
         return static::loadModelListByIds($_pIds);
     }
+
 
     /**
      * 存储或更新模型对象
@@ -488,10 +515,19 @@ class AbstractHandler {
         return $result;
     }
 
-    public static function countAll($p_where)
+    /**
+     * 统计符合条件的数量
+     * @param  array $p_where 条件
+     * @return int          总数
+     */
+    public static function count($p_where=array())
     {
         $_dbModel = static::newDBModel();
         return $_dbModel->where($p_where)->countAll();
+    }
+    public static function countAll($p_where=array())
+    {
+        return static::count($p_where);
     }
 
 }
