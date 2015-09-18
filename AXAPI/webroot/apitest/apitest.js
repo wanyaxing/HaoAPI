@@ -185,11 +185,12 @@ function filterApiList(_keyType)
 
 function getHeaders()
 {
-  var _headers = {};
+  var _headers = null;
   $('form').find('[form-type=header]').each(function(){
     var _key = $(this).val();
     if (_key!='')
     {
+      if (_headers==null){_headers={};}
       _headers[_key] = $(this).parent().siblings().find("input").val();
     }
   });
@@ -574,44 +575,62 @@ $(function(){
         }
         else if (_method=='post')
         {
-             // _data = getPosts();
+          if (_headers==null)
+          {
+             _data = getPosts();
+          }
+          else
+          {
              _data = new FormData($('form')[0]);
+          }
         }
 
         $('#textarea_results').val('waiting....');
         $('#div_json_view').html('waiting....');
         // console.log(_getValues)
-        // console.log(_data)
-        xhrTestingApi = $.ajax({
+        console.log(_headers)
+        if (_method=='post' && _headers==null)
+        {
+          xhrTestingApi = $.post(_link , _data , function(data) {
+                    xhrTestingApi = null;
+                    $('#textarea_results').val(data);
+                    $('#textarea_results').trigger("change");
+                    $('#div_frames>ul>li').eq(0).trigger("click");
+              },'text');
+        }
+        else
+        {
+          xhrTestingApi = $.ajax({
 
-            type: _method,
+              type: _method
 
-            url: _link,
+              ,url: _link
 
-            headers: _headers,
+              ,headers: _headers
 
-            data:_data,
+              ,data:_data
 
-            dataType:"text",
+              ,dataType:"text"
 
-            error: function(XHR,textStatus,errorThrown) {
-                console.log(XHR,textStatus,errorThrown);
-                $('#textarea_results').val(XHR.responseText);
-                alert ("XHR="+XHR+"\ntextStatus="+textStatus+"\nerrorThrown=" + errorThrown);
-            },
+              ,error: function(XHR,textStatus,errorThrown) {
+                  console.log(XHR,textStatus,errorThrown);
+                  $('#textarea_results').val(XHR.responseText);
+                  alert ("XHR="+XHR+"\ntextStatus="+textStatus+"\nerrorThrown=" + errorThrown);
+              }
 
-            success: function(data,textStatus) {
-                  xhrTestingApi = null;
-                  $('#textarea_results').val(data);
-                  $('#textarea_results').trigger("change");
-                  $('#div_frames>ul>li').eq(0).trigger("click");
-            },
+              ,success: function(data,textStatus) {
+                    xhrTestingApi = null;
+                    $('#textarea_results').val(data);
+                    $('#textarea_results').trigger("change");
+                    $('#div_frames>ul>li').eq(0).trigger("click");
+              }
 
-            //Options to tell jQuery not to process data or worry about content-type.
-            cache: (_method=='get'),
-            contentType: false,
-            processData: false
-        });
+              //Options to tell jQuery not to process data or worry about content-type.
+              ,cache: (_method=='get')
+              ,contentType: false//必须false才会自动加上正确的Content-Type 告诉jQuery不要去设置Content-Type请求头
+              ,processData: false//必须false才会避开jQuery对 formdata 的默认处理  告诉jQuery不要去处理发送的数据  XMLHttpRequest会对 formdata 进行正确的处理
+          });
+        }
 
     });
     // //url 监控
