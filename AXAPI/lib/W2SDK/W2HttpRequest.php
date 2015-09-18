@@ -67,7 +67,7 @@ class W2HttpRequest {
             }
 
         }
-        if (defined('IS_AX_DEBUG')){print("\n");var_export($p_key);print(" : ");var_export($_v);}
+        // if (defined('IS_AX_DEBUG')){print("\n");var_export($p_key);print(" : ");var_export($_v);}
         return $_v;
     }
 
@@ -122,7 +122,7 @@ class W2HttpRequest {
 
             if ($_v==0 && !$p_allowZero)
             {
-                throw new Exception('参数'.$p_key.'的值不可以d为0。');
+                throw new Exception('参数'.$p_key.'的值不可以为0。');
             }
 
             if (isset($p_allowMinus) && $_v<$p_allowMinus)
