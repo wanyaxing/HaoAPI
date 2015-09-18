@@ -172,7 +172,7 @@ class AbstractController {
 
         if ($p_countThis===-1)
         {
-            $p_countThis = W2HttpRequest::getRequestInt('iscountall',null,false,true,-1);
+            $p_countThis = W2HttpRequest::getRequestBool('iscountall')?1:-1;
         }
 
         $_clsHandler = static::getHandlerName();
@@ -221,7 +221,7 @@ class AbstractController {
         }
         else if ($p_countThis===-1)
         {
-            $p_countThis = W2HttpRequest::getRequestInt('iscountall',null,false,true,-1);
+            $p_countThis = W2HttpRequest::getRequestBool('iscountall')?1:-1;
         }
 
 
