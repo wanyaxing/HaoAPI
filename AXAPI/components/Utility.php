@@ -257,7 +257,7 @@ class Utility
 
 			if (abs($_HEADERS['Requesttime'] - time()) > 5*60 )//300
 			{
-				return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'该操作已过期，请重试。');
+				return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'请求失败了，请检查你的网络状态和系统时间是否准确哦。');
 			}
 
 			//加密版本2.0，支持应用识别码和debug模式
