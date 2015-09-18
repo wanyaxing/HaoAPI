@@ -69,6 +69,15 @@ class W2Time {
     }
 
     /**
+     * 取得指定时间相对于当前已经逝去的时间
+     * @param  [string | int] $p_time  目标时间
+     * @return int              时间差（秒） ，负数 说明指定时间还没到呢
+     */
+    public static function getTimePassed($p_time=null)
+    {
+        return static::getTimeBetweenDateTime(null,$p_time);
+    }
+    /**
      * 时间增减
      * @param  [type] $p_time [description]
      * @param  int|string $p_add      时间戳或 字符串  -1 day  next Thursday
