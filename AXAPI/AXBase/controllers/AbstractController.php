@@ -257,7 +257,7 @@ class AbstractController {
 
         if (count(array_keys($tmpModel->propertiesModified()))==0)
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'没有可更新的数据，请检查您是否具有管理或操作的权限。操作代码：'.W2HttpRequest::getRequestString('r'));
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'您没有作任何修改哦。');
         }
 
         if (method_exists($tmpModel,'setCreateTime') &&  $tmpModel->getCreateTime()==null )
