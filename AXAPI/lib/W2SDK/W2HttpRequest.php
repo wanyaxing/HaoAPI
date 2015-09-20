@@ -54,7 +54,7 @@ class W2HttpRequest {
     public static function getRequestMatch($p_key, $p_match='/^[\s\S]*$/', $p_allowBlank=true,$p_default=null)
     {
         $_v = array_key_exists($p_key, $_REQUEST) ? $_REQUEST[$p_key] : $p_default;
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if ($_v==='' && !$p_allowBlank)
             {
@@ -83,7 +83,7 @@ class W2HttpRequest {
     public static function getRequestString($p_key, $p_allowBlank=true,$p_default=null,$p_lenMin=null,$p_lenMax=null){
 
         $_v = static::getRequestMatch($p_key,null,$p_allowBlank,$p_default);
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if (isset($p_lenMin) && strlen($_v)<$p_lenMin)
             {
@@ -111,7 +111,7 @@ class W2HttpRequest {
     public static function getRequestFloat($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=false,$p_default=null){
         $_v = static::getRequestMatch($p_key,null,false,$p_default);
 
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if (strval(floatval($_v)) !== $_v)
             {
@@ -171,7 +171,7 @@ class W2HttpRequest {
 
         $_v = static::getRequestInt($p_key , 1 , true , 0 , $p_default);
 
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             $_v = $_v === 1;
         }
@@ -190,7 +190,7 @@ class W2HttpRequest {
 
         $_v = static::getRequestString($p_key,true,$p_default);
 
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             $_r = array();
             $_a = explode(',', $_v);
@@ -244,7 +244,7 @@ class W2HttpRequest {
 
         $_v = static::getRequestString($p_key,false,$p_default);
 
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             $_v = W2Time::timetostr(W2Time::strtotime($_v),$p_format);
         }
@@ -260,7 +260,7 @@ class W2HttpRequest {
      */
     public static function getRequestDate($p_key, $p_format='Y-m-d',$p_default=null){
         $_v = static::getRequestDateTime($p_key, $p_format,$p_default);
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             // $_v = W2Time::timetostr(W2Time::strtotime($_v),$p_format);
         }
@@ -275,7 +275,7 @@ class W2HttpRequest {
      */
     public static function getRequestEmail($p_key, $p_allowBlank=true,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if (!W2String::isEmail($_v))
             {
@@ -293,7 +293,7 @@ class W2HttpRequest {
      */
     public static function getRequestTelephone($p_key, $p_allowBlank=true,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if (!W2String::isTelephone($_v))
             {
@@ -311,7 +311,7 @@ class W2HttpRequest {
      */
     public static function getRequestIP($p_key, $p_allowBlank=true,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if (!W2String::isIP($_v))
             {
@@ -330,7 +330,7 @@ class W2HttpRequest {
      */
     public static function getRequestURL($p_key, $p_allowBlank=true,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && $_v!=$p_default)
+        if (isset($_v) && $_v!==$p_default)
         {
             if (!W2String::isURL($_v))
             {
