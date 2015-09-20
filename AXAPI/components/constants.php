@@ -27,6 +27,8 @@ define('RUNTIME_CODE_ERROR_NOT_MODEL',        7);
 define('NO_FILE_UPLOAD',        8);
 /** 非法的userid */
 define('INVALID_USER_ID',        9);
+/** Param error */
+define('RUNTIME_CODE_ERROR_NO_CHANGE',        10);
 
 
 /** 状态  - 不存在 */
