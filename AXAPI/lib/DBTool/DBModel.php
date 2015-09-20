@@ -483,7 +483,8 @@ class DBModel{
 		//查询数据
 		public function selectSingle()
 		{
-			$_data = $this->limit(1)->select();
+			if ($this->limit==''){$this->limit(1);}
+			$_data = $this->select();
 			if (is_array($_data) && count($_data)>0)
 			{
 				return $_data[0];
