@@ -4,7 +4,7 @@ ini_set('display_startup_errors',1);    //php启动错误信息
 
 error_reporting(-1);                    //打印出所有的 错误信息
 
-date_default_timezone_set('PRC');//设定时区
+date_default_timezone_set('Asia/Shanghai');//设定时区
 
 
     //加载配置文件
@@ -18,6 +18,8 @@ date_default_timezone_set('PRC');//设定时区
 
     //加载基础方法
     require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
+
+    AX_DEBUG('start');
 
     /**
      * 主要用于捕捉致命错误，每次页面处理完之后执行检查
@@ -49,7 +51,7 @@ date_default_timezone_set('PRC');//设定时区
             if (!is_null($errorMsg))
             {
                 @ob_end_clean();//要清空缓冲区， 从而删除PHPs " 致命的错误" 消息。
-                $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_UNKNOWN,$errorMsg,null,array('errorContent'=>'Error on line '.$last_error['line'].' in '.$last_error['file'].': '.$last_error['message'].''));
+                $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_UNKNOWN,$errorMsg,null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$last_error['line'].' in '.$last_error['file'].': '.$last_error['message'].''):null);
                 echo json_encode($results, JSON_UNESCAPED_UNICODE);
                 exit;
             }
@@ -79,20 +81,7 @@ date_default_timezone_set('PRC');//设定时区
             //记录接口日志
             file_put_contents(sprintf('%s/access-%s.log',AXAPI_ROOT_PATH.'/logs/',strftime('%Y%m%d'))
                                 ,sprintf("[%s] [%s] [%d] [%s] [%s/%s]: %s\n"
-                                            ,DateTime::createFromFormat('U.u', microtime(true))->setTimeZone(new DateTimeZone('+8'))->format('Y-m-d H:i:s.u e')
-                                            ,$_SERVER['REMOTE_ADDR']
-                                            ,Utility::getCurrentUserID()
-                                            ,count($_POST)>0?'POST':'GET'
-                                            ,$apiController, $apiAction
-                                            ,count($_POST)>0?json_encode($_POST, JSON_UNESCAPED_UNICODE):json_encode($_GET, JSON_UNESCAPED_UNICODE)
-                                        )
-                                ,FILE_APPEND);
-
-
-            //记录接口日志
-            file_put_contents(sprintf('%s/access-%s.log',AXAPI_ROOT_PATH.'/logs/',strftime('%Y%m%d'))
-                                ,sprintf("[%s] [%s] [%d] [%s] [%s/%s]: %s\n"
-                                            ,DateTime::createFromFormat('U.u', microtime(true))->setTimeZone(new DateTimeZone('+8'))->format('Y-m-d H:i:s.u e')
+                                            ,W2Time::microtimetostr(null)
                                             ,$_SERVER['REMOTE_ADDR']
                                             ,Utility::getCurrentUserID()
                                             ,count($_POST)>0?'POST':'GET'
@@ -104,7 +93,7 @@ date_default_timezone_set('PRC');//设定时区
             $method = new ReflectionMethod($apiController.'Controller', 'action'.$apiAction);
             $results = $method->invoke(null,0);
         } catch (Exception $e) {
-            $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_UNKNOWN,$e->getMessage(),null,array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''));
+            $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_UNKNOWN,$e->getMessage(),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''):null);
         }
     }
 
