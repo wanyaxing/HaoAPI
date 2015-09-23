@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v150923 优化t1逻辑和field逻辑，新增 fieldToStr() 和 fieldAdd()
 // v150806 新增whereAdd方法，重整了where相关的逻辑
 // v150805 默认$t1 = null;，如果有join 则t1 = t1
 // v150521 selectFields/selectValues selectField/selectValue
@@ -172,19 +173,81 @@ class DBModel{
 		}
 
 		//设置字段
-		public function field($field){
-			$fields = is_array($field)?$field:explode(',',$field);
+		public function field($p_field,$isAdd=false){
+
+			if(empty($p_field))
+			{
+				return $this;
+			}
+			if ( !is_array($p_field) )
+			{
+				$p_field = explode(',',$p_field);
+			}
+
+			$arr = $isAdd ? $this->field : array();
+
+			foreach($p_field as $key=>$value)
+			{
+				$arr[]=$value;
+			}
+
+			$this->field=$arr;
+
+			return $this;
+
+		}
+
+		/**
+		 * 追加读取字段
+		 * @param  [type] $p_field [description]
+		 * @return [type]        [description]
+		 */
+		public function fieldAdd($p_field=array())
+		{
+			return $this->field($p_field,true);
+		}
+
+		/**
+		 * 返回组装好的field字符串
+		 * @return string 内部方法
+		 */
+		protected function fieldToStr($isUseT1 = true)
+		{
+			$tmpField = $this->field;
+
+			if ( !is_array($tmpField) )
+			{
+				$tmpField = array($tmpField);
+			}
+
 			if ($this->t1 != null)
 			{
-				foreach ($fields as &$field) {
-					if (!preg_match('/^[^\.\s]+\.[^\.\s]+/', $field ) )
+				$GLOBALS['t1tmpfordbtool'] = $this->t1;
+				foreach ($tmpField as &$field) {
+					if (strpos($field,$this->t1)===false)
 					{
-						$field = $this->t1 .'.'.$field;
+						if (preg_match('/\(\s*([^\s][^\(\)]+?)\)/',$field))
+						{
+							$field = preg_replace_callback('/(\(\s*)([^\s][^\(\)]+?)(\))/'
+															, function($matches){return $matches[1].$GLOBALS['t1tmpfordbtool'].'.'.$matches[2].$matches[3];}
+															, $field
+															);
+						}
+						else
+						{
+							$field = $this->t1 .'.'.trim($field);
+						}
 					}
 				}
 			}
-			$this->field= implode(',',$fields);
-			return $this;
+
+			$condition='*';
+			if(count($tmpField)>0){
+				$condition= join(' , ',$tmpField);
+			}
+
+
+			return $condition;
 		}
 
 		/**
@@ -256,6 +319,10 @@ class DBModel{
 				{
 					if (is_int($key))
 					{
+						if (strpos($value,'exists ')!==false)
+						{
+							if ($this->t1==null){$this->useT1('t1');}
+						}
 						$arr[]=$value;
 					}
 					else
@@ -430,7 +497,7 @@ class DBModel{
 
 			$sql= 'SELECT '
 					. (($this->isCountAll)?'SQL_CALC_FOUND_ROWS ':'')
-					.  $this->field
+					.  $this->fieldToStr()
 					.' FROM '
 						. $this->tableName
 						. ' ' .$this->t1
@@ -589,13 +656,13 @@ class DBModel{
 
             	$this->whereAdd('('.implode(" and ",$clause).')');
 
-	            if ($this->field=='')
+	            if ($this->fieldToStr()=='')
 	            {
-	            	$this->field = '('.implode('+',$score).') AS scoreplusinmodel';
+	            	$this->field('('.implode('+',$score).') AS scoreplusinmodel');
 	            }
 	            else
 	            {
-	            	$this->field .= ' ,('.implode('+',$score).') AS scoreplusinmodel';
+	            	$this->fieldAdd('('.implode('+',$score).') AS scoreplusinmodel');
 	            }
 
 	            $this->order = 'ORDER BY scoreplusinmodel DESC';

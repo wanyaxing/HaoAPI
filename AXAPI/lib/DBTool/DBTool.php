@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v150923 优化t1逻辑
 // v150317 fix 别名，（和！的情况
 // 150207  conditions_push
 // 150122.1 + throw errow
@@ -32,8 +33,13 @@ class DBTool
 		}
 		public static function debug($_str)
 		{
-			if (defined('IS_SQL_PRINT') && IS_SQL_PRINT)
+			if (function_exists('AX_DEBUG'))
 			{
+				AX_DEBUG($_str);
+			}
+			else if (defined('IS_SQL_PRINT') && IS_SQL_PRINT)
+			{
+				print("\n");
 				print($_str);
 				print("\n");
 			}
@@ -96,7 +102,23 @@ class DBTool
 				if (is_int($p_strFormat) && $p_value!==null)
 				{
 					$GLOBALS['t1tmpfordbtool'] = $t1;
-					$p_value = preg_replace_callback('/(^|\s|\()([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is |not |in |like |between ))/', function($matches){return $matches[1].$GLOBALS['t1tmpfordbtool'].'.'.$matches[2].$matches[3];}, $p_value);
+					if (strpos($p_value,$t1)===false)
+					{
+						// if (preg_match('/\(\s*([^\s][^\)]+)\)/',$p_value))
+						// {
+						// 	$p_value = preg_replace_callback('/(\(\s*)([^\s][^\)]+)(\))/'
+						// 									, function($matches){return $matches[1].$GLOBALS['t1tmpfordbtool'].'.'.$matches[2].$matches[3];}
+						// 									, $p_value
+						// 									);
+						// }
+						// else
+						// {
+							$p_value = preg_replace_callback('/(^|\s|\()([^\.\(\s]+)(\s*?[!=\>\<]|\s+?(is |not |in |like |between ))/'
+								, function($matches){return $matches[1].$GLOBALS['t1tmpfordbtool'].'.'.$matches[2].$matches[3];}
+								, $p_value
+								);
+						// }
+					}
 				}
 				else if($p_strFormat!==null && !preg_match('/^[^\.\s]+\.[^\.\s]+/', $p_strFormat ) )
 				{
@@ -193,6 +215,7 @@ class DBTool
 	            // $_data = 2;
 	            throw new Exception($_mysqli->error);
 	        }
+		    self::debug('executeSql END');
 	    }
 	    return $_data;
 	}
@@ -211,37 +234,41 @@ class DBTool
 			foreach ($_sqls as $_sql) {
 				self::debug($_sql);
 				$_tmpData = array();
-			    try {
-			        $_resultSet = $_mysqli->query($_sql);
-			        if($_resultSet !== false){
+		        $_resultSet = $_mysqli->query($_sql);
+		        if($_resultSet !== false){
 
-			            $_fields = array();
-			            foreach ($_resultSet->fetch_fields() as $_field){
-			                $_fields[$_field->name] = $_field->type;
-			            }
+		            $_fields = array();
+		            foreach ($_resultSet->fetch_fields() as $_field){
+		                $_fields[$_field->name] = $_field->type;
+		            }
 
-			            while ($_row = $_resultSet->fetch_assoc()) {
+		            while ($_row = $_resultSet->fetch_assoc()) {
 
-			                foreach ($_row as $_key => $_value) {
-			                	if (isset($_value))
-			                	{
-				                    if ($_fields[$_key] <= 3 || $_fields[$_key] == 8)
-				                    {
-				                        $_row[$_key] = intval($_value);
-				                    } else if ($_fields[$_key] == 4 || $_fields[$_key] == 5)
-				                    {
-				                        $_row[$_key] = floatval($_value);
-				                    }
-			                	}
-			                }
+		                foreach ($_row as $_key => $_value) {
+		                	if (isset($_value))
+		                	{
+			                    if ($_fields[$_key] <= 3 || $_fields[$_key] == 8)
+			                    {
+			                        $_row[$_key] = intval($_value);
+			                    } else if ($_fields[$_key] == 4 || $_fields[$_key] == 5)
+			                    {
+			                        $_row[$_key] = floatval($_value);
+			                    }
+		                	}
+		                }
 
-			                array_push($_tmpData, $_row);
-			            }
-			            $_resultSet->close();
+		                array_push($_tmpData, $_row);
+		            }
+		            $_resultSet->close();
+		        }
+		        else
+		        {
+			        if(strlen($_mysqli->error)>0){
+			            throw new Exception($_mysqli->error);
 			        }
-			    } catch (Exception $e) {
-			    }
+		        }
 			    array_push($_data,$_tmpData);
+			    self::debug('queryData END');
 			}
 		    if(strlen($_mysqli->error)>0){
 		    }
