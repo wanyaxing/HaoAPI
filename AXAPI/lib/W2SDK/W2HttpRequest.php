@@ -67,7 +67,7 @@ class W2HttpRequest {
             }
 
         }
-        // if (defined('IS_AX_DEBUG')){print("\n");var_export($p_key);print(" : ");var_export($_v);}
+        if (defined('IS_AX_DEBUG') ){print("\n");var_export($p_key);print(" : ");var_export($_v);}
         return $_v;
     }
 
@@ -85,11 +85,11 @@ class W2HttpRequest {
         $_v = static::getRequestMatch($p_key,null,$p_allowBlank,$p_default);
         if (isset($_v) && $_v!==$p_default)
         {
-            if (isset($p_lenMin) && strlen($_v)<$p_lenMin)
+            if (isset($p_lenMin) && W2String::strlen($_v)<$p_lenMin)
             {
                 throw new Exception('参数'.$p_key.'必须包含'.$p_lenMin.'个以上的字符哦。');
             }
-            if (isset($p_lenMax) && strlen($_v)>$p_lenMax)
+            if (isset($p_lenMax) && W2String::strlen($_v)>$p_lenMax)
             {
                 throw new Exception('参数'.$p_key.'最多只能包含'.$p_lenMax.'个以内的字符哦。');
             }
