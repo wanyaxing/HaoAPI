@@ -744,7 +744,7 @@ class '.$_controllerName.' extends AbstractController{
                 //$p_where[\'joinList\'] = array();
                 //$p_where[\'joinList\'][] = array(\'tbl_example t2\',array(\'t2.teacherID = t1.userID\',\'t2.id\'=>$keyWord));
                 //两表一对多用exists查询
-                //$p_where[] = \'exists (select t2.id from tbl_example t2 where t2.teacherID = '.$_tableIdName.'.userID limit 1)\';
+                //$p_where[] = \'exists (select t2.id from tbl_example t2 where t2.teacherID = t1.userID limit 1)\';
 
         //根据权限不同，支持的筛选功能也可以不同
         switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
