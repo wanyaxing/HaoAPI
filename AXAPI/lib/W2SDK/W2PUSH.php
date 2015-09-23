@@ -46,9 +46,9 @@ class W2PUSH {
 			}
 			$push = new XingeApp(static::$API_KEY_ANDROID, static::$SECRET_KEY_ANDROID);
 		}
-		if (defined('IS_AX_DEBUG'))
+		if (function_exists('AX_DEBUG'))
 		{
-			print_r($push);
+			AX_DEBUG($push);
 		}
 		return $push;
 	}

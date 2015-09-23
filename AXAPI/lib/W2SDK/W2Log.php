@@ -49,6 +49,11 @@ class W2Log {
      * @param string 日志内容
      */
     private static function log($p_level, $p_logArgs, $p_showTrace=false){
+        if (!is_dir(W2Config::$LOG_PATH))
+        {
+            throw new Exception('日志目录不存在：'.W2Config::$LOG_PATH);
+            return false;
+        }
         $_logLevel = defined('LOG_LEVEL')?LOG_LEVEL:'info';
         $_fileName = null;
         if (!is_null(W2Config::$LOG_FILENAME)) {
