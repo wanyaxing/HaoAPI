@@ -48,6 +48,18 @@ class W2Time {
     }
 
     /**
+     * 将毫秒时间转化成字符串
+     * @param  int $p_time [description]
+     * @param  string $p_format [description]
+     * @return [string]           时间字符串
+     */
+    public static function microtimetostr($p_microtime=null,$p_format='Y-m-d H:i:s.u e')
+    {
+        if (is_null($p_microtime)){$p_microtime = microtime(true);}
+        return DateTime::createFromFormat('U.u', $p_microtime)->setTimeZone(new DateTimeZone(date_default_timezone_get()))->format($p_format);
+    }
+
+    /**
      * 将字符串转化成时间戳
      * @param  [string | int | DateTime] $p_time [description]
      * @return [int]         时间戳
