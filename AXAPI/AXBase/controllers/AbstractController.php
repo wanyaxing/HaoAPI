@@ -257,7 +257,7 @@ class AbstractController {
 
         if (count(array_keys($tmpModel->propertiesModified()))==0)
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'您没有作任何修改哦。');
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_CHANGE,'您没有作任何修改哦。');
         }
 
         if (method_exists($tmpModel,'setCreateTime') &&  $tmpModel->getCreateTime()==null )
