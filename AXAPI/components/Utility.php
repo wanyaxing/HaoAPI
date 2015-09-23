@@ -355,4 +355,40 @@ class Utility
 		}
 
     }
+
+}
+
+//-------------------全局方法-----------------------
+
+/** debug 直接打印日志 */
+function AX_DEBUG($p_info=null)
+{
+    if (defined('IS_AX_DEBUG') && !is_null($p_info))
+    {
+    	print("\n");
+        $_dbt = debug_backtrace();
+        foreach ($_dbt as $_i => $_d) {
+            if(!array_key_exists('file', $_d) || $_d['file']=='' || $_d['file']==__file__)
+            {
+                continue;
+            }
+            $_fileName = pathinfo($_d['file'],PATHINFO_BASENAME);
+            if ($_fileName == 'DBTool.php' || $_fileName == 'DBModel.php' || $_fileName == 'AbstractHandler.php' )
+            {
+            	continue;
+            }
+            printf('%s [%d] %s -> %s ' , W2Time::microtimetostr(null,'Y-m-d H:i:s.u') , $_d['line'],  $_fileName, $_d['function']);
+            break;
+        }
+        print(strlen($p_info)>100?" : \n":' : ');
+        if (is_string($p_info))
+        {
+	        print($p_info);
+        }
+        else
+        {
+        	var_export($p_info);
+        }
+        print("\n");
+    }
 }
