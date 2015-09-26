@@ -136,6 +136,10 @@ class Utility
 	                }
 
 				}
+				else
+				{
+					$p_userID = null;
+				}
 				static::setCurrentUserID($p_userID);
 			}
 		}
@@ -323,6 +327,9 @@ class Utility
 			//对这个字符串进行MD5加密，即可获得Signature
 			$tmpStr = md5( $tmpStr );
 
+			$isAuthed = true;//默认验证通过
+
+			//如果不通过，则返回调试信息。
 			if( $tmpStr != $_HEADERS['Signature'] ){
 				$isAuthed = array(
 					'status'=>false,
@@ -331,11 +338,7 @@ class Utility
 					'tmpArrMd5'=>$tmpStr,
 					);
 			}
-			else
-			{
-				$isAuthed = true;
-				// print('Success of auth');
-			}
+
 		}
 		else if (false)
 		{
@@ -377,7 +380,12 @@ function AX_DEBUG($p_info=null)
             {
             	continue;
             }
-            printf('%s [%d] %s -> %s ' , W2Time::microtimetostr(null,'Y-m-d H:i:s.u') , $_d['line'],  $_fileName, $_d['function']);
+            $_dFuc = $_d['function'];
+            if (in_array($_dFuc , [ 'loadModelList' , 'loadModelListByIds' , 'loadModelListById' , 'loadModelFirstInList' , 'saveModel', 'update', 'delete' , 'count', 'countAll' ] ) )
+            {
+            	continue;
+            }
+            printf('%s [%d] %s -> %s ' , W2Time::microtimetostr(null,'Y-m-d H:i:s.u') , $_d['line'],  $_fileName, $_dFuc);
             break;
         }
         print(strlen($p_info)>100?" : \n":' : ');
