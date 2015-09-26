@@ -36,4 +36,8 @@ class W2Config {
 	public static $UCPASS_TOKEN      = 'd6b63af5c800a8ab433782f2ee2cbf2e';
 	public static $UCPASS_APPID      = '1d19d3d36ef94dac81019061889a0f96';
 	public static $UCPASS_TEMPLATEID      = '11646';
+
+	public static $CACHE_HOST      = null;
+	public static $CACHE_PORT      = null;
+	public static $CACHE_INDEX      = null;
 }

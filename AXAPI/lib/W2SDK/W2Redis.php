@@ -13,6 +13,7 @@ class W2Redis {
     public static $CACHE_PORT  = null; 	//端口
     public static $CACHE_INDEX = null;	//数据库索引，一般是0-20
 
+    public static $_ax_connect = null;										  //缓存连接唯一实例
 
     public static $clearCachedKeyList        = array();                           //设定本次请求结束后需要清理的缓存key列表数组，当本次请求结束后，就去清理列表里 的 key缓存。
     public static $clearCachedKeyPoolList    = array();                           //设定本次请求结束后需要清理的缓存池列表数组，当本次请求结束后，就去清理列表里 的 缓存池里 的 key缓存。
@@ -21,7 +22,8 @@ class W2Redis {
     public static $canBeCachedTimeOut        = 600    ;                           //缓存设置：该缓存多久更新一次。单位：秒
     public static $canBeCachedKeyPoolList    = array();                           //设定所在缓存池列表数组，一个页面可以存到多个缓存池中，array()为空数组。
 
-    public static $_ax_connect = null;										  //缓存连接唯一实例
+    public static $cachedKeyGotList    = array();                           //记录本次请求中读取过的缓存key。
+
 
 
     /** 缓存工厂，获得缓存连接。 */
@@ -58,7 +60,8 @@ class W2Redis {
     {
         $memcached = self::memFactory();
         if (isset($memcached, $p_key)) {
-        	if (static::isCacheCanBeUsed($p_key))
+            static::cachedKeyGotListPush($p_key);//记录本次请求中取过的key
+        	if (static::isCacheCanBeUsed($p_key,$p_timeout))
         	{
                 //有可用的缓存，取出缓存给ta就是。
                 $_data = $_time = $memcached->get($p_key.'_data');
@@ -95,6 +98,7 @@ class W2Redis {
                 	)
                 {//不管
                         $memcached -> SETEX( $p_key.'_timelock',600, time()+120);//设定新的缓存锁，此位用户负责生成新的缓存，如果缓存失败，则两分钟后有人会重新触发。
+                        AX_DEBUG('缓存失效：'.$p_key);
                         return false;//return false的意思是说，你得请重新请求数据。
                 }
 
@@ -200,7 +204,7 @@ class W2Redis {
     /**
      * 存储缓存的变身，可以存储实例呢
      * @param  [type]  $p_key                   缓存key
-     * @param  integer $p_timeout               过期时间
+     * @param  object $p_obj               目标实例
      * @return [type]        [description]
      */
     public static function setObj($p_key,$p_obj){
@@ -208,7 +212,7 @@ class W2Redis {
     }
 
 
-    /** 在指定缓存池增加缓存key，所谓缓存池，其实是一个特殊数据的存储，其内容是N个缓存key，所以称之为池。 */
+    /** 在指定缓存池增加缓存key，所谓缓存池，其实是一个特殊数据的存储，其内容是N个缓存key，所以称之为池。其主要用于多个缓存共同触发更新。*/
     public static function addToCacheKeyPool($p_keyPool,$p_key,$p_expire=0)
     {
         $memcached = self::memFactory();
@@ -221,7 +225,7 @@ class W2Redis {
         }
     }
 
-    /** 重置缓存 */
+    /** 重置缓存 所谓重置缓存，就是设_timelock为1，并不是真的清理缓存，只有当下次下个用户请求对应的缓存数据的时候，才会覆盖更新缓存。（注意，是覆盖更新，如果有并发读取的情况，旧的缓存仍然会被用到哦）*/
     public static function resetCache($p_key)
     {
         $memcached = self::memFactory();
@@ -230,7 +234,7 @@ class W2Redis {
         }
     }
 
-    /** 重置指定缓存池里的所有key，如上所说，缓存池就是用来重置的。此处重置。一般是这样，我们将某个列表的缓存key放入列表中各元素的缓存池里，一旦某个元素更新，就主动重置其对应的缓存池，就可以达到列表类缓存的实时更新了。 */
+    /** 重置指定缓存池里的所有key，如上所说，缓存池就是用来重置的。此处重置。一般是这样，我们将某个列表的缓存放入列表中各元素独立的缓存池里，一旦某个元素更新，就主动重置其对应的独立缓存池，就可以达到列表类缓存的实时更新了。 */
     public static function resetCacheKeyPool($p_keyPool)
     {
         $memcached = self::memFactory();
@@ -245,7 +249,7 @@ class W2Redis {
     }
 
     /** 重置所有缓存，慎用。 */
-    public static function cacheEmpty()
+    public static function emptyCache()
     {
         // W2Log::debug($p_keyPool);
         $memcached = self::memFactory();
@@ -271,5 +275,26 @@ class W2Redis {
     {
         self::$canBeCachedKeyPoolList[]=$p_key;
     }
+
+    /** 进程级变量，记录本次请求过程中用过的缓存key */
+    public static function cachedKeyGotListPush($p_key)
+    {
+        self::$cachedKeyGotList[]=$p_key;
+    }
+
+    /** 在指定页面池增加缓存key，所谓页面池，其实是一个特殊数据的存储，其内容是N个缓存key，所以称之为池。其主要用于查询指定的页面。*/
+    public static function addToCachePagePool($p_pagePool,$p_key,$p_expire=0)
+    {
+        $memcached = self::memFactory();
+        if (isset($memcached,$p_pagePool, $p_key)) {
+            $memcached -> lpush( $p_pagePool.'_pagepool', $p_key );
+            if ($p_expire>0)
+            {
+                $memcached -> EXPIRE( $p_pagePool.'_pagepool', 3600 );
+            }
+        }
+    }
+
+    // public static function get
 
 }
