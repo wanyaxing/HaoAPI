@@ -348,8 +348,19 @@ class W2String {
         $htmlContent .= '</body> </html>';
         return $htmlContent;
     }
+
+
+    /**
+     * 判定给定文本是否文件地址，如果是文件，则取文件内容，如果不是文件，则返回文本本身。
+     * @param  string|path $p_string 文本或文件地址
+     * @return string           文本
+     */
+    public static function getContentsFromFileOrString($p_string)
+    {
+        if (file_exists($p_string))
+        {
+            return file_get_contents($p_string);
+        }
+        return $p_string;
+    }
 }
-
-
-
-?>
