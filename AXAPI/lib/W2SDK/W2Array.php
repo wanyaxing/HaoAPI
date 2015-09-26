@@ -86,5 +86,35 @@ class W2Array {
 		return static::minListInArray($p_array,$p_keyInList)[$p_keyInList];
 	}
 
+	/**
+	 * 将字典重组为key=value的字符串，排序后，连接到一起。
+	 * @param  array $p_array  数组
+	 * @return string          1=a&2=c&3=b
+	 */
+	public static function sortAndBuildQuery($p_array,$p_separator='&',$p_ignoreNULL = true)
+	{
+
+		$tmpArr = array();
+		foreach ($p_array as $_key => $_value) {
+			if ($p_ignoreNULL && $_value===null)
+			{
+				continue;
+			}
+			if (is_array($_value))
+			{
+				$_value = W2Array::sortAndBuildQuery($_value);
+			}
+			array_push($tmpArr, sprintf('%s=%s', $_key, $_value));
+		}
+
+		//对数组进行自然排序
+		sort($tmpArr, SORT_STRING);
+
+		//将排序后的数组组合成字符串
+		$tmpStr = implode($p_separator, $tmpArr );
+
+		return $tmpStr;
+	}
+
 
 }
