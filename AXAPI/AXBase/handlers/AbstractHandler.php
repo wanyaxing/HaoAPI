@@ -261,14 +261,38 @@ class AbstractHandler {
         $_objList = array();
         $_idsTmp = array();
         foreach ($p_ids as $_key => $p_id) {
+            //使用请求进程内缓存（仅单次请求内有效）
             if (static::cacheExsits($p_id)) {
                 $_objList[$p_id] = static::cacheLoad($p_id);
+                AX_DEBUG('使用请求内缓存：'.$p_id);
             }
             else if ($p_id>0)
             {
-                $_idsTmp[] = $p_id;
+                $w2CacheObj = null;
+                if (static::$isUseCache)
+                {
+                    //使用W2Cache全局内存型缓存（全局有效）
+                    $w2CacheKey = sprintf('ax_model_%s_id_%d',static::getTabelName(),$p_id);
+                    if (W2Cache::isCacheCanBeUsed($w2CacheKey))
+                    {
+                        $w2CacheObj = W2Cache::getObj($w2CacheKey);
+                    }
+                }
+                if (isset($w2CacheObj))
+                {
+                    static::cacheSave( $p_id , $w2CacheObj);
+                    $_objList[$p_id] = $w2CacheObj;
+                    AX_DEBUG('读取缓存成功：'.$w2CacheKey);
+                }
+                //没找到缓存，去请求。
+                else
+                {
+                    $_idsTmp[] = $p_id;
+                }
+
             }
         }
+
         if (count($_idsTmp)>0)
         {
             if (count($_idsTmp)>1)
@@ -291,8 +315,13 @@ class AbstractHandler {
             if (count($_data)>0) {
                 foreach ($_data as $_index=>$_d) {
                     $_obj = static::createModel($_d);
-                    static::cacheSave( $_obj->getId() , $_obj);
                     $_objList[$_obj->getId()] = $_obj;
+                    //存储到单次请求进程内缓存（其实就是变量）
+                    static::cacheSave( $_obj->getId() , $_obj);
+                    //存储到全局缓存（用redis等方法存起来）
+                    $w2CacheKey = sprintf('ax_model_%s_id_%d',static::getTabelName(),$_obj->getId());
+                    AX_DEBUG('更新缓存：'.$w2CacheKey);
+                    W2Cache::setObj($w2CacheKey,$_obj);
                 }
             }
         }
@@ -319,20 +348,145 @@ class AbstractHandler {
      */
     public static function loadModelList($p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
     {
-        $_dbModel = static::newDBModel();
-        if ($p_countThis != -1)
+/*
+        if ( static::$isUseCache )
         {
-            $_dbModel->isCountAll(true);
+            //尝试读取列表检索结果
+            $w2CacheKey = sprintf('ax_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
+                                        ,static::getTabelName()
+                                        ,static::getTabelIdName()
+                                        ,W2Array::sortAndBuildQuery($p_where)
+                                        ,$p_order
+                                        ,$p_pageIndex
+                                        ,$p_pageSize
+                                        ,$p_countThis
+                                        );
+            $w2CacheKey_pIds = $w2CacheKey.'_list';
+            if (W2Cache::isCacheCanBeUsed($w2CacheKey_pIds))
+            {
+                 $w2CacheObj_pIds = W2Cache::getObj($w2CacheKey_pIds);
+            }
+
+            //如果有结果，再尝试检索总数
+            if (isset($w2CacheObj_pIds))
+            {
+                if ($p_countThis != -1)
+                {
+                    $w2CacheKey_countThis = $w2CacheKey.'_count';
+                    if (W2Cache::isCacheCanBeUsed($w2CacheKey_countThis))
+                    {
+                        $w2CacheObj_countThis = W2Cache::getObj($w2CacheKey_countThis);
+                    }
+                }
+            }
         }
-        $_idsList = $_dbModel->where($p_where)->field(static::getTabelIdName())->limit($p_pageIndex,$p_pageSize)->order($p_order)->select();
-        if ($p_countThis != -1)
-        {
-            $p_countThis = $_dbModel->countAll();
+*/
+        //如果两个缓存任意一个没取成功，就重新取数据。
+        if (!isset($w2CacheObj_pIds) || ( $p_countThis != -1 && !isset($w2CacheObj_countThis) ) )
+        {//没有找到缓存，重新请求。
+            $_dbModel = static::newDBModel();
+            if ($p_countThis != -1)
+            {
+                $_dbModel->isCountAll(true);
+            }
+            $_idsList = $_dbModel->where($p_where)->field(static::getTabelIdName())->limit($p_pageIndex,$p_pageSize)->order($p_order)->select();
+            if ($p_countThis != -1)
+            {
+                $p_countThis = $_dbModel->countAll();
+            }
+            $_pIds = array();
+            foreach ($_idsList as $_idItem) {
+                $_pIds[] = $_idItem[static::getTabelIdName()];
+            }
+
+            // if (isset($w2CacheKey_pIds))
+            // {
+            //     W2Cache::setObj($w2CacheKey_pIds,$_pIds);
+            //     AX_DEBUG('更新缓存：'.$w2CacheKey_pIds);
+
+            //     if (isset($w2CacheKey_countThis))
+            //     {
+            //         W2Cache::setObj($w2CacheKey_countThis,$p_countThis);
+            //     }
+
+            //     foreach ($p_where as $_key => $_value) {
+            //         if ($_value===null)
+            //         {
+            //             continue;
+            //         }
+            //         if (is_string($_key) && in_array($_key,static::getTableDataKeys()))
+            //         {
+            //             $w2CacheKeyPool = sprintf('ax_pool_list_%s_key_%s_value_%s'
+            //                                 ,static::getTabelName()
+            //                                 ,$_key
+            //                                 ,$_value
+            //                                 );
+            //             W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_pIds);
+            //             AX_DEBUG('追加到缓存池：'.$w2CacheKeyPool);
+            //         }
+            //         else
+            //         {
+            //             if ($_key == 'joinList' && is_array($_value))
+            //             {
+            //                 foreach ($_value as $_join) {
+            //                     $_tblParams = explode(' ',trim($_join[0]));
+            //                     if (count($_tblParams)==2)
+            //                     {
+            //                         $_tbl = $_tblParams[0];
+            //                         $_tblT2 = $_tblParams[1];
+            //                     }
+            //                     foreach ($_join[1] as $_tblWhereKey => $_tblWhereValue) {
+            //                         if ((strpos($_tblWhereKey,$_tblT2)!==false) && (is_int($_tblWhereValue) || is_string($_tblWhereValue)) )
+            //                         {
+            //                             $_tblWhereKey = preg_replace('/^.*?'.$_tblT2.'\.([^\s]+).*/','$1',$_tblWhereKey);
+            //                             $w2CacheKeyPool = sprintf('ax_pool_list_%s_key_%s_value_%s'
+            //                                                 ,$_tbl
+            //                                                 ,$_tblWhereKey
+            //                                                 ,$_tblWhereValue
+            //                                                 );
+            //                             W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_pIds);
+            //                             AX_DEBUG('追加到额外缓存池：'.$w2CacheKeyPool);
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //             else if ( is_int($_key) && strpos($_value,'exists')!==false)
+            //             {
+            //                 $_tbl = preg_replace('/^[\s\S]*? from\s+?(\S+)\s+(\S+)\s[\s\S]+$/','$1',$_value);
+            //                 $_tblT2 = preg_replace('/^[\s\S]*? from\s+?(\S+)\s+(\S+)\s[\s\S]+$/','$2',$_value);
+            //                 AX_DEBUG('/'.$_tblT2.'\.(\S+)\s*=\s*([^\s\)]+)/');
+            //                 preg_match_all('/'.$_tblT2.'\.(\S+)\s*=\s*([^\s\)]+)/',$_value,$matches,PREG_SET_ORDER);
+            //                 foreach ($matches as $match) {
+            //                     $_tblWhereKey = $match[1];
+            //                     $_tblWhereValue = trim($match[2],'\'');
+            //                     if (!preg_match('/[^\s\.]\.[^\s\.]/',$_tblWhereValue))
+            //                     {
+            //                         $w2CacheKeyPool = sprintf('ax_pool_list_%s_key_%s_value_%s'
+            //                                             ,$_tbl
+            //                                             ,$_tblWhereKey
+            //                                             ,$_tblWhereValue
+            //                                             );
+            //                         W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_pIds);
+            //                         AX_DEBUG('追加到额外缓存池：'.$w2CacheKeyPool);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         }
-        $_pIds = array();
-        foreach ($_idsList as $_idItem) {
-            $_pIds[] = $_idItem[static::getTabelIdName()];
-        }
+        // else
+        // {
+        //     AX_DEBUG('读取缓存成功：'.$w2CacheKey_pIds);
+        //     if (isset($w2CacheObj_pIds))
+        //     {
+        //         $_pIds = $w2CacheObj_pIds;
+        //     }
+        //     if (isset($w2CacheObj_countThis))
+        //     {
+        //         $p_countThis = $w2CacheObj_countThis;
+        //     }
+        // }
         return static::loadModelListByIds($_pIds);
     }
 
@@ -357,23 +511,49 @@ class AbstractHandler {
             {
                 continue;
             }
-            if ($_key!='id' && $_key!=static::getTabelIdName() && in_array($_key, $_dbModel->getMeta())  )
+            if ( in_array($_key, static::getTableDataKeys() )  )
             {
-                $_updateData[$_key] = $_value;
+                if ($_key!='id' && $_key!=static::getTabelIdName() )
+                {
+                    $_updateData[$_key] = $_value;
+                }
+
+                $w2CacheKeyPool = sprintf('ax_pool_list_%s_key_%s_value_%s'
+                                    ,static::getTabelName()
+                                    ,$_key
+                                    ,$_value
+                                    );
+                W2Cache::resetCacheKeyPool($w2CacheKeyPool);
+                AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
+
+                if ($p_model->properyOriginal($_key)!=null)
+                {
+                    $w2CacheKeyPool = sprintf('ax_pool_list_%s_key_%s_value_%s'
+                                        ,static::getTabelName()
+                                        ,$_key
+                                        ,$p_model->properyOriginal($_key)
+                                        );
+                    W2Cache::resetCacheKeyPool($w2CacheKeyPool);
+                    AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
+                }
             }
         }
 
         $_modelId = null;
         if ($p_model->getId()>0)
         {
+            /** 更新数据 */
             $_dbModel -> where(array(static::getTabelIdName() => $p_model->getId()))
                       -> limit(1)
                       ->update($_updateData);
-            static::cacheRemove($p_model->getId());
             $_modelId = $p_model->getId();
+
+            //更新请求缓存
+            static::cacheRemove($p_model->getId());
         }
         else
         {
+            /** 新数据 */
             $_dbModel -> insert($_updateData);
             $_modelId = $_dbModel->init()
                         ->where($_updateData)->order(sprintf('%s desc',static::getTabelIdName()))
@@ -381,6 +561,11 @@ class AbstractHandler {
                         ->selectSingle();
             $_modelId = is_array($_modelId)?$_modelId[static::getTabelIdName()]:0;
         }
+
+        $w2CacheKey = sprintf('ax_model_%s_id_%d',static::getTabelName(),$_modelId);
+        W2Cache::resetCache($w2CacheKey);
+        AX_DEBUG('更新缓存：'.$w2CacheKey);
+
 
         return static::loadModelById($_modelId);
     }
