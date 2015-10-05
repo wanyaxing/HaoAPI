@@ -26,10 +26,10 @@ require_once(AXAPI_ROOT_PATH.'/components/requireme.php');
 // 数据库配置
 if (!defined('DB_HOST'))
 {
-    define('DB_HOST', '127.0.0.1');
-    define('DB_USER', 'apihaoye');
-    define('DB_PASSWORD', 'weiohaoyeI738');
+    define('DB_HOST'    , '127.0.0.1');
     define('DB_DATABASE', 'dbhaoye');
+    define('DB_USER'    , 'apihaoye');
+    define('DB_PASSWORD', 'weiohaoyeI738');
 }
 
 
