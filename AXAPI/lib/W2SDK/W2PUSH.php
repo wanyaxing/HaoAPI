@@ -70,7 +70,7 @@ class W2PUSH {
 		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
 		// var_export($device_type);
 		$ret = $push->QueryTokenTags($p_deviceToken);
-		if (is_array($ret) && array_key_exists('result', $ret))
+		if (is_array($ret) && array_key_exists('result', $ret)&& array_key_exists('tags', $ret['result']))
 		{
 			return $ret['result']['tags'];
 		}
