@@ -1,5 +1,22 @@
 
 apiList[apiList.length] = {
+        'title':'接口工具:Say Hello'
+        ,'desc':''
+        ,'time':'2015-09-26 21:29:16'
+        ,'action':'/axapi/SayHello'
+        ,'method':'get'
+        ,'request':[
+           { 'key':'name',       'type':'string',  'title':'name',       'desc':'',    'required':false,  'test-value':'wanyaxing'}
+          ,{ 'key':'password',   'type':'md5',     'title':'password',   'desc':'',    'required':false,  'test-value':'123456'}
+          ,{ 'key':'avatar',     'type':'file',    'title':'avatar',     'desc':'',    'required':false,  'test-value':''}
+          ,{ 'key':'photos[]',   'type':'file',    'title':'avatar',     'desc':'',    'required':false,  'test-value':''}
+          ,{ 'key':'age',        'type':'int',     'title':'age',        'desc':'',    'required':false,  'test-value':'29'}
+          ,{ 'key':'content',    'type':'string',  'title':'content',    'desc':'',    'required':false,  'test-value':'see more detail , https://github.com/wanyaxing/apitest.php'
+          }
+        ]
+      };
+
+apiList[apiList.length] = {
         'title':'接口工具:查看日志（限管理员）'
         ,'desc':''
         ,'time':'2015-09-26 21:29:16'

@@ -219,54 +219,13 @@ var apiList = [
         ,"desc":''
         ,"action":'index.php'
         ,"method":"post"
-        ,"request":[
-          {
-            "key":'name'
-            ,"type":'string'
-            ,"title":'name'
-            ,"desc":''
-            ,"required":true
-            ,"test-value":"wanyaxing"
-          }
-          ,{
-            "key":'password'
-            ,"type":'md5'
-            ,"title":'password'
-            ,"desc":''
-            ,"required":true
-            ,"test-value":"123456"
-          }
-          ,{
-            "key":'avatar'
-            ,"type":'file'
-            ,"title":'avatar'
-            ,"desc":''
-            ,"required":true
-            ,"test-value":""
-          }
-          ,{
-            "key":'photos[]'
-            ,"type":'file'
-            ,"title":'avatar'
-            ,"desc":''
-            ,"required":true
-            ,"test-value":""
-          }
-          ,{
-            "key":'age'
-            ,"type":'int'
-            ,"title":'age'
-            ,"desc":''
-            ,"required":true
-            ,"test-value":"29"
-          }
-          ,{
-            "key":'content'
-            ,"type":'string'
-            ,"title":'content'
-            ,"desc":''
-            ,"required":true
-            ,"test-value":"see more detail , https://github.com/wanyaxing/apitest.php"
+        ,'request':[
+           { 'key':'name',       'type':'string',  'title':'name',       'desc':'',    'required':false,  'test-value':'wanyaxing'}
+          ,{ 'key':'password',   'type':'md5',     'title':'password',   'desc':'',    'required':false,  'test-value':'123456'}
+          ,{ 'key':'avatar',     'type':'file',    'title':'avatar',     'desc':'',    'required':false,  'test-value':''}
+          ,{ 'key':'photos[]',   'type':'file',    'title':'avatar',     'desc':'',    'required':false,  'test-value':''}
+          ,{ 'key':'age',        'type':'int',     'title':'age',        'desc':'',    'required':false,  'test-value':'29'}
+          ,{ 'key':'content',    'type':'string',  'title':'content',    'desc':'',    'required':false,  'test-value':'see more detail , https://github.com/wanyaxing/apitest.php'
           }
         ]
       }

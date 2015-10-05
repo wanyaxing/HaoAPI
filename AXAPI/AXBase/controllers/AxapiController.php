@@ -8,6 +8,11 @@
  */
 class AxapiController extends AbstractController{
 
+    public static function actionSayHello()
+    {
+        return Utility::getArrayForResults(RUNTIME_CODE_OK,'hello',array('$_GET'=>$_GET,'$_POST'=>$_POST,'$_FILES'=>$_FILES,'getallheaders()'=>getallheaders(),'$_SERVER'=>$_SERVER));
+    }
+
     public static function actionLoadLogList()
     {
         switch ($auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null))
@@ -90,4 +95,5 @@ class AxapiController extends AbstractController{
 
         return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$result);
     }
+
 }
