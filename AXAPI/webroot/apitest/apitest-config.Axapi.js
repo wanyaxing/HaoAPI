@@ -2,7 +2,7 @@
 apiList[apiList.length] = {
         'title':'接口工具:Say Hello'
         ,'desc':''
-        ,'time':'2015-09-26 21:29:16'
+        ,'time':'2015-10-05 17:37:10'
         ,'action':'/axapi/SayHello'
         ,'method':'get'
         ,'request':[
