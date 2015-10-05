@@ -158,6 +158,10 @@ class Utility
 
 	public static function getUserByID($p_userID)
 	{
+		if ($p_userID==0)
+		{
+			return null;
+		}
 		$_clsHandler = USERHANDLER_NAME;
 		return $_clsHandler::loadModelById($p_userID);
 	}

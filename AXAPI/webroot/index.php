@@ -108,7 +108,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
 
     //接口格式校验
     $results = Utility::getAuthForApiRequest();
-    if (true || $results['errorCode']==RUNTIME_CODE_OK)//debug for test
+    if ( $results['errorCode']==RUNTIME_CODE_OK)
     {
         //调用对应接口方法
         try {
