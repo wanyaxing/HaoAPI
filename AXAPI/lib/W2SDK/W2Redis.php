@@ -31,31 +31,34 @@ class W2Redis {
     /** 缓存工厂，获得缓存连接。 */
     public static function memFactory(){
         if (static::$_ax_connect===null && class_exists('Redis') ) {
-            static::$_ax_connect = new Redis();
-			if (static::$CACHE_HOST==null)
-			{
-				static::$CACHE_HOST    = W2Config::$CACHE_HOST;
-				static::$CACHE_PORT    = W2Config::$CACHE_PORT;
+            if (static::$CACHE_HOST==null)
+            {
+                static::$CACHE_HOST    = W2Config::$CACHE_HOST;
+                static::$CACHE_PORT    = W2Config::$CACHE_PORT;
                 static::$CACHE_INDEX   = W2Config::$CACHE_INDEX;
-				static::$CACHE_AUTH    = W2Config::$CACHE_AUTH;
-			}
-            $_status = static::$_ax_connect->connect(static::$CACHE_HOST,static::$CACHE_PORT);
-            if ($_status)
-            {
-                if (!is_null(static::$CACHE_AUTH))
-                {
-                    $authResult = static::$_ax_connect->auth(static::$CACHE_AUTH);
-                    if ($authResult!='OK')
-                    {
-                        static::$_ax_connect = false;
-                        throw new Exception("缓存服务器授权失败，请管理员检查授权设定是否正确。");
-                    }
-                }
-                static::$_ax_connect->select(static::$CACHE_INDEX);
+                static::$CACHE_AUTH    = W2Config::$CACHE_AUTH;
             }
-            else
+            if (static::$CACHE_HOST!=null)
             {
-                static::$_ax_connect = null;
+                static::$_ax_connect = new Redis();
+                $_status = static::$_ax_connect->connect(static::$CACHE_HOST,static::$CACHE_PORT);
+                if ($_status)
+                {
+                    if (!is_null(static::$CACHE_AUTH))
+                    {
+                        $authResult = static::$_ax_connect->auth(static::$CACHE_AUTH);
+                        if ($authResult!='OK')
+                        {
+                            static::$_ax_connect = false;
+                            throw new Exception("缓存服务器授权失败，请管理员检查授权设定是否正确。");
+                        }
+                    }
+                    static::$_ax_connect->select(static::$CACHE_INDEX);
+                }
+                else
+                {
+                    static::$_ax_connect = false;
+                }
             }
         }
         if (static::$_ax_connect===false)
