@@ -11,7 +11,9 @@ class W2Cache extends W2Redis{
 	// 为啥要重写以下的静态变量，因为继承来的类，静态变量如果不重新声明，则会共用父类的静态变量。
     public static $CACHE_HOST  = null; 	//服务器
     public static $CACHE_PORT  = null; 	//端口
-    public static $CACHE_INDEX = null;	//数据库索引，一般是redis服务器用到0-20
+    public static $CACHE_INDEX = null;  //数据库索引，一般是redis服务器用到0-20
+
+    public static $CACHE_AUTH = null;	//密码，如果需要的话。
 
 
     public static $clearCachedKeyList        = array();                           //设定本次请求结束后需要清理的缓存key列表数组，当本次请求结束后，就去清理列表里 的 key缓存。

@@ -40,4 +40,5 @@ class W2Config {
 	public static $CACHE_HOST      = null;
 	public static $CACHE_PORT      = null;
 	public static $CACHE_INDEX      = null;
+	public static $CACHE_AUTH      = null;
 }

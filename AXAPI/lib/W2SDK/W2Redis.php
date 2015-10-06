@@ -13,6 +13,8 @@ class W2Redis {
     public static $CACHE_PORT  = null; 	//端口
     public static $CACHE_INDEX = null;	//数据库索引，一般是0-20
 
+    public static $CACHE_AUTH = null;   //密码，如果需要的话。
+
     public static $_ax_connect = null;										  //缓存连接唯一实例
 
     public static $clearCachedKeyList        = array();                           //设定本次请求结束后需要清理的缓存key列表数组，当本次请求结束后，就去清理列表里 的 key缓存。
@@ -28,25 +30,39 @@ class W2Redis {
 
     /** 缓存工厂，获得缓存连接。 */
     public static function memFactory(){
-        if (!isset(self::$_ax_connect) && class_exists('Redis') ) {
-            self::$_ax_connect = new Redis();
+        if (static::$_ax_connect===null && class_exists('Redis') ) {
+            static::$_ax_connect = new Redis();
 			if (static::$CACHE_HOST==null)
 			{
 				static::$CACHE_HOST    = W2Config::$CACHE_HOST;
 				static::$CACHE_PORT    = W2Config::$CACHE_PORT;
-				static::$CACHE_INDEX   = W2Config::$CACHE_INDEX;
+                static::$CACHE_INDEX   = W2Config::$CACHE_INDEX;
+				static::$CACHE_AUTH    = W2Config::$CACHE_AUTH;
 			}
-            $_status = self::$_ax_connect->connect(static::$CACHE_HOST,static::$CACHE_PORT);
+            $_status = static::$_ax_connect->connect(static::$CACHE_HOST,static::$CACHE_PORT);
             if ($_status)
             {
-                self::$_ax_connect->select(static::$CACHE_INDEX);
+                if (!is_null(static::$CACHE_AUTH))
+                {
+                    $authResult = static::$_ax_connect->auth(static::$CACHE_AUTH);
+                    if ($authResult!='OK')
+                    {
+                        static::$_ax_connect = false;
+                        throw new Exception("缓存服务器授权失败，请管理员检查授权设定是否正确。");
+                    }
+                }
+                static::$_ax_connect->select(static::$CACHE_INDEX);
             }
             else
             {
-                self::$_ax_connect = null;
+                static::$_ax_connect = null;
             }
         }
-        return self::$_ax_connect;
+        if (static::$_ax_connect===false)
+        {
+            return null;
+        }
+        return static::$_ax_connect;
     }
 
 
@@ -58,7 +74,7 @@ class W2Redis {
      */
     public static function getCache($p_key,$p_timeout=300)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached, $p_key)) {
             static::cachedKeyGotListPush($p_key);//记录本次请求中取过的key
         	if (static::isCacheCanBeUsed($p_key,$p_timeout))
@@ -82,7 +98,7 @@ class W2Redis {
      */
     public static function isCacheCanBeUsed($p_key,$p_timeout=300)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached, $p_key)) {
             $_time = $memcached->get($p_key.'_time');
             if ($_time!==false){
@@ -117,7 +133,7 @@ class W2Redis {
      */
     public static function isModified($p_key,&$HTTP_IF_MODIFIED_SINCE=null,&$HTTP_IF_NONE_MATCH=null)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached, $p_key)) {
             $_time = $memcached->get($p_key.'_time');
             if ($_time!==false){
@@ -175,7 +191,7 @@ class W2Redis {
      * @return null
      */
     public static function setCache($p_key,$buffer){
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached, $p_key)) {
             $_time = time();
             $memcached -> SETEX($p_key.'_data',3600,$buffer);
@@ -215,7 +231,7 @@ class W2Redis {
     /** 在指定缓存池增加缓存key，所谓缓存池，其实是一个特殊数据的存储，其内容是N个缓存key，所以称之为池。其主要用于多个缓存共同触发更新。*/
     public static function addToCacheKeyPool($p_keyPool,$p_key,$p_expire=0)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached,$p_keyPool, $p_key)) {
             $memcached -> lpush( $p_keyPool.'_keypool', $p_key );
             if ($p_expire>0)
@@ -228,7 +244,7 @@ class W2Redis {
     /** 重置缓存 所谓重置缓存，就是设_timelock为1，并不是真的清理缓存，只有当下次下个用户请求对应的缓存数据的时候，才会覆盖更新缓存。（注意，是覆盖更新，如果有并发读取的情况，旧的缓存仍然会被用到哦）*/
     public static function resetCache($p_key)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached, $p_key)) {
             $memcached -> SETEX( $p_key.'_timelock',600, 1 );
         }
@@ -237,11 +253,11 @@ class W2Redis {
     /** 重置指定缓存池里的所有key，如上所说，缓存池就是用来重置的。此处重置。一般是这样，我们将某个列表的缓存放入列表中各元素独立的缓存池里，一旦某个元素更新，就主动重置其对应的独立缓存池，就可以达到列表类缓存的实时更新了。 */
     public static function resetCacheKeyPool($p_keyPool)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached, $p_keyPool)) {
             $keysList = $memcached -> lGetRange( $p_keyPool.'_keypool',0,-1);
             foreach ($keysList as $_key => $p_key) {
-                self::resetCache($p_key);
+                static::resetCache($p_key);
             }
             $memcached -> del( $p_keyPool.'_keypool');
         }
@@ -252,7 +268,7 @@ class W2Redis {
     public static function emptyCache()
     {
         // W2Log::debug($p_keyPool);
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         // $memcached -> FLUSHALL();
         $memcached -> FLUSHDB();//清空当前数据库
         return null;
@@ -261,31 +277,31 @@ class W2Redis {
     /** 进程级变量，追加临时存储需要清理的缓存池key，页面请求成功完成后统一清理，一般用于数据更新后清理对应的缓存池。（需要另写方法辅助） */
     public static function clearCachedKeyPoolListPush($p_key)
     {
-        self::$clearCachedKeyPoolList[]=$p_key;
+        static::$clearCachedKeyPoolList[]=$p_key;
     }
 
     /** 进程级变量，追加临时存储需要清理的缓存key，页面请求成功完成后统一清理，一般用于数据更新后清理对应的缓存。（需要另写方法辅助） */
     public static function clearCachedKeyListPush($p_key)
     {
-        self::$clearCachedKeyList[]=$p_key;
+        static::$clearCachedKeyList[]=$p_key;
     }
 
     /** 进程级变量，追加临时存储需要备案的缓存池key，页面请求成功完成后统一将页面key在这些缓存池中备案。（需要另写方法辅助） */
     public static function canBeCachedKeyPoolListPush($p_key)
     {
-        self::$canBeCachedKeyPoolList[]=$p_key;
+        static::$canBeCachedKeyPoolList[]=$p_key;
     }
 
     /** 进程级变量，记录本次请求过程中用过的缓存key */
     public static function cachedKeyGotListPush($p_key)
     {
-        self::$cachedKeyGotList[]=$p_key;
+        static::$cachedKeyGotList[]=$p_key;
     }
 
     /** 在指定页面池增加缓存key，所谓页面池，其实是一个特殊数据的存储，其内容是N个缓存key，所以称之为池。其主要用于查询指定的页面。*/
     public static function addToCachePagePool($p_pagePool,$p_key,$p_expire=0)
     {
-        $memcached = self::memFactory();
+        $memcached = static::memFactory();
         if (isset($memcached,$p_pagePool, $p_key)) {
             $memcached -> lpush( $p_pagePool.'_pagepool', $p_key );
             if ($p_expire>0)
