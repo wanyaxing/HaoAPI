@@ -562,10 +562,7 @@ class AbstractHandler {
             $_modelId = is_array($_modelId)?$_modelId[static::getTabelIdName()]:0;
         }
 
-        $w2CacheKey = sprintf('ax_model_%s_id_%d',static::getTabelName(),$_modelId);
-        W2Cache::resetCache($w2CacheKey);
-        AX_DEBUG('更新缓存：'.$w2CacheKey);
-
+        static::resetW2CacheByModelId($_modelId);//更新缓存
 
         return static::loadModelById($_modelId);
     }
@@ -579,10 +576,29 @@ class AbstractHandler {
     public static function update($p_values,$p_where=array())
     {
         $_dbModel = static::newDBModel();
-        return $_dbModel ->update($p_values,$p_where);
+        $result = $_dbModel ->update($p_values,$p_where);
+        if (isset($p_where['id']))
+        {
+            static::resetW2CacheByModelId($p_where['id']);//更新缓存
+        }
+        return $result ;
     }
 
 
+    /**
+     * 更新缓存W2Cache
+     * @param  int $_modelId [description]
+     * @return [type]           [description]
+     */
+    public static function resetW2CacheByModelId($_modelId)
+    {
+        if ($_modelId>0)
+        {
+            $w2CacheKey = sprintf('ax_model_%s_id_%d',static::getTabelName(),$_modelId);
+            W2Cache::resetCache($w2CacheKey);
+            AX_DEBUG('更新缓存：'.$w2CacheKey);
+        }
+    }
     // /**
     //  * 来从数据库中删除对象实例
     //  * @param  object $p_model 对应的model 实例
