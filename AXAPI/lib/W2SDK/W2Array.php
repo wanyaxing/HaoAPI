@@ -116,5 +116,14 @@ class W2Array {
 		return $tmpStr;
 	}
 
+	/**
+	 * 判断数组是否是字典
+	 * @param  array  $p_array   数组变量
+	 * @return boolean          [description]
+	 */
+	public static function isList($p_array)
+	{
+		return is_array($p_array) && (array_keys($p_array) !== array_keys(array_keys($p_array)));
+	}
 
 }

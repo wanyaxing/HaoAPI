@@ -59,6 +59,21 @@ class W2Web {
         curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);
 
         if (isset($p_header)) {
+            if (W2Array::isList($p_header))
+            {//将字典型的$p_header转换成字符串组成的数组。
+                $_headerData = array();
+                foreach ($p_header as $key => $value) {
+                    if (!is_int($key))
+                    {
+                        $_headerData[] = sprintf('%s:%s', $key, $value);
+                    }
+                    else
+                    {
+                        $_headerData[] = $value;
+                    }
+                }
+                $p_header = $_headerData;
+            }
             curl_setopt($_curl, CURLOPT_HTTPHEADER, $p_header);
         }
         if (isset($p_timeout)) {
@@ -87,6 +102,7 @@ class W2Web {
         }
         curl_close($_curl);
 
+        if (function_exists('AX_DEBUG')){AX_DEBUG('curl');}
         if (defined('IS_AX_DEBUG'))
         {
             print("\n");var_export($p_url);
