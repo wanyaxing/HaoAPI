@@ -138,9 +138,9 @@ class AbstractController {
 
     protected static function loadList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,&$p_countThis=-1,$isDetail = false)
     {
-        if (count($_POST)>0)
+        if ( $_SERVER['REQUEST_METHOD'] != 'GET' )
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处不接受POST数据。');
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处只接受POST数据。');
         }
         if ($p_where===null)
         {
@@ -183,9 +183,9 @@ class AbstractController {
 
     protected static function aList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,$p_countThis=-1,$isDetail = false)
     {
-        if (count($_POST)>0)
+        if ($_SERVER['REQUEST_METHOD'] != 'GET' )
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处不接受POST数据。');
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处只接受GET数据。');
         }
         if ($p_where===null)
         {
@@ -249,9 +249,9 @@ class AbstractController {
     //保存
     protected static function save($tmpModel,$isAdd=false)
     {
-        if (count($_POST) == 0)
+        if ($_SERVER['REQUEST_METHOD'] != 'POST' )
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处不接受GET数据。');
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处只接受POST数据。');
         }
         $_clsHandler = static::getHandlerName();
 
