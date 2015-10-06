@@ -590,11 +590,15 @@ class AbstractHandler {
      * @param  int $_modelId [description]
      * @return [type]           [description]
      */
-    public static function resetW2CacheByModelId($_modelId)
+    public static function resetW2CacheByModelId($_modelId,$_tableName = null)
     {
         if ($_modelId>0)
         {
-            $w2CacheKey = sprintf('ax_model_%s_id_%d',static::getTabelName(),$_modelId);
+            if ($_tableName==null)
+            {
+                $_tableName = static::getTabelName();
+            }
+            $w2CacheKey = sprintf('ax_model_%s_id_%d',$_tableName,$_modelId);
             W2Cache::resetCache($w2CacheKey);
             AX_DEBUG('更新缓存：'.$w2CacheKey);
         }
