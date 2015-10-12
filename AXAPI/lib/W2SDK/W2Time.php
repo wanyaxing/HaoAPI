@@ -21,9 +21,9 @@ class W2Time {
             $p_time = time();
         }
         $time = null;
-        if (is_int($p_time))
+        if (W2String::is_int($p_time))
         {
-            $time = strtotime(date('Y-m-d H:i:s',$p_time));
+            $time = intval($p_time);
         }
         else if (is_string($p_time))
         {

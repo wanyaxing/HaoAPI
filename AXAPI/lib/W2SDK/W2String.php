@@ -128,6 +128,17 @@ class W2String {
         return (preg_match('/^1[34578]\d{9}$/',$p_str))?true:false;
     }
 
+
+    /**
+     * 目标值是否数字（或数字组成的字符串）
+     * @param  int|string  $_v [description]
+     * @return boolean      [description]
+     */
+    public static function is_int($_v)
+    {
+        return is_int($_v) || (strval(intval($_v))===$_v);
+    }
+
     /**
      * 构建加密字符串
      * @param string 原字符串
