@@ -23,6 +23,11 @@ class W2Time {
         $time = null;
         if (W2String::is_int($p_time))
         {
+            if (strlen($p_time)==13)
+            {
+                $p_time = substr($p_time,0,11);
+            }
+            if (defined('IS_AX_DEBUG')){print("\n");print(W2Time::microtimetostr());print("\n");var_export($p_time);print(strlen($p_time));print("\n");}
             $time = intval($p_time);
         }
         else if (is_string($p_time))
