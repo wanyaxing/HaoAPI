@@ -699,6 +699,7 @@ class AbstractHandler {
             {//只有GET请求才会使用缓存。为安全计，POST请求就耗点性能吧。
                 if ( !( Utility::getCurrentUserID()>0 && preg_match('/userID.{0,10}'.Utility::getCurrentUserID().'/',$sql) ) )
                 {
+                    AX_DEBUG('读取缓存成功：'.$w2CacheKey);
                     return W2Cache::getObj($w2CacheKey);
                 }
             }
