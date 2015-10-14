@@ -296,6 +296,20 @@ class AbstractController {
             return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'该接口没有对应数据表哦。');
         }
         $columns = $handlerlName::getTableColumns();
-        return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$columns);
+        $result = array();
+        foreach ($columns as $column) {
+            $result[] = array(
+                    'Field'     =>$column['Field']
+                    ,'Comment'   =>$column['Comment']
+                    ,'Type'      =>$column['Type']
+                    ,'Collation' =>$column['Collation']
+                    ,'Null'      =>$column['Null']
+                    ,'Key'       =>$column['Key']
+                    ,'Default'   =>$column['Default']
+                    ,'Extra'     =>$column['Extra']
+                    // ,'Privileges'=>$column['Privileges']
+                );
+        }
+        return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$result);
     }
 }
