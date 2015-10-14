@@ -107,12 +107,16 @@ class Utility
 			{
 				$_clsHandler = USERHANDLER_NAME;
 				$tmpModel =  $_clsHandler::loadModelById($p_userID);
-				if (is_object($tmpModel) && W2Time::getTimeBetweenDateTime($tmpModel->getLastLoginTime())<-60*5)
+				if (is_object($tmpModel))
 				{
-					if (method_exists($tmpModel,'setLastLoginTime'))
-					{
-						$tmpModel->setLastLoginTime(W2Time::timetostr());
-						$tmpModel = $_clsHandler::saveModel($tmpModel);
+					if (method_exists($tmpModel,'getLastPasswordTime'))
+					{//通过比较用户的最后一次密码修改时间，来确定当前登录用户是否是密码修改之后登录的用户，如果不是，则拒绝承认。
+						if (!is_null($tmpModel->getLastPasswordTime()) && W2Time::getTimeBetweenDateTime(Utility::getHeaderValue('Logintime'),$tmpModel->getLastPasswordTime())<0)
+						{
+							$tmpModel = null;
+							static::setCurrentUserID(false);
+							throw new Exception("您的登录信息已经失效，请重新登录。",RUNTIME_CODE_ERROR_NOT_USER);
+						}
 					}
 				}
 				if (is_object($tmpModel))
@@ -128,15 +132,25 @@ class Utility
 				                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'禁言用户');
 				                break;
 				            case STATUS_DISABLED: //封号
-				            	$p_userID = null;
+				            	$tmpModel = null;
 				                break;
 				            default:
 				                break;
 				        }
 	                }
-
 				}
-				else
+				if (is_object($tmpModel))
+				{
+					if (method_exists($tmpModel,'setLastLoginTime'))
+					{
+						if (W2Time::getTimeBetweenDateTime($tmpModel->getLastLoginTime())<-60*5)
+						{
+							$tmpModel->setLastLoginTime(W2Time::timetostr());
+							$tmpModel = $_clsHandler::saveModel($tmpModel);
+						}
+					}
+				}
+				if (!is_object($tmpModel))
 				{
 					$p_userID = null;
 				}
@@ -385,16 +399,16 @@ function AX_DEBUG($p_info=null)
             	continue;
             }
             $_dFuc = $_d['function'];
-            if (in_array($_dFuc , [ 'loadModelList' , 'loadModelListByIds' , 'loadModelListById' , 'loadModelFirstInList' , 'saveModel', 'update', 'delete' , 'count', 'countAll' ] ) )
-            {
-            	continue;
-            }
+            // if (in_array($_dFuc , [ 'loadModelList' , 'loadModelListByIds' , 'loadModelListById' , 'loadModelFirstInList' , 'saveModel', 'update', 'delete' , 'count', 'countAll' ] ) )
+            // {
+            // 	continue;
+            // }
             printf('%s [%d] %s -> %s ' , W2Time::microtimetostr(null,'Y-m-d H:i:s.u') , $_d['line'],  $_fileName, $_dFuc);
             break;
         }
-        print(strlen($p_info)>100?" : \n":' : ');
         if (is_string($p_info))
         {
+	        print(strlen($p_info)>100?" : \n":' : ');
 	        print($p_info);
         }
         else
