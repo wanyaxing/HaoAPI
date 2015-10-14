@@ -278,4 +278,24 @@ class AbstractController {
             return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DB,'数据库异常',$savedModel);
         }
     }
+
+    //查看对应的数据表的信息
+    public static function actionColumns()
+    {
+        switch ($auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'columns',null))
+        {
+            case 'admin'   : //有管理权限
+                break;
+            default :
+                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'您没有权限执行该操作');
+                break;
+        }
+        $handlerlName = static::$handlerlName;
+        if (!class_exists($handlerlName))
+        {
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'该接口没有对应数据表哦。');
+        }
+        $columns = $handlerlName::getTableColumns();
+        return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$columns);
+    }
 }
