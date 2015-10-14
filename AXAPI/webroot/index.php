@@ -116,7 +116,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
             $method = new ReflectionMethod($apiController.'Controller', 'action'.$apiAction);
             $results = $method->invoke(null,0);
         } catch (Exception $e) {
-            $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_UNKNOWN,$e->getMessage(),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''):null);
+            $results = Utility::getArrayForResults($e->getCode()==0?RUNTIME_CODE_ERROR_UNKNOWN:$e->getCode(),$e->getMessage(),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''):null);
         }
     }
 
