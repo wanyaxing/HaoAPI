@@ -52,6 +52,8 @@ function getValueInArgv($argv_key)
     return null;
 }
 
+$noAllowKeyInMysql = ['add','all','alter','analyze','and','as','asc','asensitive','before','between','bigint','binary','blob','both','by','call','cascade','case','change','char','character','check','collate','column','condition','connection','constraint','continue','convert','create','cross','current_date','current_time','current_timestamp','current_user','cursor','database','databases','day_hour','day_microsecond','day_minute','day_second','dec','decimal','declare','default','delayed','delete','desc','describe','deterministic','distinct','distinctrow','div','double','drop','dual','each','else','elseif','enclosed','escaped','exists','exit','explain','false','fetch','float','float4','float8','for','force','foreign','from','fulltext','goto','grant','group','having','high_priority','hour_microsecond','hour_minute','hour_second','if','ignore','in','index','infile','inner','inout','insensitive','insert','int','int1','int2','int3','int4','int8','integer','interval','into','is','iterate','join','key','keys','kill','label','leading','leave','left','like','limit','linear','lines','load','localtime','localtimestamp','lock','long','longblob','longtext','loop','low_priority','match','mediumblob','mediumint','mediumtext','middleint','minute_microsecond','minute_second','mod','modifies','natural','not','no_write_to_binlog','null','numeric','on','optimize','option','optionally','or','order','out','outer','outfile','precision','primary','procedure','purge','raid0','range','read','reads','real','references','regexp','release','rename','repeat','replace','require','restrict','return','revoke','right','rlike','schema','schemas','second_microsecond','select','sensitive','separator','set','show','smallint','spatial','specific','sql','sqlexception','sqlstate','sqlwarning','sql_big_result','sql_calc_found_rows','sql_small_result','ssl','starting','straight_join','table','terminated','then','tinyblob','tinyint','tinytext','to','trailing','trigger','true','undo','union','unique','unlock','unsigned','update','usage','use','using','utc_date','utc_time','utc_timestamp','values','varbinary','varchar','varcharacter','varying','when','where','while','with','write','x509','xor','year_month','zerofill','action','bit','date','enum','no','text','time','timestamp'];
+
 class CMysql2PHP{
     public static $columnTypes=array(
         'varchar'   =>  'string',
@@ -88,6 +90,17 @@ class CMysql2PHP{
         }
     }
 
+    /** 取字段支持最大长度 */
+    public static function getTypeLength($type)
+    {
+        $length = null;
+        if (strpos($type,'(')!==false)
+        {
+            $length = intval(preg_replace('/^.*?\((\d+?)\).*/','$1',$type));
+        }
+        return $length;
+    }
+
     public static function getMethodString($field,$p_allowBlank=true)
     {
         $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($p_allowBlank?'':',false').')';
@@ -101,7 +114,8 @@ class CMysql2PHP{
                 break;
             case 'string':
             case 'text':
-                $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($p_allowBlank?'':',false').')';
+                $lenMax = static::getTypeLength($field);
+                $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($p_allowBlank?',true':',false').($lenMax>0?',null,0,'.$lenMax:'').')';
                 break;
             case 'datetime':
                 $methodString = 'W2HttpRequest::getRequestDateTime(\'%s\')';
@@ -198,7 +212,13 @@ else if (count($filesExists)>0)
 $_filedList = DBTool::queryData('show full columns from '.$_tableName);
 $_tableDataKeys = array();
 $_tableKeysImportantForAdd = array();
+$_tableIdName = '';
 foreach ($_filedList as $_fieldRow) {
+    if (in_array(strtolower($_fieldRow["Field"]),$noAllowKeyInMysql))
+    {
+        print('警告：您不可以在mysql使用以下字符作为字段：'.$_fieldRow["Field"]."\n");
+        exit;
+    }
     if ($_fieldRow['Key']=='PRI')
     {
         $_tableIdName = $_fieldRow["Field"];
@@ -503,7 +523,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_orderValue = strtolower($_fieldRow['Field']);
         $_orderDesc = (!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:'');
         $_controllerStringAddOrder .= "\n". '            case '.str_pad('\''.$_orderValue.'\'',20,' ',STR_PAD_RIGHT).':'.($_orderDesc!=''?' //'.$_orderDesc:'') ;
-        $_apitestConfigRequestOrderValues[] = $_orderValue . (!is_null($_orderDesc)?':'.$_orderDesc:'');
+        $_apitestConfigRequestOrderValues[] = $_orderValue ;//. (!is_null($_orderDesc)?':'.$_orderDesc:'');
     }
 }
     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\'order\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\'string\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'排序方式\' ,\'desc\':\'限以下值（'.implode(' , ', $_apitestConfigRequestOrderValues ).'）\' }';
