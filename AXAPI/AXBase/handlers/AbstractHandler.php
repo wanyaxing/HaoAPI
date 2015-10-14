@@ -52,6 +52,14 @@ class AbstractHandler {
 
 	// ================== database ==================
 
+    /**
+     * 获得详细的数据表字段数据（如备注信息等）
+     * @return array
+     */
+    public static function getTableColumns()
+    {
+        return static::queryData('show full columns from '.static::getTabelName());
+    }
 
     /**
      * 获得常规的表格字段数据
@@ -338,41 +346,47 @@ class AbstractHandler {
     }
 
     /**
-     * 批量查询，根据筛选条件，筛选获得对象数组
+     * 查询单独字段的值的数组，如不指定$field，则返回首条数据的首个字段的值组成的数组
+     * @param  string  $p_field      [description]
      * @param  array   $p_where     这是一个数组字典，用来约束筛选条件，支持多种表达方式，如array('id'=>'13','replyCount>'=>5,'lastmodifTime>now()'),注意其中的key value的排列方式。
      * @param  string  $p_order     排序方式，如'lastmodifytime desc'
      * @param  integer $p_pageIndex 分页，第一页为1，第二页为2
      * @param  integer  $p_pageSize  分页数据量
      * @param  integer  $p_countThis  计数变量，注意，若需要进行计数统计，则调用此处时需传入一个变量，当方法调用结束后，会将计数赋值给该变量。
-     * @return AbstractModel[]         对象模型数组
+     * @return array                单独字段的值的数组
      */
-    public static function loadModelList($p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
+    public static function selectFields($p_field=null,$p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
     {
+        $_fieldValues = null;
+        if ($p_field===null)
+        {
+            $p_field = static::getTabelIdName();
+        }
         if ( static::$isUseCache )
         {
             $w2CacheKey = sprintf('ax_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
                                         ,static::getTabelName()
-                                        ,static::getTabelIdName()
+                                        ,$p_field
                                         ,W2Array::sortAndBuildQuery($p_where)
                                         ,$p_order
                                         ,$p_pageIndex
                                         ,$p_pageSize
                                         ,$p_countThis
                                         );
-            $w2CacheKey_pIds = $w2CacheKey.'_list';
+            $w2CacheKey_fieldValues = $w2CacheKey.'_list';
             if ($_SERVER['REQUEST_METHOD'] == 'GET')
-            {//只有GET请求才会使用缓存。为安全计，POST请求就得耗点性能了。
+            {//只有GET请求才会使用缓存。为安全计，POST请求就耗点性能吧。
                 if ( !isset($p_where['userID']) || $p_where['userID'] != Utility::getCurrentUserID() )
                 {//查询与自己无关的数据，使用缓存。如果用户检索自己相关的数据时，不用缓存
 
                     //尝试读取列表检索结果
-                    if (W2Cache::isCacheCanBeUsed($w2CacheKey_pIds))
+                    if (W2Cache::isCacheCanBeUsed($w2CacheKey_fieldValues))
                     {
-                         $w2CacheObj_pIds = W2Cache::getObj($w2CacheKey_pIds);
+                         $w2CacheObj_fieldValues = W2Cache::getObj($w2CacheKey_fieldValues);
                     }
 
                     //如果有结果，再尝试检索总数
-                    if (isset($w2CacheObj_pIds))
+                    if (isset($w2CacheObj_fieldValues))
                     {
                         if ($p_countThis != -1)
                         {
@@ -388,33 +402,32 @@ class AbstractHandler {
         }
 
         //如果两个缓存任意一个没取成功，就重新取数据。
-        if (!isset($w2CacheObj_pIds) || ( $p_countThis != -1 && !isset($w2CacheObj_countThis) ) )
+        if (!isset($w2CacheObj_fieldValues) || ( $p_countThis != -1 && !isset($w2CacheObj_countThis) ) )
         {//没有找到缓存，重新请求。
             $_dbModel = static::newDBModel();
             if ($p_countThis != -1)
             {
                 $_dbModel->isCountAll(true);
             }
-            $_idsList = $_dbModel->where($p_where)->field(static::getTabelIdName())->limit($p_pageIndex,$p_pageSize)->order($p_order)->select();
+            $_fieldValues = $_dbModel->where($p_where)->limit($p_pageIndex,$p_pageSize)->order($p_order)->selectFields($p_field);
             if ($p_countThis != -1)
             {
                 $p_countThis = $_dbModel->countAll();
             }
-            $_pIds = array();
-            foreach ($_idsList as $_idItem) {
-                $_pIds[] = $_idItem[static::getTabelIdName()];
-            }
 
-            if (isset($w2CacheKey_pIds))
+            if (isset($w2CacheKey_fieldValues))
             {
-                W2Cache::setObj($w2CacheKey_pIds,$_pIds);
-                AX_DEBUG('更新缓存：'.$w2CacheKey_pIds);
+                //更新缓存／存储数据
+                W2Cache::setObj($w2CacheKey_fieldValues,$_fieldValues);
+                AX_DEBUG('更新缓存：'.$w2CacheKey_fieldValues);
 
+                //更新缓存／存储计数
                 if (isset($w2CacheKey_countThis))
                 {
                     W2Cache::setObj($w2CacheKey_countThis,$p_countThis);
                 }
 
+                //追加到缓存池
                 foreach ($p_where as $_key => $_value) {
                     if ($_value===null)
                     {
@@ -430,7 +443,7 @@ class AbstractHandler {
                                                 ,$_key
                                                 ,$_value
                                                 );
-                            W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_pIds);
+                            W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_fieldValues);
                             AX_DEBUG('追加到缓存池：'.$w2CacheKeyPool);
                         }
                     }
@@ -455,7 +468,7 @@ class AbstractHandler {
                                                             ,$_tblWhereKey
                                                             ,$_tblWhereValue
                                                             );
-                                        W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_pIds);
+                                        W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_fieldValues);
                                         AX_DEBUG('追加到额外缓存池：'.$w2CacheKeyPool);
                                     }
                                 }
@@ -480,7 +493,7 @@ class AbstractHandler {
                                                             ,$_tblWhereKey
                                                             ,$_tblWhereValue
                                                             );
-                                        W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_pIds);
+                                        W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_fieldValues);
                                         AX_DEBUG('追加到额外缓存池：'.$w2CacheKeyPool);
                                     }
                                 }
@@ -492,16 +505,56 @@ class AbstractHandler {
         }
         else
         {
-            AX_DEBUG('读取缓存成功：'.$w2CacheKey_pIds);
-            if (isset($w2CacheObj_pIds))
+            AX_DEBUG('读取缓存成功：'.$w2CacheKey_fieldValues);
+            if (isset($w2CacheObj_fieldValues))
             {
-                $_pIds = $w2CacheObj_pIds;
+                $_fieldValues = $w2CacheObj_fieldValues;
             }
             if (isset($w2CacheObj_countThis))
             {
                 $p_countThis = $w2CacheObj_countThis;
             }
         }
+        return $_fieldValues;
+
+    }
+
+
+    /**
+     * 查询单独数据，如不指定$field，则返回首条数据的首个字段的值
+     * @param  string  $p_field      [description]
+     * @param  array   $p_where     这是一个数组字典，用来约束筛选条件，支持多种表达方式，如array('id'=>'13','replyCount>'=>5,'lastmodifTime>now()'),注意其中的key value的排列方式。
+     * @param  string  $p_order     排序方式，如'lastmodifytime desc'
+     * @param  integer $p_pageIndex 分页，第一页为1，第二页为2
+     * @param  integer  $p_pageSize  分页数据量
+     * @param  integer  $p_countThis  计数变量，注意，若需要进行计数统计，则调用此处时需传入一个变量，当方法调用结束后，会将计数赋值给该变量。
+     * @return string|int
+     */
+    public static function selectField($p_field=null,$p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
+    {
+        $_fieldValues = static::selectFields($p_field,$p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
+
+        if (is_array($_fieldValues) && count($_fieldValues)>0)
+        {
+            return $_fieldValues[0];
+        }
+        else
+        {
+            return null;
+        }
+    }
+    /**
+     * 批量查询，根据筛选条件，筛选获得对象数组
+     * @param  array   $p_where     这是一个数组字典，用来约束筛选条件，支持多种表达方式，如array('id'=>'13','replyCount>'=>5,'lastmodifTime>now()'),注意其中的key value的排列方式。
+     * @param  string  $p_order     排序方式，如'lastmodifytime desc'
+     * @param  integer $p_pageIndex 分页，第一页为1，第二页为2
+     * @param  integer  $p_pageSize  分页数据量
+     * @param  integer  $p_countThis  计数变量，注意，若需要进行计数统计，则调用此处时需传入一个变量，当方法调用结束后，会将计数赋值给该变量。
+     * @return AbstractModel[]         对象模型数组
+     */
+    public static function loadModelList($p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
+    {
+        $_pIds = static::selectFields(static::getTabelIdName(),$p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
         return static::loadModelListByIds($_pIds);
     }
 
@@ -529,10 +582,10 @@ class AbstractHandler {
             /** 更新缓存池 */
             if ( in_array($_key, static::getTableDataKeys() )  )
             {
-                if ($_key!='id' && $_key!=static::getTabelIdName() )
-                {
+                // if ($_key!='id' && $_key!=static::getTabelIdName() )
+                // {
                     $_updateData[$_key] = $_value;
-                }
+                // }
 
                 if ((is_int($_value) || (is_string($_value) && strlen($_value)<10 ) ))
                 {
@@ -564,8 +617,11 @@ class AbstractHandler {
             }
         }
 
+        AX_DEBUG($_updateData);
+
         $_modelId = null;
-        if ($p_model->getId()>0)
+
+        if ( is_object( static::loadModelById( $p_model->getId() ) ) )//如果目标数据已存在，则更新
         {
             /** 更新数据 */
             $_dbModel -> where(array(static::getTabelIdName() => $p_model->getId()))
@@ -592,6 +648,18 @@ class AbstractHandler {
         return static::loadModelById($_modelId);
     }
 
+
+    /**
+     * 直接插入数据
+     * @param  array  $p_values  需要插入的数据
+     * @return [type]          [description]
+     */
+    public static function insert($p_values=array())
+    {
+        $_dbModel = static::newDBModel();
+        $_dbModel->insert($p_values);
+    }
+
     /**
      * 根据筛选结果，直接操作数据库进行数据更新
      * @param  array $p_values 需要更新的数据
@@ -609,6 +677,41 @@ class AbstractHandler {
         return $result ;
     }
 
+    /**
+     * 根据条件直接删除数据
+     * @param  array  $p_where 筛选条件
+     * @return [type]          [description]
+     */
+    public static function delete($p_where=array())
+    {
+        $_dbModel = static::newDBModel();
+        $_dbModel->delete($p_where);
+    }
+
+    /** 执行sql语句 */
+    public static function queryData($sql)
+    {
+        //使用W2Cache全局内存型缓存（全局有效）
+        $w2CacheKey = sprintf('ax_%s_query_%s_sql_%s',AXAPI_PROJECT_NAME,static::getTabelName(),$sql);
+        if (W2Cache::isCacheCanBeUsed($w2CacheKey))
+        {
+            if ($_SERVER['REQUEST_METHOD'] == 'GET')
+            {//只有GET请求才会使用缓存。为安全计，POST请求就耗点性能吧。
+                if ( !( Utility::getCurrentUserID()>0 && preg_match('/userID.{0,10}'.Utility::getCurrentUserID().'/',$sql) ) )
+                {
+                    return W2Cache::getObj($w2CacheKey);
+                }
+            }
+        }
+
+        $data = DBTool::queryData($sql);
+
+        //存储到全局缓存（用redis等方法存起来）
+        AX_DEBUG('更新缓存：'.$w2CacheKey);
+        W2Cache::setObj($w2CacheKey,$data);
+
+        return $data;
+    }
 
     /**
      * 更新缓存W2Cache
@@ -697,16 +800,7 @@ class AbstractHandler {
     //     }
     //     return true;
     // }
-    /**
-     * 根据条件直接删除数据
-     * @param  array  $p_where 筛选条件
-     * @return [type]          [description]
-     */
-    public static function delete($p_where=array())
-    {
-        $_dbModel = static::newDBModel();
-        $_dbModel->delete($p_where);
-    }
+
     /**
      * 根据指定统计类型进行数据统计
      * @param  string $p_dateType 统计方法 ： year month day
@@ -752,8 +846,7 @@ class AbstractHandler {
      */
     public static function count($p_where=array())
     {
-        $_dbModel = static::newDBModel();
-        return $_dbModel->where($p_where)->countAll();
+        return static::selectField('count(*)',$p_where);
     }
     public static function countAll($p_where=array())
     {
