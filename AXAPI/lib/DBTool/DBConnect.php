@@ -15,7 +15,7 @@
 		{
 
 			$this->conn = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE,defined('DB_PORT')?strlen(DB_PORT):'3306',MYSQL_CLIENT_INTERACTIVE);
-			$this->conn->set_charset("utf8");
+			$this->conn->set_charset("utf8mb4");
 		}
 
 		public function getCoon()

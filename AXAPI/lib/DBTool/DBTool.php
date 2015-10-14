@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v151014 	(is_string($p_value) || is_int($p_value)))
 // v150923 优化t1逻辑
 // v150317 fix 别名，（和！的情况
 // 150207  conditions_push
@@ -184,7 +185,7 @@ class DBTool
 				{
 					$conditions[] =  sprintf('%s = NULL',$p_strFormat);
 				}
-				else if ( null !== $p_value )
+				else if ( null !== $p_value && (is_string($p_value) || is_int($p_value)))
 				{
 					$conditions[] =  sprintf('%s = \'%s\'',$p_strFormat,$p_value);
 				}
