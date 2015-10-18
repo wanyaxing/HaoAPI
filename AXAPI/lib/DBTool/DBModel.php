@@ -393,7 +393,7 @@ class DBModel{
 		{
 			if (isset($limit))
 			{
-				if (!empty($size) && $limit!=0)
+				if ($size!==null)// && $limit!=0
 				{
 					$this->limitPageIndex = $limit;
 					$this->limitPageSize = $size;
