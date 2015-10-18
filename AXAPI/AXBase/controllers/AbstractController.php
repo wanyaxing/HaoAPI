@@ -167,7 +167,7 @@ class AbstractController {
 
         if ($p_pageSize===null)
         {
-            $p_pageSize = W2HttpRequest::getRequestInt('size',null,false,true,DEFAULT_PAGE_SIZE);
+            $p_pageSize = W2HttpRequest::getRequestInt('size',null,true,true,DEFAULT_PAGE_SIZE);
         }
 
         if ($p_countThis===-1)
@@ -212,7 +212,7 @@ class AbstractController {
 
         if ($p_pageSize===null)
         {
-            $p_pageSize = W2HttpRequest::getRequestInt('size',null,false,true,DEFAULT_PAGE_SIZE);
+            $p_pageSize = W2HttpRequest::getRequestInt('size',null,true,0,DEFAULT_PAGE_SIZE);
         }
 
         if ($p_pageIndex<0)

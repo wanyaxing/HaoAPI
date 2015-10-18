@@ -409,7 +409,12 @@ class AbstractHandler {
             {
                 $_dbModel->isCountAll(true);
             }
-            $_fieldValues = $_dbModel->where($p_where)->limit($p_pageIndex,$p_pageSize)->order($p_order)->selectFields($p_field);
+            $_dbModel->where($p_where)->limit($p_pageIndex,$p_pageSize)->order($p_order);
+            $_fieldValues = array();
+            if ($p_pageSize>0)
+            {//只有$p_pageSize>0才需要去实际查询数据,如果为0自然连查都不用查了，直接默认空数组就是。
+                $_fieldValues = $_dbModel->selectFields($p_field);
+            }
             if ($p_countThis != -1)
             {
                 $p_countThis = $_dbModel->countAll();
