@@ -199,7 +199,7 @@ class W2HttpRequest {
                 {
                     if ($p_intOnly) {
                         if (strval(intval($_v)) !== trim($_v)) {
-                            throw new Exception('参数'.$p_key.'请使用正确数字与逗号组成的字符串。');
+                            throw new Exception('参数'.$p_key.'请使用规范的数字与逗号组成的字符串。');
                         }
                     }
                     array_push($_r, $_v);
@@ -279,7 +279,7 @@ class W2HttpRequest {
         {
             if (!W2String::isEmail($_v))
             {
-                throw new Exception('参数'.$p_key.'请使用正确格式的邮箱地址。');
+                throw new Exception('请使用正确格式的邮箱地址。');//参数'.$p_key.'
             }
         }
         return $_v;
@@ -297,7 +297,7 @@ class W2HttpRequest {
         {
             if (!W2String::isTelephone($_v))
             {
-                throw new Exception('参数'.$p_key.'请使用正确格式的手机号码。');
+                throw new Exception('请使用正确格式的手机号码。');//参数'.$p_key.'
             }
         }
         return $_v;
@@ -315,7 +315,7 @@ class W2HttpRequest {
         {
             if (!W2String::isIP($_v))
             {
-                throw new Exception('参数'.$p_key.'请使用正确格式的IP地址。');
+                throw new Exception('请使用正确格式的IP地址。');//参数'.$p_key.'
             }
         }
         return $_v;
@@ -334,7 +334,7 @@ class W2HttpRequest {
         {
             if (!W2String::isURL($_v))
             {
-                throw new Exception('参数'.$p_key.'请使用正确格式的网址。');
+                throw new Exception('请使用正确格式的网址。');//参数'.$p_key.'
             }
         }
         return $_v;
