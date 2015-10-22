@@ -51,7 +51,18 @@ W2Config::$Qiniu_secretKey    = 'Uv9yBLUeqsdfafmVgAybHBRbT07Jj';   /** 七牛配
 W2Config::$SMS_USER    		  = 'USERNAME';  						   /** SMS用户名 */
 W2Config::$SMS_PASSWD         = '123456';   					   /** SMS密码 */
 
+
+W2Config::$UCPASS_ACCOUNTSID    = null;                            /** 云之讯相关密钥 */
+W2Config::$UCPASS_TOKEN         = null;                            /** 云之讯相关密钥 */
+W2Config::$UCPASS_APPID         = null;                            /** 云之讯相关密钥 */
+W2Config::$UCPASS_TEMPLATEID    = null;                            /** 云之讯相关密钥 */
+
 W2Config::$LOG_PATH           = AXAPI_ROOT_PATH . '/logs/';   	   /** 日志存储目录 */
+
+W2Config::$CACHE_HOST  = '127.0.0.1';                                     //缓存服务器
+W2Config::$CACHE_PORT  = '6379';                                          //缓存端口
+W2Config::$CACHE_INDEX = 1;                                               //缓存数据库索引，一般是0-20
+W2Config::$CACHE_AUTH  = null; 											  //缓存密码，如果需要的话。
 
 // 默认分页数据量
 define("DEFAULT_PAGE_SIZE", 10);
