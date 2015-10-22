@@ -69,6 +69,16 @@ class W2Redis {
     }
 
 
+    /** 缓存服务器状态 */
+    public static function info()
+    {
+        $memcached = static::memFactory();
+        if (isset($memcached)) {
+            return $memcached->INFO();
+        }
+        return null;
+    }
+
     /**
      * 最强方法，根据key值获得缓存内容
      * @param  [type]  $p_key                   缓存key
