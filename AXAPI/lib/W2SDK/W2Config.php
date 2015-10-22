@@ -32,10 +32,10 @@ class W2Config {
 
 
 	/** @var string 云之讯短信账号的配置 */
-	public static $UCPASS_ACCOUNTSID = 'dec24d3bfb0b62d45f992b52d7285a2f';
-	public static $UCPASS_TOKEN      = 'd6b63af5c800a8ab433782f2ee2cbf2e';
-	public static $UCPASS_APPID      = '1d19d3d36ef94dac81019061889a0f96';
-	public static $UCPASS_TEMPLATEID      = '11646';
+	public static $UCPASS_ACCOUNTSID = null;
+	public static $UCPASS_TOKEN      = null;
+	public static $UCPASS_APPID      = null;
+	public static $UCPASS_TEMPLATEID      = null;
 
 	public static $CACHE_HOST      = null;
 	public static $CACHE_PORT      = null;
