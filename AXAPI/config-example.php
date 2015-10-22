@@ -77,3 +77,13 @@ define("DEFAULT_PAGE_SIZE", 10);
  */
 define("USERHANDLER_NAME", 'UserHandler');
 
+/** 常量类，提供了遍历类中所有常量的方法 */
+class CONST_CLASS
+{
+    public static function getAllConstants()
+    {
+        $oClass = new ReflectionClass(get_called_class());
+        $constants = $oClass->getConstants();
+        return array_values($constants);
+    }
+}
