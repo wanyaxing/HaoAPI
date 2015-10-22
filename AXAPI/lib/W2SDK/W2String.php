@@ -40,9 +40,18 @@ class W2String {
     }
 
     /** 返回字符串的长度 */
-    public static function strlen($p_str,$p_charactset='UTF-8')
+    public static function strlen($p_str,$p_charactset='utf-8')
     {
-        return mb_strlen($p_str,$p_charactset);
+        if ($p_charactset!='utf-8')
+        {
+            $tmp = @iconv($p_charactset, 'utf-8', $p_str);
+            if(!empty($tmp)){
+                $p_str = $tmp;
+            }
+        }
+        preg_match_all('/./us', $p_str, $match);
+        return count($match[0]);  // 输出9
+        // return mb_strlen($p_str,$p_charactset);
     }
 
     /**
