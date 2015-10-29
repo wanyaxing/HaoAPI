@@ -140,7 +140,7 @@ class AbstractController {
     {
         if ( $_SERVER['REQUEST_METHOD'] != 'GET' )
         {
-            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处只接受POST数据。');
+            return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误，此处只接受GET数据。');
         }
         if ($p_where===null)
         {
