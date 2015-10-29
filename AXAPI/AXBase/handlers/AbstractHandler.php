@@ -108,7 +108,7 @@ class AbstractHandler {
      */
     public static function newDBModel(){
         $_dbModel = new DBModel(static::getTabelName());
-        $_dbModel->isUseCache(static::$isUseCache);
+        $_dbModel->isUseCache(static::isUseCache());
         return $_dbModel;
     }
 
@@ -186,6 +186,14 @@ class AbstractHandler {
     {
         static::$cache[$p_key] = clone $p_data;
         return True;
+    }
+
+    /**
+     * 是否使用请求内缓存
+     */
+    public static function isUseCache()
+    {
+        return ($_SERVER['REQUEST_METHOD'] == 'GET') && static::$isUseCache;//POST数据不用缓存，不然会有各种奇葩问题。
     }
 
     /**
@@ -277,7 +285,7 @@ class AbstractHandler {
             else if ($p_id>0)
             {
                 $w2CacheObj = null;
-                if (static::$isUseCache)
+                if (static::isUseCache())
                 {
                     //使用W2Cache全局内存型缓存（全局有效）
                     $w2CacheKey = sprintf('ax_%s_model_%s_id_%d',AXAPI_PROJECT_NAME,static::getTabelName(),$p_id);
@@ -362,7 +370,7 @@ class AbstractHandler {
         {
             $p_field = static::getTabelIdName();
         }
-        if ( static::$isUseCache )
+        if ( static::isUseCache() )
         {
             $w2CacheKey = sprintf('ax_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
                                         ,static::getTabelName()
