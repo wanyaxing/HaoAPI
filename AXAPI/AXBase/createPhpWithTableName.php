@@ -418,6 +418,17 @@ else
 //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
 $_apitestConfigArray = array();
 
+$_apitestConfigSingle = 'apiList[apiList.length] = {
+        \'title\':\''.($_tableNameCN.':'.'查看表结构（限管理员）').'\'
+        ,\'desc\':\'\'
+        ,\'action\':\''.strtolower($_tableName).'/columns\'
+        ,\'method\':\'get\'
+        ,\'request\':[]
+      };
+';
+$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
+
+
 //add
 $_apitestConfigSingleAdd = 'apiList[apiList.length] = {
         \'title\':\''.($_tableNameCN.':'.'新建').'\'
