@@ -444,4 +444,46 @@ class W2Qiniu {
 		}
 	}
 
+	/**
+	 * 查询空间列表
+	 * @param  string  $prefix 前缀
+	 * @param  string  $marker 分隔标记（默认第一页为空）
+	 * @param  integer $limit  分页大小（默认1000）
+	 * @return [type]          [description]
+	 */
+	public static function getList($prefix = '', $marker = '', $limit = 0, &$markerNext=null)
+	{
+		$mac = new Qiniu_Mac(W2Config::$Qiniu_accessKey, W2Config::$Qiniu_secretKey);
+		$client = new Qiniu_MacHttpClient($mac);
+
+		$QINIU_RSF_HOST = 'http://rsf.qbox.me';
+		$query = array('bucket' => W2Config::$Qiniu_bucket);
+		if (!empty($prefix)) {
+			$query['prefix'] = $prefix;
+		}
+		if (!empty($marker)) {
+			$query['marker'] = $marker;
+		}
+		if (!empty($limit)) {
+			$query['limit'] = $limit;
+		}
+
+		$url =  $QINIU_RSF_HOST . '/list?' . http_build_query($query);
+		list($ret, $err) = Qiniu_Client_Call($client, $url);
+		if ($err !== null) {
+			throw new Exception( $err);
+		}
+
+		$items = $ret['items'];
+		if (empty($ret['marker'])) {
+			// return 'EOF';
+		} else {
+			if (isset($markerNext))
+			{
+				$markerNext = $ret['marker'];
+			}
+		}
+		return $items;
+	}
+
 }
