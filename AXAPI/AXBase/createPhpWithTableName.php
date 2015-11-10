@@ -29,7 +29,7 @@ if (count($argv)<=1)
     print("\n".'-name 中文标题');
     print("\n".'-rm yes');
     print("\n".'-update yes');
-	exit;
+    exit;
 }
 
 function getValueInArgv($argv_key)
@@ -203,8 +203,8 @@ else if (count($filesExists)>0)
 // $_tableDataKeys = $_dbModel->getMeta();
 // if (!is_array($_tableDataKeys) || count($_tableDataKeys)==0)
 // {
-// 	print('中止，表字段获取失败：'.$_tableName."\n");
-// 	exit;
+//  print('中止，表字段获取失败：'.$_tableName."\n");
+//  exit;
 // }
 //
 
@@ -628,22 +628,22 @@ class '.$_controllerName.' extends AbstractController{
 
     // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝接口方法都在下面定义 action开头的方法是对外接口＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     //权限
-    public static function getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel=null)
-    {
-        $auth = parent::getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel);
-        $_user = Utility::getUserByID($p_userID);
-        if (is_object($_user))
-        {
-            switch ($p_action)
-            {
-                case \'add\'    :    break;
-                case \'update\' :    break;
-                case \'detail\' :    break;
-                case \'list\'   :    break;
-            }
-        }
-        return $auth;
-    }
+    // public static function getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel=null)
+    // {
+    //     $auth = parent::getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel);
+    //     $_user = Utility::getUserByID($p_userID);
+    //     if (is_object($_user))
+    //     {
+    //         switch ($p_action)
+    //         {
+    //             case \'add\'    :    break;
+    //             case \'update\' :    break;
+    //             case \'detail\' :    break;
+    //             case \'list\'   :    break;
+    //         }
+    //     }
+    //     return $auth;
+    // }
 
     //新建
     public static function actionAdd()
@@ -670,16 +670,12 @@ class '.$_controllerName.' extends AbstractController{
 '.$_controllerStringNormal.'
                 break;
             case \'draft\'://未激活
-                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号未激活，不可使用该功能。\');
-                break;
             case \'pending\'://待审禁言
-                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号被禁言，不可使用该功能。\');
-                break;
             case \'disabled\'://封号
-                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号不可用，不可使用该功能。\');
+                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号不可使用该功能。\');
                 break;
 
-            case \'visitor\':
+            case \'visitor\'://游客
                 return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'您需要登录后才可以执行该操作\');
                 break;
 
@@ -712,16 +708,12 @@ class '.$_controllerName.' extends AbstractController{
                 return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'您没有权限执行该操作\');
                 break;
             case \'draft\'://未激活
-                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号未激活，不可使用该功能。\');
-                break;
             case \'pending\'://待审禁言
-                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号被禁言，不可使用该功能。\');
-                break;
             case \'disabled\'://封号
-                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号不可用，不可使用该功能。\');
+                return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'该账号不可使用该功能。\');
                 break;
 
-            case \'visitor\':
+            case \'visitor\'://游客
                 return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'您需要登录后才可以执行该操作\');
                 break;
 
@@ -798,7 +790,6 @@ class '.$_controllerName.' extends AbstractController{
             case \'draft\'   : //未激活
             case \'pending\' : //待审禁言
             case \'disabled\': //封号
-
             case \'visitor\' : //游客
                 break;
 
@@ -852,7 +843,6 @@ class '.$_controllerName.' extends AbstractController{
             case \'draft\'   : //未激活
             case \'pending\' : //待审禁言
             case \'disabled\': //封号
-
             case \'visitor\' : //游客
                 return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,\'您没有权限执行该操作\');//其他用户不可见
                 break;
