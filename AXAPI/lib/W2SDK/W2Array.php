@@ -126,4 +126,52 @@ class W2Array {
 		return is_array($p_array) && (array_keys($p_array) !== array_keys(array_keys($p_array)));
 	}
 
+	/**
+	 * 通过路径字符串快速提取字典中的值
+	 * @param  [type] $p_array [description]
+	 * @param  [type] $path    如 'user>avatar'
+	 * @return [type]          [description]
+	 */
+	public static function findInArray($p_array,$path)
+	{
+		$result = $p_array;
+		foreach (explode('>',$path) as $k) {
+			if (isset($result[$k]))
+			{
+				$result = $result[$k];
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * 取出字典组成的数组中的各个字典中指定路径下的值，并重新组成数组。
+	 * @param  [type] $p_array [description]
+	 * @param  [type] $path    如 'user>avatar'
+	 * @return [type]          [description]
+	 */
+	public static function arrayValuesInListArray($p_array,$p_pathInList)
+	{
+		$values = array();
+		foreach ($p_array as $key => $value) {
+			$values[] = W2Array::findInArray($value,$p_pathInList);
+		}
+		return $values;
+	}
+
+	/**
+	 * 取出数组中各值并Intval
+	 * @param  [type] $p_array [description]
+	 * @param  [type] $path    如 'user>avatar'
+	 * @return [type]          [description]
+	 */
+	public static function arrayValuesIntval($p_array)
+	{
+		$values = array();
+		foreach ($p_array as $key => $value) {
+			$values[] = Intval($value);
+		}
+		return $values;
+	}
+
 }
