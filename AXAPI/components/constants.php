@@ -35,10 +35,10 @@ define('RUNTIME_CODE_ERROR_NO_CHANGE',        10);
 define('STATUS_DISABLED',         0);
 /** 状态  - 正常 */
 define('STATUS_NORMAL',           1);
-/** 状态  - 待审 */
-define('STATUS_PENDING',          2);
 /** 状态  - 草稿 */
-define('STATUS_DRAFT',            3);
+define('STATUS_DRAFT',            2);
+/** 状态  - 待审 */
+define('STATUS_PENDING',          3);
 
 /*
  *  1：浏览器设备
