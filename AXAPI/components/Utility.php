@@ -372,7 +372,7 @@ class Utility
 		}
 		else
 		{
-			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'校验失败',defined('IS_SQL_PRINT')&&IS_SQL_PRINT?$isAuthed:'');
+			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'校验失败','');
 		}
 
     }
