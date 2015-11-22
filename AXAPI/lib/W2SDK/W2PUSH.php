@@ -195,7 +195,7 @@ class W2PUSH {
      * @param  int     $deploy_status     1是开发模式  2是正式环境
      * @return array                 results
      */
-    public static function pushMessage($push_type ,$device_type , $title='', $content,$customtype=null,$customvalue = null ,$p_deviceTokens=null ,$tag_name=null,$deploy_status=2)
+    public static function pushMessage($push_type ,$device_type , $title='', $content,$customtype=null,$customvalue = null ,$p_deviceTokens=null ,$tag_name=null,$deploy_status=2,$isSound=true,$isShake=true)
     {
 		$push = null;
 		$mess = null;
@@ -227,7 +227,7 @@ class W2PUSH {
 			$mess->setExpireTime(86400);
 			//$style = new Style(0);
 			#含义：样式编号0，响铃，震动，不可从通知栏清除，不影响先前通知
-			$style = new Style(0,1,1,0,0);
+			$style = new Style(0,($isSound?1:0),($isShake?1:0),0,0);
 			$mess->setStyle($style);
 
 			$action = new ClickAction();
