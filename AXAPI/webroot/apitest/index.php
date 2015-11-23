@@ -2,12 +2,12 @@
     // by wanyaxing@gmail.com
     // version: 150430.1
 	  date_default_timezone_set("Asia/shanghai");
-    if( ($_SERVER['SERVER_ADDR'] != $_SERVER['REMOTE_ADDR']) &&
-            (!array_key_exists('PHP_AUTH_USER', $_SERVER) || !array_key_exists('PHP_AUTH_PW', $_SERVER) || $_SERVER['PHP_AUTH_USER']!='12345679' || $_SERVER['PHP_AUTH_PW']!='12345679') ) {
-        header('WWW-Authenticate: Basic realm=\'\'');
-        header('HTTP/1.0 401');
-        exit;
-    }
+    // if( ($_SERVER['SERVER_ADDR'] != $_SERVER['REMOTE_ADDR']) &&
+    //         (!array_key_exists('PHP_AUTH_USER', $_SERVER) || !array_key_exists('PHP_AUTH_PW', $_SERVER) || $_SERVER['PHP_AUTH_USER']!='12345679' || $_SERVER['PHP_AUTH_PW']!='12345679') ) {
+    //     header('WWW-Authenticate: Basic realm=\'\'');
+    //     header('HTTP/1.0 401');
+    //     exit;
+    // }
     if (count($_GET)>0 || count($_POST)>0)
     {
       header('Content-Type:text/javascript; charset=utf-8');
