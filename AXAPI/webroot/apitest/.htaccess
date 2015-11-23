@@ -1,0 +1,13 @@
+#htpasswd -bc /data/web/.pwdapitest 12345679 12345679
+#htpasswd -b /data/web/.pwdapitest xxjx2 xxjx2
+
+AuthType Basic
+
+#引号中的是说明文字，随便写
+AuthName "apitest of AXAPI"
+
+#AuthUserFile指的是保存用户名和密码的文件位置(绝对路径)
+AuthUserFile /data/web/.pwdapitest
+
+#Require valid-user表示指定只有.htpasswd文件包含的合法用户才能访问。
+Require valid-user
