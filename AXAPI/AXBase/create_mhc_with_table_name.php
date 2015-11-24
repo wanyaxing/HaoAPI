@@ -135,12 +135,12 @@ if (is_null($_tableNameCN)){$_tableNameCN = $_tableName;}
 $_handlerName = ucwords($_tableName).'Handler';
 $_modelName = ucwords($_tableName).'Model';
 $_controllerName = ucwords($_tableName).'Controller';
-$_apitestConfigName = 'apitest-config.'.ucwords($_tableName);
+$_apitestConfigName = 'apitest_config.'.ucwords($_tableName);
 
 $_handlerFile = AXAPI_ROOT_PATH.'/AXBase/handlers/'.$_handlerName.'.php';
 $_modelFile = AXAPI_ROOT_PATH.'/AXBase/models/'.$_modelName.'.php';
 $_controllerFile = AXAPI_ROOT_PATH.'/AXBase/controllers/'.$_controllerName.'.php';
-$_apitestConfigFile = AXAPI_ROOT_PATH.'/webroot/apitest/'.$_apitestConfigName.'.js';
+$_apitestConfigFile = AXAPI_ROOT_PATH.'/webroot/apitest/conf/'.$_apitestConfigName.'.json';
 
 $filesExists = array();
 if(file_exists($_handlerFile))
@@ -347,7 +347,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $this->'.$_tableKey.' = $'.$_tableKey.';
 
         return $this;
-    }';
+    }'."\n"."\n";
 }
 
 
@@ -418,7 +418,7 @@ else
 //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
 $_apitestConfigArray = array();
 
-$_apitestConfigSingle = 'apiList[apiList.length] = {
+$_apitestConfigSingle = '{
         \'title\':\''.($_tableNameCN.':'.'查看表结构（限管理员）').'\'
         ,\'desc\':\'\'
         ,\'action\':\''.strtolower($_tableName).'/columns\'
@@ -430,7 +430,7 @@ $_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
 
 
 //add
-$_apitestConfigSingleAdd = 'apiList[apiList.length] = {
+$_apitestConfigSingleAdd = '{
         \'title\':\''.($_tableNameCN.':'.'新建').'\'
         ,\'desc\':\'\'
         ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
@@ -466,11 +466,11 @@ $_apitestConfigSingleAdd .= implode("\n".'          ,',array_merge($_apitestConf
         ]
       };
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingleAdd."\n*/";
+$_apitestConfigArray[] = "/*\n,".$_apitestConfigSingleAdd."\n*/";
 
 
 //update
-$_apitestConfigSingleUpdate = 'apiList[apiList.length] = {
+$_apitestConfigSingleUpdate = '{
         \'title\':\''.($_tableNameCN.':'.'更新').'\'
         ,\'desc\':\'\'
         ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
@@ -509,11 +509,11 @@ $_apitestConfigSingleUpdate .= implode("\n".'          ,',array_merge($_apitestC
       };
 ';
 
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingleUpdate."\n*/";
+$_apitestConfigArray[] = "/*\n,".$_apitestConfigSingleUpdate."\n*/";
 
 
 //list
-$_apitestConfigSingle = 'apiList[apiList.length] = {
+$_apitestConfigSingle = '{
         \'title\':\''.($_tableNameCN.':'.'列表').'\'
         ,\'desc\':\'\'
         ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
@@ -579,12 +579,12 @@ $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestList) 
         ]
       };
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
+$_apitestConfigArray[] = "/*\n,".$_apitestConfigSingle."\n*/";
 
 
 //详情
 
-$_apitestConfigSingle = 'apiList[apiList.length] = {
+$_apitestConfigSingle = '{
         \'title\':\''.($_tableNameCN.':'.'详情').'\'
         ,\'desc\':\'\'
         ,\'time\':\''.(date('Y-m-d H:i:s')).'\'
@@ -599,7 +599,7 @@ $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestDetail
         ]
       };
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
+$_apitestConfigArray[] = "/*\n,".$_apitestConfigSingle."\n*/";
 
 
 $_controllerString = '<?php
