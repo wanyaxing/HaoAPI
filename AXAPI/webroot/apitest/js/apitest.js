@@ -404,7 +404,8 @@ function apiKeyBarInit()
       if (!_sortType){ sortKeyBar('name');return false;}
       console.log('按名称排序');
       _keyTypeArray.sort(function compare(a,b){
-          return a['keyPY'].localeCompare(b['keyPY']);
+          // return a['keyPY'].localeCompare(b['keyPY']);
+          return a['keyType'].localeCompare(b['keyType']);
       });
     }
     else if (_sortType=='time')
