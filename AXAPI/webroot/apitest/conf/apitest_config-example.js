@@ -1,9 +1,9 @@
-var SECRET_HAX_BROWSER   = 'secret=apixsfk101899klwilolw';
-var SECRET_HAX_PC        = 'secret=apio3i4089037arkefwap';
-var SECRET_HAX_ANDROID   = 'secret=apijsvd981972lzegofyk';
-var SECRET_HAX_IOS       = 'secret=apijfwa194207o0dmxvjc';
-var SECRET_HAX_WINDOWS   = 'secret=apiwjsl314393laurntyv';
-var USER_COOKIE_RANDCODE = 'f9823r2ioejall094287vddbtvdh';
+var SECRET_HAX_BROWSER   = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_PC        = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_ANDROID   = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_IOS       = 'secret=RESET_WHEN_NEW_PROJECT';
+var SECRET_HAX_WINDOWS   = 'secret=RESET_WHEN_NEW_PROJECT';
+var USER_COOKIE_RANDCODE = 'RESET_WHEN_NEW_PROJECT';
 
 var headerList =[
   {
@@ -217,7 +217,7 @@ var apiList = [
       {
         "title":'example:test'
         ,"desc":''
-        ,"action":'index.php'
+        ,"action":'/apitest/index.php'
         ,"method":"post"
         ,'request':[
            { 'key':'name',       'type':'string',  'title':'name',       'desc':'',    'required':false,  'test-value':'wanyaxing'}

@@ -1,6 +1,9 @@
 var currentUrl;
 var xhrTestingApi = null;
 var todayPassedTime = null;
+var _keyTypes = {};
+var _sortType = null;
+
 
 Date.prototype.format = function(format)
 {
@@ -316,7 +319,11 @@ function reFormApi(i)
   setCurrentUrl('#api'+'|'+i+'|'+apiList[i]['title']);
   if (_api['action'].indexOf('http')<0)
   {
-    _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/(\/apitest\/|\/)[^\/]*$/g,'')+'/') + _api['action'];
+    _api['action'] = window.location.protocol +'//'+ window.location.host
+                       + (_api['action'].indexOf('/')==0
+                            ?''
+                            :window.location.pathname.replace(/(\/apitest\/|\/)[^\/]*$/g,'')+'/')
+                       + _api['action'];
     _api['action'] = _api['action'].replace(/\/[^\/]+\/\.\.\//g,'/');
   }
   $('#link_api_url').val(_api['action']);
@@ -359,10 +366,88 @@ function reFormHeader()
   }
 }
 
+function sortKeyBar(_newSortType)
+{
+    if (_newSortType)
+    {
+      _sortType = _newSortType;
+    }
+    else
+    {
+      switch (_sortType)
+      {
+        case 'name':
+          _sortType = 'time';
+          break;
+
+        case 'time':
+          _sortType = 'name';
+          break;
+      }
+    }
+    apiKeyBarInit();
+    return false;
+}
+
+function apiKeyBarInit()
+{
+    var _now = (new Date()).getTime()/1000;
+    var _keyTypeArray = [];
+    var _timeLast = 0;
+    for(var _keyType in _keyTypes)
+    {
+      _keyTypeArray.push({'keyType':_keyType,'keyPY':makeFirstPy(_keyType),'timeunix':_keyTypes[_keyType]});
+      _timeLast = Math.max(_timeLast,_keyTypes[_keyType]);
+    }
+    if (_sortType=='name' || ( _sortType==null && (_now - _timeLast > 60 * 60 * 24 *3)))
+    {
+      if (!_sortType){ sortKeyBar('name');return false;}
+      console.log('按名称排序');
+      _keyTypeArray.sort(function compare(a,b){
+          return a['keyPY'].localeCompare(b['keyPY']);
+      });
+    }
+    else if (_sortType=='time')
+    {
+      if (!_sortType){ sortKeyBar('time');return false;}
+      console.log('按时间排序');
+      _keyTypeArray.sort(function compare(a,b){
+          return a['timeunix'] <= b['timeunix']?1:-1;
+      });
+    }
+    $('#switch_examples').empty();
+    var _lastKeyPY = null;
+    for(var i in _keyTypeArray)
+    {
+      var _keyType = _keyTypeArray[i]['keyType'];
+      var _keyPY = _keyTypeArray[i]['keyPY'];
+      var _timeunix = _keyTypeArray[i]['timeunix'];
+      $('#switch_examples').append('<button type="button" class="btn btn-default" onclick="changeKeyType(this);" keytype="'+_keyType+'">'
+                                  +_keyType
+                                  +( _sortType=='time'?range_to_badge(_now - _timeunix):(_lastKeyPY!=_keyPY?'<span class="badge">'+_keyPY+'</span>':''))
+                                  +'</button>');
+      _lastKeyPY = _keyPY;
+    }
+
+    var _sortStr = '排序';
+    switch (_sortType)
+    {
+      case 'name':
+        _sortStr = '按名称排序';
+        break;
+
+      case 'time':
+        _sortStr = '按时间排序';
+        break;
+    }
+    $('<button type="button" class="btn btn-default" onclick="changeKeyType(this);" keytype="所有">所有<span class="badge key_bar_sort" onclick="return sortKeyBar();" >'+_sortStr+'</span></button>').insertBefore($('#switch_examples button').eq(0));
+    $('<input id="input_search" type="text" class="btn btn-default" onkeyup="searchApiKey(this);" onclick="searchApiKey(this,1);" placeholder="search"/>').insertAfter($('#switch_examples button').eq(0));
+
+}
+
 function apiListInit()
 {
     var _listNode = $('#list_api_btns');
-    var _keyTypes = {};
     var _now = (new Date()).getTime()/1000;
 
     for (var i in apiList)
@@ -456,28 +541,7 @@ function apiListInit()
 
     reFormHeader();
 
-    // console.log(_keyTypes);
-    var _keyTypeArray = [];
-    for(var _keyType in _keyTypes)
-    {
-      _keyTypeArray.push({'keyType':_keyType,'timeunix':_keyTypes[_keyType]});
-    }
-    _keyTypeArray.sort(function compare(a,b){
-        return a['timeunix'] <= b['timeunix']?1:-1;
-    });
-    _keyTypeArray.unshift({'keyType':'所有','timeunix':1})
-    for(var i in _keyTypeArray)
-    {
-      var _keyType = _keyTypeArray[i]['keyType'];
-      var _timeunix = _keyTypeArray[i]['timeunix'];
-      $('#switch_examples').append('<button type="button" class="btn btn-default" onclick="changeKeyType(this);" keytype="'+_keyType+'">'
-                                  +_keyType
-                                  + range_to_badge(_now - _timeunix)
-                                  +'</button>');
-    }
-
-    $('<input id="input_search" type="text" class="btn btn-default" onkeyup="searchApiKey(this);" onclick="searchApiKey(this,1);" placeholder="search"/>').insertAfter($('#switch_examples button').eq(0));
-
+    apiKeyBarInit();
 }
 
 function configJsonInit()
