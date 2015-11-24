@@ -359,7 +359,8 @@ function reFormHeader()
   }
 }
 
-$(function(){
+function apiListInit()
+{
     var _listNode = $('#list_api_btns');
     var _keyTypes = {};
     var _now = (new Date()).getTime()/1000;
@@ -474,7 +475,35 @@ $(function(){
                                   + range_to_badge(_now - _timeunix)
                                   +'</button>');
     }
+
     $('<input id="input_search" type="text" class="btn btn-default" onkeyup="searchApiKey(this);" onclick="searchApiKey(this,1);" placeholder="search"/>').insertAfter($('#switch_examples button').eq(0));
+
+}
+
+function configJsonInit()
+{
+  if (configJsonFileList && configJsonFileList.length>0)
+  {
+    $.ajax({
+       type: 'GET',
+       url: configJsonFileList.pop(),
+       dataType: 'json',
+       async:true,//是否使用异步
+       success: function(result){
+            apiList = apiList.concat(result);
+            configJsonInit();
+       }
+    });
+  }
+  else
+  {
+    apiListInit();
+  }
+}
+
+$(function(){
+    configJsonInit();
+
 
     $('#switch_examples').children().eq(0).trigger('click');
 
