@@ -114,28 +114,28 @@
   if (file_exists('apitest-config.js'))
   {
     printf('<script type="text/javascript" src="%s" ></script>','apitest-config.js');
-    foreach(  (array)glob(__dir__ . "/apitest-config.*.js" ) as $_jobFile )
-    {
-      print("\n");
-      printf('<script type="text/javascript" src="%s" ></script>',basename($_jobFile));
-    }
   }
   else if (file_exists(__dir__.'/conf/apitest_config.js'))
   {
     printf('<script type="text/javascript" src="%s" ></script>','conf/apitest_config.js');
-    $configJsonFileList = array();
-    foreach(  (array)glob(__dir__ . "/conf/apitest_config.*.json" ) as $_jobFile )
-    {
-      $configJsonFileList[] = 'conf/'.basename($_jobFile);
-    }
-    if (count($configJsonFileList)>0)
-    {
-      printf('<script type="text/javascript">var configJsonFileList = %s ;</script>', json_encode($configJsonFileList));
-    }
   }
   else
   {
     print('<script type="text/javascript">alert("错误，无法引入apitest_config.js文件，请检查。（初始化apitest时，需要将apitest_config-example.js改为apitest_config.js哦。");</script>');
+  }
+  foreach(  (array)glob(__dir__ . "/apitest-config.*.js" ) as $_jobFile )
+  {
+    print("\n");
+    printf('<script type="text/javascript" src="%s" ></script>',basename($_jobFile));
+  }
+  $configJsonFileList = array();
+  foreach(  (array)glob(__dir__ . "/conf/apitest_config.*.json" ) as $_jobFile )
+  {
+    $configJsonFileList[] = 'conf/'.basename($_jobFile);
+  }
+  if (count($configJsonFileList)>0)
+  {
+    printf('<script type="text/javascript">var configJsonFileList = %s ;</script>', json_encode($configJsonFileList));
   }
 ?>
 
