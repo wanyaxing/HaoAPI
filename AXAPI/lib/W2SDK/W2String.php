@@ -383,4 +383,25 @@ class W2String {
         }
         return $p_string;
     }
+
+    //驼峰式字符串（首字母大写）
+    public static function camelCaseWithUcFirst($str)
+    {
+        return ucfirst(W2String::camelCase($str));
+    }
+
+    //驼峰式字符串（首字母小写）
+    public static function camelCase($str)
+    {
+        //使用空格隔开后，每个单词首字母大写
+        $str = ucwords(str_replace('_', ' ', $str));
+        //小写字符串的首字母，然后删除空格
+        $str = str_replace(' ','',lcfirst($str));
+        return $str;
+    }
+
+    /** 下划线格式的字符串（全部小写） */
+    public static function under_score($str) {
+        return strtolower(ltrim(preg_replace_callback('/[A-Z]/', function ($mathes) { return '_' . strtolower($mathes[0]); }, $str), '_'));
+    }
 }
