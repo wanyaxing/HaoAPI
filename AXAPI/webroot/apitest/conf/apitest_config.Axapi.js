@@ -1,6 +1,4 @@
-[
-
-{
+apiList.push({
   "title":"接口工具:Say Hello"
   ,"desc":""
   ,"time":""
@@ -15,9 +13,9 @@
     ,{ "key":"content",    "type":"string",  "title":"content",    "desc":"",    "required":false,  "test-value":"see more detail , https://github.com/wanyaxing/apitest.php"
     }
   ]
-}
+});
 
-,{
+apiList.push({
   "title":"接口工具:查看日志（限管理员）"
   ,"desc":""
   ,"time":""
@@ -29,6 +27,4 @@
     ,{ "key":"type"                 ,"type":"string"      ,"required":true ,"test-value":"error"                         ,"title":"日志类型" ,"desc":"限以下值（access: 访问日志, error:错误日志）" }
     ,{ "key":"datetime"             ,"type":"datetime"      ,"required":false ,"test-value":"error"                         ,"title":"指定日志所在日期（默认当日）" ,"desc":"" }
   ]
-}
-
-]
+});
