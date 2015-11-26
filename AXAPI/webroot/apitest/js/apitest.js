@@ -547,7 +547,7 @@ function apiListInit()
 
 function configJsonInit()
 {
-  if (configJsonFileList && configJsonFileList.length>0)
+  if (typeof(configJsonFileList)=='object' && configJsonFileList.length>0)
   {
     $.ajax({
        type: 'GET',
