@@ -67,7 +67,7 @@ class W2HttpRequest {
             }
 
         }
-        if (defined('IS_AX_DEBUG')){print("\n");printf('%s [%d] %s -> %s ' , W2Time::microtimetostr(null,'Y-m-d H:i:s.u') , __LINE__,  __FILE__, __METHOD__);print("\n");var_export($p_key);print(" : ");var_export($_v);print("\n");}
+        if (defined('IS_AX_DEBUG')){var_export($p_key);print(" : ");var_export($_v);print("\n");}
         return $_v;
     }
 
