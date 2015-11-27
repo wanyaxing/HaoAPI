@@ -30,19 +30,19 @@ class W2PUSH {
 		$push = null;
 		if ($device_type==4) //IOS 推送
 		{
-			if (static::$API_KEY_IOS==null)
+			if (static::$API_KEY_IOS==null && defined('W2PUSH_API_KEY_IOS'))
 			{
-				static::$API_KEY_IOS    = W2Config::$API_KEY_IOS;
-				static::$SECRET_KEY_IOS = W2Config::$SECRET_KEY_IOS;
+				static::$API_KEY_IOS    = W2PUSH_API_KEY_IOS;
+				static::$SECRET_KEY_IOS = W2PUSH_SECRET_KEY_IOS;
 			}
 			$push = new XingeApp(static::$API_KEY_IOS, static::$SECRET_KEY_IOS);
 		}
 		else if ($device_type==3) //安卓推送
 		{
-			if (static::$API_KEY_IOS==null)
+			if (static::$API_KEY_IOS==null && defined('W2PUSH_API_KEY_IOS'))
 			{
-				static::$API_KEY_ANDROID    = W2Config::$API_KEY_ANDROID;
-				static::$SECRET_KEY_ANDROID = W2Config::$SECRET_KEY_ANDROID;
+				static::$API_KEY_ANDROID    = W2PUSH_API_KEY_ANDROID;
+				static::$SECRET_KEY_ANDROID = W2PUSH_SECRET_KEY_ANDROID;
 			}
 			$push = new XingeApp(static::$API_KEY_ANDROID, static::$SECRET_KEY_ANDROID);
 		}

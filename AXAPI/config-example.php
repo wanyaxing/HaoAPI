@@ -33,36 +33,38 @@ if (!defined('DB_HOST'))
     define('DB_PASSWORD', 'weiohaoyeI738');
 }
 
+define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目录 */
+// define('W2LOG_FILENAME' , 'w2log.log');         * 日志存储文件名
 
 //请酌情配置以下信息
-// W2Config::$API_KEY_ANDROID    = '2100023326834';                   /** xg推送 */
-// W2Config::$SECRET_KEY_ANDROID = 'cacd0597db93508d874c49c';         /** xg推送 */
-// W2Config::$API_KEY_IOS        = '2100023226814';                   /** xg推送 */
-// W2Config::$SECRET_KEY_IOS     = 'b632046c0cewfwe985eabe00';        /** xg推送 */
+/** xg推送 */
+// define('W2PUSH_API_KEY_ANDROID'   , '2100023326834');
+// define('W2PUSH_SECRET_KEY_ANDROID', 'cacd0597db93508d874c49c');
+// define('W2PUSH_API_KEY_IOS'       , '2100023226814');
+// define('W2PUSH_SECRET_KEY_IOS'    , 'b632046c0cewfwe985eabe00');
 
-// W2Config::$API_KEY            = '54d47832fd98c5dbd10001df';        /** 百度推送 */
-// W2Config::$SECRET_KEY         = 'c3a48b44a21e37210c3e3b7add5c1c7a';/** 百度推送 */
+/** 七牛配置 */
+// define('W2QINIU_QINIU_BUCKET'   , 'test');
+// define('W2QINIU_QINIU_DOMAIN'   , '7u2sdg.test.z0.glb.clouddn.com');
+// define('W2QINIU_QINIU_ACCESSKEY', '_AFIydsfaRbmMRP8aO38y3C9');
+// define('W2QINIU_QINIU_SECRETKEY', 'Uv9yBLUeqsdfafmVgAybHBRbT07Jj');
 
-// W2Config::$Qiniu_bucket       = 'test';                            /** 七牛配置 */
-// W2Config::$Qiniu_domain       = '7u2sdg.test.z0.glb.clouddn.com';  /** 七牛配置 */
-// W2Config::$Qiniu_accessKey    = '_AFIydsfaRbmMRP8aO38y3C9';        /** 七牛配置 */
-// W2Config::$Qiniu_secretKey    = 'Uv9yBLUeqsdfafmVgAybHBRbT07Jj';   /** 七牛配置 */
+/** SMS用户密码 */
+// define('W2SMS_USER'  , 'USERNAME');
+// define('W2SMS_PASSWD', '123456');
 
-// W2Config::$SMS_USER    		  = 'USERNAME';  						   /** SMS用户名 */
-// W2Config::$SMS_PASSWD         = '123456';   					   /** SMS密码 */
+/** 云之讯相关密钥 */
+// defin('UCPASS_ACCOUNTSID', '');
+// defin('UCPASS_TOKEN'     , '');
+// defin('UCPASS_APPID'     , '');
+// defin('UCPASS_TEMPLATEID', '');
 
 
-// W2Config::$UCPASS_ACCOUNTSID    = null;                            /** 云之讯相关密钥 */
-// W2Config::$UCPASS_TOKEN         = null;                            /** 云之讯相关密钥 */
-// W2Config::$UCPASS_APPID         = null;                            /** 云之讯相关密钥 */
-// W2Config::$UCPASS_TEMPLATEID    = null;                            /** 云之讯相关密钥 */
-
-W2Config::$LOG_PATH           = AXAPI_ROOT_PATH . '/logs/';   	   /** 日志存储目录 */
-
-// W2Config::$CACHE_HOST  = '127.0.0.1';                                     //缓存服务器
-// W2Config::$CACHE_PORT  = '6379';                                          //缓存端口
-// W2Config::$CACHE_INDEX = 1;                                               //缓存数据库索引，一般是0-20
-// W2Config::$CACHE_AUTH  = null; 											  //缓存密码，如果需要的话。
+/** redis 缓存服务器 */
+// define('W2CACHE_HOST'  ,'127.0.0.1');
+// define('W2CACHE_PORT'  ,'6379');
+// define('W2CACHE_INDEX' ,4);
+// define('W2CACHE_AUTH'  ,'thIsIsteStseRverForhAOxitech1305bywYxin151006');
 
 // 默认分页数据量
 define("DEFAULT_PAGE_SIZE", 10);

@@ -10,6 +10,8 @@
  */
 class W2Log {
 
+    public static $LOG_PATH;
+
     public static $LOG_LEVELS = array('debug', 'info', 'warn', 'error');
 
     /**
@@ -49,15 +51,15 @@ class W2Log {
      * @param string 日志内容
      */
     private static function log($p_level, $p_logArgs, $p_showTrace=false){
-        if (!is_dir(W2Config::$LOG_PATH))
+        if (!is_dir(static::$LOG_PATH))
         {
-            throw new Exception('日志目录不存在：'.W2Config::$LOG_PATH);
+            throw new Exception('日志目录不存在：'.static::$LOG_PATH);
             return false;
         }
         $_logLevel = defined('LOG_LEVEL')?LOG_LEVEL:'info';
         $_fileName = null;
-        if (!is_null(W2Config::$LOG_FILENAME)) {
-            $_fileName = W2Config::$LOG_FILENAME;
+        if (!is_null(static::$LOG_FILENAME)) {
+            $_fileName = static::$LOG_FILENAME;
         } else {
             $_dbt = debug_backtrace();
             foreach ($_dbt as $_i => $_d) {
@@ -81,7 +83,7 @@ class W2Log {
 
         $_log = sprintf("%s.%-03s %7s %s\n", strftime('%F %T'), $_ms, '['.strtoupper(W2Log::$LOG_LEVELS[$p_level]).']', W2Log::buildLog($p_logArgs, $p_showTrace) );
 
-        $_logFile = sprintf('%s/%s-%s.log',W2Config::$LOG_PATH, $_fileName, strftime('%Y%m%d'));
+        $_logFile = sprintf('%s/%s-%s.log',static::$LOG_PATH, $_fileName, strftime('%Y%m%d'));
 
         if(isset($_logFile)) {
             file_put_contents($_logFile,$_log,FILE_APPEND);
@@ -290,4 +292,12 @@ class W2Log {
     */
 }
 
-?>
+//静态类的静态变量的初始化不能使用宏，只能用这样的笨办法了。
+if (W2SMS::$LOG_PATH == nul && defined('W2LOG_PATH'))
+{
+    W2SMS::$LOG_PATH      = W2LOG_PATH;
+}
+if (W2SMS::$LOG_FILENAME == nul && defined('W2LOG_FILENAME'))
+{
+    W2SMS::$LOG_FILENAME      = W2LOG_FILENAME;
+}

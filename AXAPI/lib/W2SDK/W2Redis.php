@@ -31,12 +31,12 @@ class W2Redis {
     /** 缓存工厂，获得缓存连接。 */
     public static function memFactory(){
         if (static::$_ax_connect===null && class_exists('Redis') ) {
-            if (static::$CACHE_HOST==null)
+            if (static::$CACHE_HOST==null && defined('W2CACHE_HOST'))
             {
-                static::$CACHE_HOST    = W2Config::$CACHE_HOST;
-                static::$CACHE_PORT    = W2Config::$CACHE_PORT;
-                static::$CACHE_INDEX   = W2Config::$CACHE_INDEX;
-                static::$CACHE_AUTH    = W2Config::$CACHE_AUTH;
+                static::$CACHE_HOST    = W2CACHE_HOST;
+                static::$CACHE_PORT    = W2CACHE_PORT;
+                static::$CACHE_INDEX   = W2CACHE_INDEX;
+                static::$CACHE_AUTH    = W2CACHE_AUTH;
             }
             if (static::$CACHE_HOST!=null)
             {
