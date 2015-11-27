@@ -126,10 +126,8 @@ class Utility
 				        switch($tmpModel->getStatus())
 				        {
 				            case STATUS_DRAFT:    //未激活
-				                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'未激活');
 				                break;
 				            case STATUS_PENDING:  //待审禁言
-				                // return Utility::getArrayForResults(RUNTIME_CODE_ERROR_DATA_EMPTY,'禁言用户');
 				                break;
 				            case STATUS_DISABLED: //封号
 				            	$tmpModel = null;
@@ -211,13 +209,7 @@ class Utility
 	 */
     public static function getArrayForResults($errorCode=0,$errorStr='',$result = array(),$extraInfo=array())
     {
-    	return array(
-					'errorCode' => $errorCode,
-					'errorStr' => $errorStr,
-					'resultCount'=> (is_array($result) && array_values($result)===$result?count($result):1),
-					'extraInfo'	=> $extraInfo,
-					'results'	=> $result
-    		);
+    	return HaoResult::init(is_array($errorCode)?$errorCode:array($errorCode,$errorStr,$errorStr),$result,$extraInfo);
     }
 
     /**
@@ -227,7 +219,7 @@ class Utility
      */
     public static function isResults($tmpResult=null)
     {
-    	return (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult) );
+    	return  (is_object($tmpResult) && get_class($tmpModel)=='HaoResult') || (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult) ) ;
     }
 
     /**
@@ -237,7 +229,7 @@ class Utility
      */
     public static function isResultsOK($tmpResult=null)
     {
-    	return (Utility::isResults($tmpResult) && $tmpResult['errorCode']==RUNTIME_CODE_OK);
+    	return (Utility::isResults($tmpResult) && ((is_object($tmpResult) && $tmpResult->isResultsOK()) || (is_array($tmpResult) && $tmpResult['errorCode']==RUNTIME_CODE_OK)));
     }
 
     /**
@@ -249,11 +241,15 @@ class Utility
     {
     	if (Utility::isResultsOK($tmpResult))
     	{
-    		return $tmpResult['results'];
+    		return is_object($tmpResult)?$tmpResult->getResults():$tmpResult['results'];
     	}
     	return null;
     }
 
+    /**
+     * 对请求进行校验
+     * @return HaoResult
+     */
     public static function getAuthForApiRequest()
     {
     	$isAuthed = false;
@@ -273,13 +269,13 @@ class Utility
 				}
 				else
 				{
-					return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请求信息错误',array('errorContent'=>'缺少头信息：'.$_key));
+					return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array('errorContent'=>'缺少头信息：'.$_key));
 				}
 			}
 
 			if (abs($_HEADERS['Requesttime'] - time()) > 5*60 )//300
 			{
-				return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'请求失败了，请检查你的网络状态和系统时间是否准确哦。');
+				return HaoResult::init(ERROR_CODE::$REQUEST_TIME_OUT);
 			}
 
 			//加密版本2.0，支持应用识别码和debug模式
@@ -292,7 +288,7 @@ class Utility
 					}
 					else
 					{
-						return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请求信息错误',array('errorContent'=>'缺少头信息：'.$_key));
+						return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array('errorContent'=>'缺少头信息：'.$_key));
 					}
 				}
 
@@ -354,6 +350,7 @@ class Utility
 					'tmpArr'=>$tmpArr,
 					'tmpArrString'=>implode( $tmpArr ),
 					'tmpArrMd5'=>$tmpStr,
+					'getallheaders()'=>getallheaders(),
 					);
 			}
 
@@ -364,15 +361,15 @@ class Utility
 		}
 		else
 		{
-			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请求信息错误',array('errorContent'=>'缺少头信息：'.'signature'));
+			return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array('errorContent'=>'缺少头信息：'.'signature'));
 		}
 		if ($isAuthed === true)
 		{
-			return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$isAuthed);
+			return HaoResult::init(ERROR_CODE::$OK,$isAuthed);
 		}
 		else
 		{
-			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_NO_AUTH,'校验失败','');
+			return HaoResult::init(ERROR_CODE::$SIGNATURE_WRONG,$isAuthed);
 		}
 
     }

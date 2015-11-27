@@ -6,15 +6,15 @@ if(!function_exists('___autoload')) {
         $_dir = '';
         if (strpos($p_className,'Handler')!==false)
         {
-            $_dir = AXAPI_ROOT_PATH.'/AXBase/handlers';
+            $_dir = AXAPI_ROOT_PATH.'/mhc/handlers';
         }
         else if (strpos($p_className,'Model')!==false)
         {
-            $_dir = AXAPI_ROOT_PATH.'/AXBase/models';
+            $_dir = AXAPI_ROOT_PATH.'/mhc/models';
         }
         else if (strpos($p_className,'Controller')!==false)
         {
-            $_dir = AXAPI_ROOT_PATH.'/AXBase/controllers';
+            $_dir = AXAPI_ROOT_PATH.'/mhc/controllers';
         }
         else if (strpos($p_className,'W2')!==false)
         {
