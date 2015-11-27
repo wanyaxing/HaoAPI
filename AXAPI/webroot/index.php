@@ -85,8 +85,8 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
 
                 //返回错误信息
                 @ob_end_clean();//要清空缓冲区， 从而删除PHPs " 致命的错误" 消息。
-                $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_UNKNOWN,$errorMsg,null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$last_error['line'].' in '.$last_error['file'].': '.$last_error['message'].''):null);
-                echo json_encode($results, JSON_UNESCAPED_UNICODE);
+                $results = HaoResult::init(array(RUNTIME_CODE_ERROR_UNKNOWN,$errorMsg,$errorMsg),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$last_error['line'].' in '.$last_error['file'].': '.$last_error['message'].''):null);
+                echo json_encode($results->properties(), JSON_UNESCAPED_UNICODE);
                 exit;
             }
         }
@@ -98,7 +98,6 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
     if (count($apiPaths)<3)
     {
         list ($apiController, $apiAction) = explode ("/", W2HttpRequest::getRequestString('r',false,'/'), 2);
-        // $results = Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'错误的请求地址，请使用正确的[/对象/方法]地址。');
     }
     else
     {
@@ -108,44 +107,24 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
 
     //接口格式校验
     $results = Utility::getAuthForApiRequest();
-    if ( $results['errorCode']==RUNTIME_CODE_OK)
+    if ( $results->isResultsOK())
     {
         //调用对应接口方法
         try {
 
-            $method = new ReflectionMethod($apiController.'Controller', 'action'.$apiAction);
+            $method = new ReflectionMethod(W2String::camelCase($apiController.'Controller'), W2String::camelCase('action'.$apiAction));
             $results = $method->invoke(null,0);
+            // $apiController .= 'Controller';
+            // $apiAction = 'action'.$apiAction;
+            // $apiController::$apiAction();
         } catch (Exception $e) {
-            $results = Utility::getArrayForResults($e->getCode()==0?RUNTIME_CODE_ERROR_UNKNOWN:$e->getCode(),$e->getMessage(),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''):null);
+            $results = HaoResult::init(array($e->getCode()==0?RUNTIME_CODE_ERROR_UNKNOWN:$e->getCode(),$e->getMessage(),$e->getMessage()),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''):null);
         }
     }
 
     //打印接口返回的数据
-    if (is_array($results))
+    if ( get_class($results) == 'HaoResult' )
     {
-        if (array_key_exists('errorCode',$results))
-        {
-            $data = $results['results'];
-            if (is_object($results['results']) && is_subclass_of($results['results'],'AbstractModel'))
-            {
-                $data = $results['results']->properties();
-            }
-            else if (is_array($results['results']) && array_key_exists(0, $results['results']))
-            {
-                $data = array();
-                foreach ($results['results'] as $_key => $_value) {
-                    if (is_object($_value) && is_subclass_of($_value,'AbstractModel'))
-                    {
-                        $data[$_key] = $_value->properties();
-                    }
-                    else
-                    {
-                        $data[$_key] = $_value;
-                    }
-                }
-            }
-            $results['results'] = $data;
-        }
         if (defined('IS_AX_DEBUG'))
         {
             print_r($results);
@@ -153,7 +132,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         else
         {
             header('Content-Type:text/javascript; charset=utf-8');
-            echo json_encode($results, JSON_UNESCAPED_UNICODE);
+            echo json_encode($results->properties(), JSON_UNESCAPED_UNICODE);
         }
     }
     else if (is_string($results))

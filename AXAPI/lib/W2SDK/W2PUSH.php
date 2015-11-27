@@ -50,6 +50,10 @@ class W2PUSH {
 		{
 			AX_DEBUG($push);
 		}
+		if ($push == null)
+		{
+			throw new Exception('推送对象获取失败，无法创建推送任务。');
+		}
 		return $push;
 	}
 
@@ -58,7 +62,7 @@ class W2PUSH {
 	 */
 	public static function QueryInfoOfToken($p_deviceToken,$device_type)
 	{
-		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$push = static::getPush($device_type);
 		return $push->QueryInfoOfToken($p_deviceToken);
 	}
 
@@ -67,7 +71,7 @@ class W2PUSH {
 	 */
 	public static function queryTokenTags($p_deviceToken,$device_type)
 	{
-		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$push = static::getPush($device_type);
 		// var_export($device_type);
 		$ret = $push->QueryTokenTags($p_deviceToken);
 		if (is_array($ret) && array_key_exists('result', $ret)&& array_key_exists('tags', $ret['result']))
@@ -122,7 +126,7 @@ class W2PUSH {
 	 */
 	public static function BatchAddTag($p_deviceTokens,$device_type,$tag_names)
 	{
-		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$push = static::getPush($device_type);
 		$pairs = array();
 		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
 		$tag_names      = is_array($tag_names)?$tag_names:explode(',',$tag_names);
@@ -155,7 +159,7 @@ class W2PUSH {
 	 */
 	public static function BatchDelTag($p_deviceTokens,$device_type,$tag_names)
 	{
-		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$push = static::getPush($device_type);
 		$pairs = array();
 		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
 		$tag_names      = is_array($tag_names)?$tag_names:explode(',',$tag_names);
@@ -201,7 +205,7 @@ class W2PUSH {
 		$mess = null;
 
 		/** @var XingeApp */
-		$push = static::getPush($device_type);if ($push==null){return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'推送对象获取失败，无法创建推送任务。');}
+		$push = static::getPush($device_type);
 		if ($device_type==4) //IOS 推送
 		{
 			$mess = new MessageIOS();
@@ -243,7 +247,7 @@ class W2PUSH {
 		}
 		else
 		{
-			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请传入正确的设备类型，iOS 还是 安卓');
+			return false;
 		}
 		$params['production_mode']= $deploy_status==2;//是否正式环境
 
@@ -254,7 +258,8 @@ class W2PUSH {
     			$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
     			if (count($p_deviceTokens)==0 || (count($p_deviceTokens)==1 && $p_deviceTokens[0]==null))
     			{
-	    			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'请传入正确的用户推送token');
+    				throw new Exception('请传入正确的用户推送token');
+	    			return false;
     			}
     			if (count($p_deviceTokens)>5)//设备多的话，就用大批量推送
     			{
@@ -324,10 +329,10 @@ class W2PUSH {
 				}
     			break;
     		default:
-    			return Utility::getArrayForResults(RUNTIME_CODE_ERROR_PARAM,'push_type 1:单个人 2部分人 3所有人');
+    			throw new Exception('push_type 1:单个人 2部分人 3所有人');
     	}
 
-    	return Utility::getArrayForResults(RUNTIME_CODE_OK,'',array('push_type'=>$push_type,'device_type'=>$device_type, 'messages'=>$mess,'result'=>$ret));
+    	return array(ERROR_CODE::$OK,array('push_type'=>$push_type,'device_type'=>$device_type, 'messages'=>$mess,'result'=>$ret));
     }
 
 }
