@@ -76,6 +76,10 @@ class AbstractController {
             if (!is_object($_user))
             {
                 $auth = 'visitor';//游客
+                if (!class_exists(USERHANDLER_NAME))
+                {
+                    $auth = 'admin';//如果不存在用户Handler，则游客都是admin
+                }
             }
             else
             {
