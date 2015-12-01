@@ -13,6 +13,8 @@ if (!defined('AXAPI_ROOT_PATH'))
 
 //加载类 并注册自动加载事件。
 require_once(AXAPI_ROOT_PATH.'/components/autoload.php');
+require_once(AXAPI_ROOT_PATH.'/mhc/models/HaoResult.php');
+
 
 /** API项目名（最好全网唯一）   */  define('AXAPI_PROJECT_NAME', 'project-haoframe' );
 
