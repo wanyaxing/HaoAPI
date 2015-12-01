@@ -230,7 +230,7 @@ class AbstractController {
 
 
         $tmpResult = static::loadList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis,$isDetail);
-        if (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult))
+        if (is_object($tmpResult) && get_class($tmpResult)=='HaoResult')
         {
             return $tmpResult;
         }
