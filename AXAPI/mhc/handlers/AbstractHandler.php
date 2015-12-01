@@ -727,6 +727,13 @@ class AbstractHandler {
         return $data;
     }
 
+    /** 执行sql语句     */
+    public static function executeSql($sql)
+    {
+        return DBTool::queryData($sql);
+    }
+
+
     /**
      * 更新缓存W2Cache
      * @param  int $_modelId [description]
