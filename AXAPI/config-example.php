@@ -89,3 +89,34 @@ class CONST_CLASS
         return array_values($constants);
     }
 }
+
+
+/** 专用的ERROR_CODE类，同时提供了描述文本 */
+class ERROR_CODE
+{
+    public static $OK              = array(0,  '',            '');
+    public static $UNKNOWN_ERROR   = array(1,  '未知错误',            'unknow error');
+    public static $DB_ERROR        = array(2,  '数据库错误',          'database error');
+    public static $PARAM_ERROR     = array(3,  '请求参数错误',        'param error');
+    public static $DATA_EMPTY      = array(4,  '数据不存在',          'nothing here');
+    public static $NO_AUTH         = array(5,  '没有权限操作',        'no promise here');
+    public static $NOT_USER        = array(6,  '没有登录，不可操作。',  'no login no promise');
+    public static $NOT_MODEL       = array(7,  '错误的模型对象',       'model error');
+    public static $NO_FILE_UPLOAD  = array(8,  '没有发现上传文件',     'no file found');
+    public static $INVALID_USER_ID = array(9,  '错误的用户信息',       'user info unkonw');
+    public static $NO_CHANGE_FOUND = array(10, '未发现数据更新',       'no change found');
+
+    public static $ONLY_GET_ALLOW  = array(11, '错误，此处只接受GET数据。',       'only get allow here');
+    public static $ONLY_POST_ALLOW = array(12, '错误，此处只接受POST数据。',       'only post allow here');
+    public static $ONLY_USER_ALLOW = array(13, '您需要登录后才可以执行该操作。',       'only post allow here');
+    public static $REQUEST_TIME_OUT = array(14, '请求失败了，请检查你的网络状态和系统时间是否准确哦。',       'request is out of time');
+    public static $SIGNATURE_WRONG = array(15, '校验失败',       'SIGNATURE_WRONG');
+    public static $ORDER_VALUE_ERROR = array(16, '请使用正确的排序方案。',       'ORDER_VALUE_ERROR');
+    public static $NO_TBALE_FOUND = array(17, '没有对应的表存在',       'NO_TBALE_FOUND');
+
+
+    //实际开发过程中，可以继续自定义更多的错误类型
+    public static $LOGLIST_TYPE_WRONG = array(101, '错误的日志类型',       'LOGLIST_TYPE_WRONG');
+    public static $LOGLIST_NO_LOG_FOUND = array(102, '暂无相关日志',       'LOGLIST_NO_LOG_FOUND');
+}
+
