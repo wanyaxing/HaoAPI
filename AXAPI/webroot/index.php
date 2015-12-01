@@ -38,7 +38,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
                             ,sprintf("[%s] (%s s) [%s] [%d] [%s] [%s/%s]: %s\n"
                                         ,W2Time::microtimetostr(AX_TIMER_START)
                                         ,number_format(microtime (true) - AX_TIMER_START, 5, '.', '')
-                                        ,$_SERVER['REMOTE_ADDR']
+                                        ,Utility::getCurrentIP()
                                         ,Utility::getCurrentUserID()
                                         ,count($_POST)>0?'POST':'GET'
                                         ,$GLOBALS['apiController'], $GLOBALS['apiAction']

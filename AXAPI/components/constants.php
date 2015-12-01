@@ -51,6 +51,7 @@ class DEVICE_TYPE
 {
 	const BROWSER  = 1;
 	const PC       = 2;
+	const LINUX    = 2;
 	const ANDROID  = 3;
 	const IOS 	   = 4;
 	const WINDOWS  = 5;
