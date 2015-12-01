@@ -42,7 +42,7 @@ class AxapiController extends AbstractController{
                 break;
 
             default:
-                return HaoResult::init(ERROR_CODE::LOGLIST_TYPE_WRONG);
+                return HaoResult::init(ERROR_CODE::$LOGLIST_TYPE_WRONG);
                 break;
         }
 
@@ -55,7 +55,7 @@ class AxapiController extends AbstractController{
         if (defined('IS_AX_DEBUG')){print("\n");print(W2Time::microtimetostr());print("\n");var_export($logFilePath);print("\n");}
         if (!file_exists($logFilePath))
         {
-            return HaoResult::init(ERROR_CODE::LOGLIST_NO_LOG_FOUND);
+            return HaoResult::init(ERROR_CODE::$LOGLIST_NO_LOG_FOUND);
         }
 
         $lineList = file($logFilePath);//把整个文件读入一个数组中。
