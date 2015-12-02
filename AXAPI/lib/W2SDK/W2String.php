@@ -402,6 +402,7 @@ class W2String {
 
     /** 下划线格式的字符串（全部小写） */
     public static function under_score($str) {
+        $str = str_replace('ID','Id',$str);
         return strtolower(ltrim(preg_replace_callback('/[A-Z]/', function ($mathes) { return '_' . strtolower($mathes[0]); }, $str), '_'));
     }
 }
