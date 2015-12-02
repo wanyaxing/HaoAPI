@@ -244,7 +244,7 @@ class Utility
      */
     public static function isResults($tmpResult=null)
     {
-    	return  (is_object($tmpResult) && get_class($tmpModel)=='HaoResult') || (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult) ) ;
+    	return  (is_object($tmpResult) && get_class($tmpResult)=='HaoResult') || (is_array($tmpResult) && array_key_exists('errorCode',$tmpResult) ) ;
     }
 
     /**
