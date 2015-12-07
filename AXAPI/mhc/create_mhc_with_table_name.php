@@ -798,7 +798,7 @@ if (IS_SPECIAL_TABLE=='user')
         \'title\':\'用户:修改密码（不登录，需要验证短信）\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/user/UpdateWithVerifyCode\'
+        ,\'action\':\'/user/update_with_verify_code\'
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'13774298448\'                         ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
@@ -811,7 +811,7 @@ apiList[apiList.length] = {
         \'title\':\'用户:修改密码／邮箱/手机（需要登录，并提供原始密码）\'
         ,\'desc\':\'（修改手机需要验证新手机）<br/>（联合登录用户，初次设定密码不需要原始密码）\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/user/updateWithOldPassword\'
+        ,\'action\':\'/user/update_with_oldpassword\'
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'oldpassword\'              ,\'type\':\'md5\'        ,\'required\': false ,\'test-value\':\'123456\'                              ,\'title\':\'旧密码\' ,\'desc\':\'\' }
@@ -839,7 +839,7 @@ apiList[apiList.length] = {
         \'title\':\'用户:联合登录\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/user/UnionLogin\'
+        ,\'action\':\'/user/union_login\'
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'uniontype\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
@@ -851,7 +851,7 @@ apiList[apiList.length] = {
         \'title\':\'用户:登录后绑定对应联合登录\'
         ,\'desc\':\'登录后调用该接口可新增绑定\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/user/SetUnionLogin\'
+        ,\'action\':\'/user/set_union_login\'
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'uniontype\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
@@ -863,7 +863,7 @@ apiList[apiList.length] = {
         \'title\':\'用户:注销\'
         ,\'desc\':\'用户点击注销，本地删除其登录信息，同时调用本接口以便服务器解除其账号与设备的绑定信息。\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/user/LogOut\'
+        ,\'action\':\'/user/log_out\'
         ,\'method\':\'get\'
         ,\'request\':[
 
@@ -874,7 +874,7 @@ apiList[apiList.length] = {
         \'title\':\'用户:我的信息\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/user/GetMyDetail\'
+        ,\'action\':\'/user/get_my_detail\'
         ,\'method\':\'get\'
         ,\'request\':[
 

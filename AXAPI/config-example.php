@@ -96,29 +96,63 @@ class CONST_CLASS
 /** 专用的ERROR_CODE类，同时提供了描述文本 */
 class ERROR_CODE
 {
-    public static $OK              = array(0,  '',            '');
-    public static $UNKNOWN_ERROR   = array(1,  '未知错误',            'unknow error');
-    public static $DB_ERROR        = array(2,  '数据库错误',          'database error');
-    public static $PARAM_ERROR     = array(3,  '请求参数错误',        'param error');
-    public static $DATA_EMPTY      = array(4,  '数据不存在',          'nothing here');
-    public static $NO_AUTH         = array(5,  '没有权限操作',        'no promise here');
-    public static $NOT_USER        = array(6,  '没有登录，不可操作。',  'no login no promise');
-    public static $NOT_MODEL       = array(7,  '错误的模型对象',       'model error');
-    public static $NO_FILE_UPLOAD  = array(8,  '没有发现上传文件',     'no file found');
-    public static $INVALID_USER_ID = array(9,  '错误的用户信息',       'user info unkonw');
-    public static $NO_CHANGE_FOUND = array(10, '未发现数据更新',       'no change found');
+    public static $OK                   = array(0,  '',            '');
+    public static $UNKNOWN_ERROR        = array(1,  '未知错误',            'unknow error');
+    public static $DB_ERROR             = array(2,  '数据库错误',          'database error');
+    public static $PARAM_ERROR          = array(3,  '请求参数错误',        'param error');
+    public static $DATA_EMPTY           = array(4,  '数据不存在',          'nothing here');
+    public static $NO_AUTH              = array(5,  '没有权限操作',        'no promise here');
+    public static $NOT_USER             = array(6,  '没有登录，不可操作。',  'no login no promise');
+    public static $NOT_MODEL            = array(7,  '错误的模型对象',       'model error');
+    public static $NO_FILE_UPLOAD       = array(8,  '没有发现上传文件',     'no file found');
+    public static $INVALID_USER_ID      = array(9,  '错误的用户信息',       'user info unkonw');
+    public static $NO_CHANGE_FOUND      = array(10, '未发现数据更新',       'no change found');
 
-    public static $ONLY_GET_ALLOW  = array(11, '错误，此处只接受GET数据。',       'only get allow here');
-    public static $ONLY_POST_ALLOW = array(12, '错误，此处只接受POST数据。',       'only post allow here');
-    public static $ONLY_USER_ALLOW = array(13, '您需要登录后才可以执行该操作。',       'only post allow here');
-    public static $REQUEST_TIME_OUT = array(14, '请求失败了，请检查你的网络状态和系统时间是否准确哦。',       'request is out of time');
-    public static $SIGNATURE_WRONG = array(15, '校验失败',       'SIGNATURE_WRONG');
-    public static $ORDER_VALUE_ERROR = array(16, '请使用正确的排序方案。',       'ORDER_VALUE_ERROR');
-    public static $NO_TBALE_FOUND = array(17, '没有对应的表存在',       'NO_TBALE_FOUND');
+    public static $ONLY_GET_ALLOW       = array(11, '错误，此处只接受GET数据。',       'only get allow here');
+    public static $ONLY_POST_ALLOW      = array(12, '错误，此处只接受POST数据。',       'only post allow here');
+    public static $ONLY_USER_ALLOW      = array(13, '您需要登录后才可以执行该操作。',       'only post allow here');
+    public static $REQUEST_TIME_OUT     = array(14, '请求失败了，请检查你的网络状态和系统时间是否准确哦。',       'request is out of time');
+    public static $SIGNATURE_WRONG      = array(15, '校验失败',       'SIGNATURE_WRONG');
+    public static $ORDER_VALUE_ERROR    = array(16, '请使用正确的排序方案。',       'ORDER_VALUE_ERROR');
+    public static $NO_TBALE_FOUND       = array(17, '没有对应的表存在',       'NO_TBALE_FOUND');
+    public static $ONLY_ADMIN_ALLOW     = array(18, '仅限管理员使用此功能。',       'ONLY_ADMIN_ALLOW');
 
 
     //实际开发过程中，可以继续自定义更多的错误类型
-    public static $LOGLIST_TYPE_WRONG = array(101, '错误的日志类型',       'LOGLIST_TYPE_WRONG');
+    public static $LOGLIST_TYPE_WRONG   = array(101, '错误的日志类型',       'LOGLIST_TYPE_WRONG');
     public static $LOGLIST_NO_LOG_FOUND = array(102, '暂无相关日志',       'LOGLIST_NO_LOG_FOUND');
+
+    public static $USER_PLS_OLD_PWD     = array(111, '请输入当前密码，您才可以继续执行操作。',       'USER_PLS_NEW_PWD');
+    public static $USER_WRONG_OLD_PWD   = array(112, '当前密码错误，您不可以执行此操作。',       'USER_WRONG_OLD_PWD');
+    public static $USER_PLS_NEW_PWD     = array(113, '您必须指定一个新的密码。',       'USER_PLS_NEW_PWD');
+    public static $USER_DUP_USERNAME    = array(114, '该用户名已存在。',       'USER_DUP_USERNAME');
+    public static $USER_DUP_TELEPHONE   = array(114, '该手机号已存在。',       'USER_DUP_TELEPHONE');
+    public static $USER_DUP_EMAIL       = array(114, '该邮箱已存在。',       'USER_DUP_EMAIL');
+    public static $USER_LOGIN_FAIL      = array(115, '登录失败，账号或密码错误。',       'USER_LOGIN_FAIL');
+    public static $USER_BEEN_DISABLED   = array(116, '该账号已被禁用。',       'USER_BEEN_DISABLED');
+    public static $USER_PLS_ACCOUNT     = array(117, '请输入登录账号',       'USER_PLS_ACCOUNT');
+    public static $USER_PLS_PWD         = array(118, '请输入密码',       'USER_PLS_PWD');
+    public static $USER_USED_UNION      = array(119, '该联合登录已被绑定',       'USER_USED_UNION');
+    public static $USER_UNAME_NO_PHONE      = array(120, '不可以使用手机号作为用户名。',       'USER_UNAME_NO_PHONE');
+    public static $USER_UNAME_NO_EMAIL      = array(121, '不可以使用邮箱作为用户名。',       'USER_UNAME_NO_EMAIL');
+    public static $SMS_TOO_OFEN      = array(122, '验证码发送太频繁，请稍后再试。',       'SMS_TOO_OFEN');
+    public static $SMS_PHONE_EXISTS      = array(123, '该手机号已存在，不可用于注册。',       'SMS_PHONE_EXISTS');
+    public static $SMS_PHONE_INVAILD      = array(124, '该手机号并未注册过，无法找回密码哦。',       'SMS_PHONE_INVAILD');
+    public static $SMS_PLS_USEFOR      = array(125, '发送验证码必须要有用途说明哦',       'SMS_PLS_USEFOR');
+    public static $SMS_VERIFYCODE_WRONG      = array(126, '验证码错误',       'SMS_VERIFYCODE_WRONG');
+
+
+
+
+    //如需更多错误码，请在以下延生，建议使用四位数以上数字作为您的错误码。
+    //...
 }
 
+
+
+class SMS_USEFOR extends CONST_CLASS
+{
+    const REGISTER    = 1;//注册用验证码
+    const LOGIN       = 2;//登陆用验证码
+    const RESTPWD     = 3;//找回密码用验证码
+}
