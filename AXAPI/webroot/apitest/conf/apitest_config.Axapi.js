@@ -28,3 +28,16 @@ apiList.push({
     ,{ "key":"datetime"             ,"type":"datetime"      ,"required":false ,"test-value":"error"                         ,"title":"指定日志所在日期（默认当日）" ,"desc":"" }
   ]
 });
+apiList.push({
+  "title":"接口工具:MHC代码文件快速生成（限管理员）"
+  ,"desc":""
+  ,"time":""
+  ,"action":"/axapi/create_mhc_with_table_name"
+  ,"method":"get"
+  ,"request":[
+     { "key":"-t"                  ,"type":"string"        ,"required": true ,"test-value":"test"                        ,"title":"表名" ,"desc":"" }
+    ,{ "key":"-name"               ,"type":"string"        ,"required": true ,"test-value":"测试"                       ,"title":"接口分组描述" ,"desc":"" }
+    ,{ "key":"-rm"                 ,"type":"string"      ,"required":true ,"test-value":"no"                         ,"title":"是否删除代码文件" ,"desc":"yes / no" }
+    ,{ "key":"-update"             ,"type":"string"      ,"required":false ,"test-value":"no"                         ,"title":"是否更新代码文件" ,"desc":"yes / no" }
+  ]
+});

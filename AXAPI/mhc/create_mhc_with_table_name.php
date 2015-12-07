@@ -9,7 +9,7 @@
 ini_set('display_errors',1);            //错误信息
 ini_set('display_startup_errors',1);    //php启动错误信息
 error_reporting(-1);                    //打印出所有的 错误信息
-define('IS_SQL_PRINT',True);//打印sql语句
+
 
 //加载配置文件
 require_once(__dir__.'/../config.php');
@@ -22,7 +22,7 @@ require_once(AXAPI_ROOT_PATH.'/lib/DBTool/DBModel.php');
 //加载基础方法
 require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
 
-if (count($argv)<=1)
+if ((!isset($argv) || count($argv)<=1) && count(array_keys($_REQUEST))<=1)
 {
     print("\n".'需要参数：');
     print("\n".'-t 表名');
@@ -32,10 +32,20 @@ if (count($argv)<=1)
     exit;
 }
 
+
 function getValueInArgv($argv_key)
 {
+    if (isset($_REQUEST[$argv_key]))
+    {
+        return $_REQUEST[$argv_key];
+    }
     global $argv;
 
+    if (!is_array($argv))
+    {
+        print("\n".'无法获得参数'.$argv_key.'的值'."\n");
+        exit;
+    }
     $index = array_search($argv_key,$argv);
     if ($index!==false)
     {
@@ -72,9 +82,14 @@ class CMysql2PHP{
         // 'decimal'   =>  'money',
     );
 
-    public static function getPhpProp($type)
+    public static function getPhpProp($_fieldRow)
     {
-        if(isset(static::$columnTypes[$type]))
+        $type = $_fieldRow['Type'];
+        if ($_fieldRow['Field']=='password')
+        {
+            return 'md5';
+        }
+        else if(isset(static::$columnTypes[$type]))
         {
             return static::$columnTypes[$type];
         }
@@ -101,10 +116,10 @@ class CMysql2PHP{
         return $length;
     }
 
-    public static function getMethodString($field,$p_allowBlank=true)
+    public static function getMethodString($_fieldRow,$pAllowBlank=true)
     {
-        $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($p_allowBlank?'':',false').')';
-        switch (static::getPhpProp($field))
+        $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($pAllowBlank?'':',false').')';
+        switch (static::getPhpProp($_fieldRow))
         {
             case 'integer':
                 $methodString = 'W2HttpRequest::getRequestInt(\'%s\')';
@@ -114,8 +129,19 @@ class CMysql2PHP{
                 break;
             case 'string':
             case 'text':
-                $lenMax = static::getTypeLength($field);
-                $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($p_allowBlank?',true':',false').($lenMax>0?',null,0,'.$lenMax:'').')';
+                if ($_fieldRow['Field']=='telephone')
+                {
+                    $methodString = 'W2HttpRequest::getRequestTelephone(\'%s\')';
+                }
+                else if ($_fieldRow['Field'] == 'email')
+                {
+                    $methodString = 'W2HttpRequest::getRequestEmail(\'%s\')';
+                }
+                else
+                {
+                    $lenMax = static::getTypeLength($_fieldRow['Type']);
+                    $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($pAllowBlank?',true':',false').',null,0,'.($lenMax>0?$lenMax:'10000').')';
+                }
                 break;
             case 'datetime':
                 $methodString = 'W2HttpRequest::getRequestDateTime(\'%s\')';
@@ -145,22 +171,18 @@ $_apitestConfigFile = AXAPI_ROOT_PATH.'/webroot/apitest/conf/'.$_apitestConfigNa
 $filesExists = array();
 if(file_exists($_handlerFile))
 {
-    print('警告，文件已存在：'.$_handlerFile."\n");
     $filesExists[]=$_handlerFile;
 }
 if(file_exists($_modelFile))
 {
-    print('警告，文件已存在：'.$_modelFile."\n");
     $filesExists[]=$_modelFile;
 }
 if(file_exists($_controllerFile))
 {
-    print('警告，文件已存在：'.$_controllerFile."\n");
     $filesExists[]=$_controllerFile;
 }
 if(file_exists($_apitestConfigFile))
 {
-    print('警告，文件已存在：'.$_apitestConfigFile."\n");
     $filesExists[]=$_apitestConfigFile;
 }
 if ( getValueInArgv('-rm') == 'yes')
@@ -175,7 +197,7 @@ if ( getValueInArgv('-rm') == 'yes')
     }
     else
     {
-        print('失败，因为不存在目标文件，所以无法使用删除命令。'."\n");
+        print('失败，因为不存在目标文件，所以无法使用删除命令。:'."\n");
     }
     exit;
 }
@@ -193,6 +215,7 @@ else if ( getValueInArgv('-update') == 'yes')
 }
 else if (count($filesExists)>0)
 {
+    print('失败，目标文件已存在：'."\n".implode("\n",$filesExists));
     print('可以使用以下参数删除文件： -rm yes'."\n");
     print('可以使用以下参数更新文件： -update yes'."\n");
     exit;
@@ -214,23 +237,23 @@ $_tableDataKeys = array();
 $_tableKeysImportantForAdd = array();
 $_tableIdName = '';
 foreach ($_filedList as $_fieldRow) {
-    if (in_array(strtolower($_fieldRow["Field"]),$noAllowKeyInMysql))
+    if (in_array(strtolower($_fieldRow['Field']),$noAllowKeyInMysql))
     {
-        print('警告：您不可以在mysql使用以下字符作为字段：'.$_fieldRow["Field"]."\n");
+        print('警告：您不可以在mysql使用以下字符作为字段：'.$_fieldRow['Field']."\n");
         exit;
     }
     if ($_fieldRow['Key']=='PRI')
     {
-        $_tableIdName = $_fieldRow["Field"];
+        $_tableIdName = $_fieldRow['Field'];
     }
     else
     {
-        if (!in_array($_fieldRow["Field"],array('id','userID','status','createTime','modifyTime')))
+        if (!in_array($_fieldRow['Field'],array('id','userID','status','createTime','modifyTime')))
         {
-            $_tableKeysImportantForAdd[] = $_fieldRow["Field"];
+            $_tableKeysImportantForAdd[] = $_fieldRow['Field'];
         }
     }
-    $_tableDataKeys[$_fieldRow["Field"]] = $_fieldRow;
+    $_tableDataKeys[$_fieldRow['Field']] = $_fieldRow;
 }
 
 if (!is_array($_tableDataKeys) || count($_tableDataKeys)==0)
@@ -238,6 +261,25 @@ if (!is_array($_tableDataKeys) || count($_tableDataKeys)==0)
  print('中止，表字段获取失败：'.$_tableName."\n");
  exit;
 }
+
+if ($_tableName=='user' && array_key_exists('password',$_tableDataKeys) && array_key_exists('telephone',$_tableDataKeys) && array_key_exists('level',$_tableDataKeys))
+{
+    define('IS_SPECIAL_TABLE','user');
+}
+else if ($_tableName=='smsVerify' && array_key_exists('verifyCode',$_tableDataKeys))
+{
+    define('IS_SPECIAL_TABLE','smsVerify');
+}
+else if ($_tableName=='unionLogin' && array_key_exists('unionToken',$_tableDataKeys))
+{
+    define('IS_SPECIAL_TABLE','unionLogin');
+}
+else
+{
+    define('IS_SPECIAL_TABLE','none');
+}
+// var_export(IS_SPECIAL_TABLE);
+// exit;
 //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
 $_handlerSrting = '<?php
 /**
@@ -263,9 +305,9 @@ class '.$_handlerName.' extends AbstractHandler {
      * 根据主键值查询单条记录
      * @return '.$_modelName.' 对应的model 实例
      */
-    public static function loadModelById($p_id=null)
+    public static function loadModelById($pId=null)
     {
-        return parent::loadModelById($p_id);
+        return parent::loadModelById($pId);
     }
 
     /**
@@ -273,44 +315,97 @@ class '.$_handlerName.' extends AbstractHandler {
      * @see AbstractHandler::loadModelList()
      * @return '.$_modelName.'         对象模型
      */
-    public static function loadModelFirstInList($p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=1,&$p_countThis=-1)
+    public static function loadModelFirstInList($pWhere=array(),$pOrder=null,$pPageIndex=1,$pPageSize=1,&$pCountThis=-1)
     {
-        return parent::loadModelFirstInList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
+        return parent::loadModelFirstInList($pWhere,$pOrder,$pPageIndex,$pPageSize,$pCountThis);
     }
 
     /**
     * 指定ids查询，根据多个主键值查询多条记录,注意，这里返回的数组以传入的id顺序一致
-    * @param  array $p_ids 数组id,或逗号隔开的id字符串
+    * @param  array $pIds 数组id,或逗号隔开的id字符串
     * @return '.$_modelName.'[]        对应的model 实例数组
     */
-    public static function loadModelListByIds($p_ids=null)
+    public static function loadModelListByIds($pIds=null)
     {
-        return parent::loadModelListByIds($p_ids);
+        return parent::loadModelListByIds($pIds);
     }
 
     /**
      * 批量查询，根据筛选条件，筛选获得对象数组
-     * @param  array   $p_where     这是一个数组字典，用来约束筛选条件，支持多种表达方式，如array(\'id\'=>\'13\',\'replyCount>\'=>5,\'lastmodifTime>now()\'),注意其中的key value的排列方式。
-     * @param  string  $p_order     排序方式，如\'lastmodifytime desc\'
-     * @param  integer $p_pageIndex 分页，第一页为1，第二页为2
-     * @param  integer  $p_pageSize  分页数据量
-     * @param  integer  $p_countThis  计数变量，注意，若需要进行计数统计，则调用此处时需传入一个变量，当方法调用结束后，会将计数赋值给该变量。
+     * @param  array   $pWhere     这是一个数组字典，用来约束筛选条件，支持多种表达方式，如array(\'id\'=>\'13\',\'replyCount>\'=>5,\'lastmodifTime>now()\'),注意其中的key value的排列方式。
+     * @param  string  $pOrder     排序方式，如\'lastmodifytime desc\'
+     * @param  integer $pPageIndex 分页，第一页为1，第二页为2
+     * @param  integer  $pPageSize  分页数据量
+     * @param  integer  $pCountThis  计数变量，注意，若需要进行计数统计，则调用此处时需传入一个变量，当方法调用结束后，会将计数赋值给该变量。
      * @return '.$_modelName.'[]         对象模型数组
      */
-    public static function loadModelList($p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
+    public static function loadModelList($pWhere=array(),$pOrder=null,$pPageIndex=1,$pPageSize=DEFAULT_PAGE_SIZE,&$pCountThis=-1)
     {
-        return parent::loadModelList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
+        return parent::loadModelList($pWhere,$pOrder,$pPageIndex,$pPageSize,$pCountThis);
     }
 
     /**
      * 存储或更新模型对象
-     * @param  object $p_model 新建或改动后的模型
+     * @param  object $pModel 新建或改动后的模型
      * @return '.$_modelName.'         返回更新后的模型对象
      */
-    public static function saveModel($p_model)
+    public static function saveModel($pModel)
     {
-        return parent::saveModel($p_model);
+        return parent::saveModel($pModel);
     }
+';
+if (IS_SPECIAL_TABLE == 'smsVerify')
+{
+    $_handlerSrting .=  '    /**
+     * 判断验证码是否正确
+     * @param  string  $pTelephone  手机号
+     * @param  string  $pVerifyCode 验证码
+     * @return boolean               是/否
+     */
+    public static function isSmsVerifyRight($pTelephone,$pVerifyCode)
+    {
+        if (isset($pTelephone,$pVerifyCode))
+        {
+            $_smsVerifyModel = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$pTelephone),\'id desc\',1,1);
+            if (is_object($_smsVerifyModel) && $_smsVerifyModel->getVerifyCode()==$pVerifyCode)
+            {
+                $_smsVerifyModel->setVerifyTime(date(\'Y-m-d H:i:s\'));
+                static::saveModel($_smsVerifyModel);
+                return true;
+            }
+        }
+        return false;
+    }';
+}
+else if (IS_SPECIAL_TABLE == 'unionLogin')
+{
+    $_handlerSrting .=  '    /**
+     * 根据$unionToken,$unionType获得对应设置实例
+     * @return UnionLoginModel           设置实例
+     */
+    public static function loadModelByToken($unionToken,$unionType)
+    {
+        $tmpModel = static::loadModelFirstInList(array(\'unionToken\'=>$unionToken,\'unionType\'=>$unionType));
+        if (!is_object($tmpModel))
+        {
+            $tmpModel = static::createModel();
+            $tmpModel->setCreateTime(date(\'Y-m-d H:i:s\'));
+            $tmpModel->setUnionToken($unionToken);
+            $tmpModel->setUnionType($unionType);
+        }
+        return $tmpModel;
+    }
+
+    /**
+     * 根据$userID,$unionType获得对应设置实例
+     * @return UnionLoginModel           设置实例
+     */
+    public static function loadModelByUserID($userID,$unionType)
+    {
+        return static::loadModelFirstInList(array(\'userID\'=>$userID,\'unionType\'=>$unionType));
+    }';
+}
+$_handlerSrting .=  '
 }';
 if (!file_exists($_handlerFile))
 {
@@ -337,17 +432,52 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
 
 $_modelFucStrings = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
-    $_modelFucStrings[$_tableKey] = "\n".'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'()
+    $strSetGet = "\n".'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'()
     {
         return $this->'.$_tableKey.';
     }
+';
 
-    public function set'.W2String::camelCaseWithUcFirst($_tableKey).'($'.$_tableKey.')
+    if (IS_SPECIAL_TABLE=='user' && $_tableKey=='password')
+    {
+        $strSetGet .= "\n".'    public function setPassword($password,$isNeedEncodePwd = true)//axing edit 密码需要加密后存储
+    {
+
+        $this->password = ($isNeedEncodePwd && $password!=null)?Utility::getEncodedPwd($password):$password;
+
+        return $this;
+    }';
+    }
+    else
+    {
+        $strSetGet .= "\n".'    public function set'.W2String::camelCaseWithUcFirst($_tableKey).'($'.$_tableKey.')
     {
         $this->'.$_tableKey.' = $'.$_tableKey.';
 
         return $this;
-    }'."\n"."\n";
+    }';
+    }
+    if (IS_SPECIAL_TABLE=='user')
+    {
+        if ($_tableKey=='telephone')
+        {
+            $strSetGet .= "\n".'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'Local()
+    {
+        return preg_replace(\'/(.*?)(\d\d\d\d)(\d\d\d\d)$/\', \'$1****$3\', $this->getTelephone());
+    }';
+        }
+        else if ($_tableKey=='password')
+        {
+            $strSetGet .= "\n".'    public function isPasswordRight($password)
+    {
+        return Utility::getEncodedPwd($password)==$this->getPassword();
+    }';
+        }
+
+    }
+    $strSetGet .= "\n"."\n";
+
+    $_modelFucStrings[$_tableKey] = $strSetGet;
 }
 
 
@@ -361,15 +491,43 @@ $_modelString = '<?php
  */
 class '.$_modelName.' extends AbstractModel {
 
-    public static $authViewDisabled    = array();//展示数据时，禁止列表。
+';
+if (IS_SPECIAL_TABLE == 'user')
+{
+    $_modelString .= '    public static $authViewDisabled    = array(\'password\',\'telephone\');//展示数据时，禁止列表。';
+}
+else if (IS_SPECIAL_TABLE == 'smsVerify')
+{
+    $_modelString .= '    public static $authViewDisabled    = array(\'verifyCode\');//展示数据时，禁止列表。';
+}
+else
+{
+    $_modelString .= '    public static $authViewDisabled    = array();//展示数据时，禁止列表。';
+}
+
+$_modelString .= '
 
     /**
      * 初始化方法，如果需要，各模型必须重写此处
      * @param int|array 如果是整数, 赋值给对象的id,如果是数组, 给对象的逐个属性赋值
      * @return '.$_modelName.'
      */
-    public static function instance($p_data=null) {
-        $_o = parent::instanceModel(__class__, $p_data);
+    public static function instance($pData=null) {
+        $_o = parent::instanceModel(__class__, $pData);
+';
+if (IS_SPECIAL_TABLE == 'user')
+{
+    $_modelString .= '        if (array_key_exists(\'password\', $pData))//axing edit
+        {
+            $_o->setPassword($pData[\'password\'],false);//从数组（来自数据库）转化成UserModel,其密码就是加密后字符串，所以，不要再次加密。
+        }';
+}
+else
+{
+    $_modelString .= '';
+}
+
+$_modelString .= '
         $tmpVars = get_object_vars($_o);
         $tmpVars[\'snapshot\'] = \'\';
         $_o->snapshot = $tmpVars;//初始化完成后，记录当前状态
@@ -426,7 +584,7 @@ $_apitestConfigSingle = 'apiList.push({
         ,\'request\':[]
       });
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
+$_apitestConfigArray[] = "\n".$_apitestConfigSingle."\n";
 
 
 //add
@@ -448,8 +606,8 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('status','userID','level','createTime','modifyTime'));
-        $_controllerStringTmp = "\n".'                $tmpModel  ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array($_fieldRow['Field'],$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
+        $_controllerStringTmp = "\n".'                $tmpModel  ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array($_fieldRow['Field'],$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
             $_apitestConfigRequestAddAdmin[]   =  $_apitestConfigRequestAddTmp;
@@ -466,7 +624,14 @@ $_apitestConfigSingleAdd .= implode("\n".'          ,',array_merge($_apitestConf
         ]
       });
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingleAdd."\n*/";
+if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin')
+{
+
+}
+else
+{
+    $_apitestConfigArray[] = "\n".$_apitestConfigSingleAdd."\n";
+}
 
 
 //update
@@ -490,8 +655,8 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('userID','level','createTime','modifyTime'));
-        $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type']),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
+        $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
             $_apitestConfigRequestUpdateAdmin[]   =  $_apitestConfigRequestUpdateTmp;
@@ -508,8 +673,14 @@ $_apitestConfigSingleUpdate .= implode("\n".'          ,',array_merge($_apitestC
         ]
       });
 ';
+if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin')
+{
 
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingleUpdate."\n*/";
+}
+else
+{
+    $_apitestConfigArray[] = "\n".$_apitestConfigSingleUpdate."\n";
+}
 
 
 //list
@@ -529,7 +700,7 @@ $_apitestConfigRequestList = array();
 $_controllerStringAddOrder = '';
 $_apitestConfigRequestOrderValues = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
-    if (in_array(CMysql2PHP::getPhpProp($_fieldRow['Type']),array('integer','string','datetime','date','float')))
+    if (in_array(CMysql2PHP::getPhpProp($_fieldRow),array('integer','string','datetime','date','float')))
     {
         $_orderValue = W2String::under_score($_fieldRow['Field']);
         $_orderDesc = (!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:'');
@@ -544,30 +715,30 @@ $_controllerStringList = '';
 $_controllerKeySearchList = '';
 $_controllerKeyFieldList = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
-    if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'date' )
+    if (CMysql2PHP::getPhpProp($_fieldRow) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow) == 'date' )
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),W2String::under_score($_fieldRow['Field']).'start') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),W2String::under_score($_fieldRow['Field']).'end') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field']).'start') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field']).'end') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
     else if ($_fieldRow['Field']=='status')
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
+        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
     // else if ($_fieldRow['Field']=='userID')
     // {
     //     //默认不支持用户筛选，只能筛选登录用户自己的数据;
-    //     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
+    //     $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'0\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'默认登录用户只能筛选自己名下数据 ，管理员可筛选指定用户\' }';
     // }
     else
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$p_where[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow['Type'],false),W2String::under_score($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow['Type']).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
 
-    if (CMysql2PHP::getPhpProp($_fieldRow['Type']) == 'string')
+    if (CMysql2PHP::getPhpProp($_fieldRow) == 'string')
     {
         $_controllerKeySearchList .= "\n".'            '.str_pad('$keyWhere[] = sprintf(\''.$_fieldRow['Field'].' like \\\'%%%s%%\\\'\',',40,' ',STR_PAD_RIGHT).'$keyWord);'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_controllerKeyFieldList[] = $_fieldRow['Field'];
@@ -579,7 +750,9 @@ $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestList) 
         ]
       });
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
+
+    $_apitestConfigArray[] = "\n".$_apitestConfigSingle."\n";
+
 
 
 //详情
@@ -599,9 +772,166 @@ $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestDetail
         ]
       });
 ';
-$_apitestConfigArray[] = "/*\n".$_apitestConfigSingle."\n*/";
+if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin')
+{
+
+}
+else
+{
+    $_apitestConfigArray[] = "\n".$_apitestConfigSingle."\n";
+}
+
+$authViewDisabled = '';
+
+if (IS_SPECIAL_TABLE=='user')
+{
+    $authViewDisabled = '\'password\'';
+}
+else if (IS_SPECIAL_TABLE=='smsVerify')
+{
+    $authViewDisabled = '\'verifyCode\'';
+}
+
+if (IS_SPECIAL_TABLE=='user')
+{
+    $_apitestConfigArray[] = "\n".'apiList[apiList.length] = {
+        \'title\':\'用户:修改密码（不登录，需要验证短信）\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/UpdateWithVerifyCode\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'13774298448\'                         ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
+          ,{ \'key\':\'verify_code\'            ,\'type\':\'string\'    ,\'required\': true ,\'test-value\':\'123456\'                             ,\'title\':\'验证码\' ,\'desc\':\'必需\' }
+          ,{ \'key\':\'newpassword\'           ,\'type\':\'md5\'        ,\'required\': true ,\'test-value\':\'123456\'                              ,\'title\':\'密码\' ,\'desc\':\'\' }
+        ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'用户:修改密码／邮箱/手机（需要登录，并提供原始密码）\'
+        ,\'desc\':\'（修改手机需要验证新手机）<br/>（联合登录用户，初次设定密码不需要原始密码）\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/updateWithOldPassword\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'oldpassword\'              ,\'type\':\'md5\'        ,\'required\': false ,\'test-value\':\'123456\'                              ,\'title\':\'旧密码\' ,\'desc\':\'\' }
+          ,{ \'key\':\'newpassword\'              ,\'type\':\'md5\'        ,\'required\': false ,\'test-value\':\'654321\'                              ,\'title\':\'新密码\' ,\'desc\':\'\' }
+          ,{ \'key\':\'email\'                 ,\'type\':\'string\'     ,\'required\':false ,\'time\':\'\' ,\'test-value\':\'wyx2@haoxitech.com\'                         ,\'title\':\'邮箱\' ,\'desc\':\'\' }
+          ,{ \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': false ,\'test-value\':\'13774298448\'                         ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
+          ,{ \'key\':\'verify_code\'            ,\'type\':\'string\'    ,\'required\': false ,\'test-value\':\'123456\'                             ,\'title\':\'验证码\' ,\'desc\':\'如果修改手机号，需要验证新手机号。\' }
+        ]
+      };
 
 
+apiList[apiList.length] = {
+        \'title\':\'用户:登录\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/login\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'account\'               ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'13774298448\'                     ,\'title\':\'支持手机号、用户名、邮箱登录\' ,\'desc\':\'\' }
+          ,{ \'key\':\'password\'              ,\'type\':\'md5\'     ,\'required\':true ,\'test-value\':\'123456\'                         ,\'title\':\'密码\' ,\'desc\':\'\' }
+       ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'用户:联合登录\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/UnionLogin\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'uniontype\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
+          ,{ \'key\':\'uniontoken\'             ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'398ADCFAED79A49ACBE516EE89F7950B\'                     ,\'title\':\'联合登录唯一识别码\' ,\'desc\':\'\' }
+       ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'用户:登录后绑定对应联合登录\'
+        ,\'desc\':\'登录后调用该接口可新增绑定\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/SetUnionLogin\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'uniontype\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
+          ,{ \'key\':\'uniontoken\'             ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'398ADCFAED79A49ACBE516EE89F7950B\'                     ,\'title\':\'联合登录唯一识别码\' ,\'desc\':\'\' }
+       ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'用户:注销\'
+        ,\'desc\':\'用户点击注销，本地删除其登录信息，同时调用本接口以便服务器解除其账号与设备的绑定信息。\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/LogOut\'
+        ,\'method\':\'get\'
+        ,\'request\':[
+
+       ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'用户:我的信息\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/GetMyDetail\'
+        ,\'method\':\'get\'
+        ,\'request\':[
+
+          ]
+      };
+
+
+
+apiList[apiList.length] = {
+        \'title\':\'用户:删除（仅供管理员测试期间用)\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/delete\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+          ,{ \'key\':\'ids\'                   ,\'type\':\'string\'     ,\'required\':false ,\'test-value\':\'\'                         ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }
+          ,{ \'key\':\'id\'                    ,\'type\':\'integer\'    ,\'required\':false ,\'test-value\':\'\'                         ,\'title\':\'\' ,\'desc\':\'\' }
+          ,{ \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\':false ,\'test-value\':\'13112345678\'              ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
+        ]
+      };'."\n";
+}
+if (IS_SPECIAL_TABLE=='smsVerify')
+{
+    $_apitestConfigArray[] = "\n".'apiList[apiList.length] = {
+        \'title\':\'验证码:发送一条验证码到手机\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/smsverify/SendVerifyCode\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'10000000000\'                         ,\'title\':\'\' ,\'desc\':\'\' }
+           ,{ \'key\':\'usefor\'             ,\'type\':\'int\'     ,\'required\': true,\'test-value\':\'2\'                         ,\'title\':\'验证码用途\' ,\'desc\':\'1：注册用 2：登陆用 3：找回密码用\' }
+        ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'验证码:确认验证码是否正确\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/smsverify/CheckVerifyCode\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'13774298448\'                         ,\'title\':\'手机号码\' ,\'desc\':\'\' }
+          ,{ \'key\':\'verify_code\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'123456\'                         ,\'title\':\'验证码\' ,\'desc\':\'\' }
+        ]
+      };
+
+apiList[apiList.length] = {
+        \'title\':\'验证码:剩余短信量\'
+        ,\'desc\':\'\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/smsverify/GetBalance\'
+        ,\'method\':\'get\'
+        ,\'request\':[
+        ]
+      };';
+}
 $_controllerString = '<?php
 /**
  * '.$_tableName.'表相关接口
@@ -616,46 +946,147 @@ class '.$_controllerName.' extends AbstractController{
 
     protected static $authType = \'default\';//默认权限类型
     public static $authViewDisabledList     = array(
-                                                \'empty\'    =>array()
-                                                ,\'visitor\' =>array()
-                                                ,\'disabled\'=>array()
-                                                ,\'pending\' =>array()
-                                                ,\'draft\'   =>array()
-                                                ,\'normal\'  =>array()
-                                                ,\'self\'    =>array()
-                                                ,\'admin\'   =>array()
+                                                \'empty\'    =>array('.$authViewDisabled.')
+                                                ,\'visitor\' =>array('.$authViewDisabled.')
+                                                ,\'disabled\'=>array('.$authViewDisabled.')
+                                                ,\'pending\' =>array('.$authViewDisabled.')
+                                                ,\'draft\'   =>array('.$authViewDisabled.')
+                                                ,\'normal\'  =>array('.$authViewDisabled.')
+                                                ,\'self\'    =>array('.$authViewDisabled.')
+                                                ,\'admin\'   =>array('.$authViewDisabled.')
                                                 );//查看相关字段权限
 
     // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝接口方法都在下面定义 action开头的方法是对外接口＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     //权限
-    // public static function getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel=null)
-    // {
-    //     $auth = parent::getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel);
-    //     $_user = Utility::getUserByID($p_userID);
-    //     if (is_object($_user))
-    //     {
-    //         switch ($p_action)
-    //         {
-    //             case \'add\'    :    break;
-    //             case \'update\' :    break;
-    //             case \'detail\' :    break;
-    //             case \'list\'   :    break;
-    //         }
-    //     }
-    //     return $auth;
-    // }
+    public static function getAuthIfUserCanDoIt($pUserID,$pAction,$pTargetModel=null)
+    {
+        $auth = parent::getAuthIfUserCanDoIt($pUserID,$pAction,$pTargetModel);
+        $_user = Utility::getUserByID($pUserID);
+        if (is_object($_user))
+        {';
+if (IS_SPECIAL_TABLE == 'user')
+{
+    $_controllerString .= "\n".'            if (is_object($pTargetModel) && $pTargetModel->getId()==$pUserID )
+            {
+                $auth = \'self\';
+            }';
+}
+$_controllerString .= '
+            switch ($pAction)
+            {
+                case \'add\'    :    break;
+                case \'update\' :    break;
+                case \'detail\' :    break;
+                case \'list\'   :    break;
+            }
+        }
+        return $auth;
+    }
+
+';
+if (IS_SPECIAL_TABLE == 'smsVerify')
+{
+    $_controllerString .='
+    //新建
+    public static function actionSendVerifyCode()
+    {
+        $telephone = W2HttpRequest::getRequestTelephone(\'telephone\',false);
+        $_smsVerifyModelFound = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$telephone),\'id desc\');
+        // if (isset($_smsVerifyModelFound) && time() - strtotime($_smsVerifyModelFound->getCreateTime()) < 600)
+        // {//此处对发送频率作限制
+        //     return HaoResult::init(ERROR_CODE::$SMS_TOO_OFEN);
+        // }
+
+        $_useFor = W2HttpRequest::getRequestInt(\'usefor\');
+
+        $_userModel = UserHandler::loadModelFirstInList(array(\'telephone\'=>$telephone));
+        switch ($_useFor) {
+            case SMS_USEFOR::REGISTER:
+                if (is_object($_userModel))
+                {
+                    return HaoResult::init(ERROR_CODE::$SMS_PHONE_EXISTS);
+                }
+                break;
+            case SMS_USEFOR::LOGIN:
+                # code...
+                break;
+            case SMS_USEFOR::RESTPWD:
+                if (is_null($_userModel))
+                {
+                    return HaoResult::init(ERROR_CODE::$SMS_PHONE_INVAILD);
+                }
+                break;
+
+            default:
+                return HaoResult::init(ERROR_CODE::$SMS_PLS_USEFOR);
+                break;
+        }
+
+        $tmpModel =  new SmsVerifyModel();
+        $_verifyCode = W2String::buildRandNumbers(6);
+
+        $tmpModel  ->           setUserID(Utility::getCurrentUserID());
+        $tmpModel  ->        setTelephone($telephone);
+        $tmpModel  ->       setVerifyCode($_verifyCode);
+        $tmpModel  ->       setUseFor($_useFor);
+
+        $result = static::save($tmpModel,$isAdd=true);
+        if ($result->isResultsOK())
+        {
+            $pMsg = \'验证码:\'.$_verifyCode.\' 退订回N【HaoFrame】\';
+            $result->setErrorStr( \'短信已发送成功成功，请注意查收。\' );
+            // $result[\'extraInfo\'][\'smsResult\'] = W2SMS::sendMessage($telephone,$pMsg);
+            // $result[\'extraInfo\'][\'smsResult\'] = W2SMS::sendVerifyCodeWithUcpaas($telephone,$_verifyCode);//使用融云发送验证码
+            $result->setErrorStr( $pMsg );//此处默认直接展示了验证码，实际开发过程中，请更改此处逻辑。
+        }
+        return $result;
+    }
 
 
+    /** 确认验证码是否正确 */
+    public static function actionCheckVerifyCode()
+    {
+
+        $isRight = SmsVerifyHandler::isSmsVerifyRight(W2HttpRequest::getRequestTelephone(\'telephone\',false),W2HttpRequest::getRequestString(\'verify_code\',false));
+
+        if($isRight)
+        {
+            return HaoResult::init(ERROR_CODE::$OK,\'正确\');
+        }
+        else
+        {
+            return HaoResult::init(ERROR_CODE::$SMS_VERIFYCODE_WRONG);
+        }
+
+    }
+
+    /** 查询剩余短信 */
+    public static function actionGetBalance()
+    {
+        $balance = W2SMS::GetBalance();
+
+        return HaoResult::init(ERROR_CODE::$OK,$balance);
+    }
+    ';
+}
+else if (IS_SPECIAL_TABLE=='unionLogin')
+{
+
+}
+else
+{
+
+    $_controllerString .='
     /**
      * 新建数据
      * @return HaoResult
      */
     public static function actionAdd()
     {
-        $unsetKey = W2HttpRequest::getUnsetRequest(\''.strtolower(implode(',',$_tableKeysImportantForAdd)).'\', $p_allowBlank = false);
+        $unsetKey = W2HttpRequest::getUnsetRequest(\''.(IS_SPECIAL_TABLE == 'user'?'telephone,password':strtolower(implode(',',$_tableKeysImportantForAdd))).'\', $pAllowBlank = false);
         if ( $unsetKey  !== null)
         {
-            return HaoResult::init(ERROR_CODE::PARAM_ERROR,array(\'errorContent\'=>\'部分参数未提交数据: \'.$unsetKey));
+            return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array(\'errorContent\'=>\'部分参数未提交数据: \'.$unsetKey));
         }
         $tmpModel =  new '.$_modelName.'();
 
@@ -665,13 +1096,30 @@ class '.$_controllerName.' extends AbstractController{
 '.$_controllerStringAdmin.'
             case \'self\'  ://作者
             case \'normal\'://正常用户
-'
-.(array_key_exists('userID',$_tableDataKeys)?'                if ($auth == \'normal\' || $tmpModel->properyValue(\'userID\')===null)
+';
+    if(array_key_exists('userID',$_tableDataKeys))
+    {
+        $_controllerString .= "\n".'                if ($auth == \'normal\' || $tmpModel->properyValue(\'userID\')===null)
                 {
                     $tmpModel  ->       setUserID(Utility::getCurrentUserID());//普通用户创建的数据，默认作者为自己。
-                }':'')
-.'
-'.$_controllerStringNormal.'
+                }';
+    }
+    if (IS_SPECIAL_TABLE == 'user')
+    {
+        $_controllerString .= "\n".'
+            case \'visitor\'://游客
+                if ($auth != \'admin\')
+                {
+                    //检查校验码
+                    $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode();
+                    if (!$_resultSmsCheck->isResultsOK())
+                    {
+                        return $_resultSmsCheck;
+                    }
+                }';
+    }
+
+$_controllerString .= ''.$_controllerStringNormal.'
                 break;
             case \'draft\'://未激活
             case \'pending\'://待审禁言
@@ -701,9 +1149,9 @@ class '.$_controllerName.' extends AbstractController{
      */
     public static function actionUpdate()
     {
-        $p_id = W2HttpRequest::getRequestInt(\'id\',null,false,false);
+        $pId = W2HttpRequest::getRequestInt(\'id\',null,false,false);
 
-        $tmpModel = '.$_handlerName.'::loadModelById($p_id);
+        $tmpModel = '.$_handlerName.'::loadModelById($pId);
 
         switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'update\',$tmpModel))
         {
@@ -736,7 +1184,10 @@ class '.$_controllerName.' extends AbstractController{
 
         return static::save($tmpModel);
     }
+';
+}
 
+$_controllerString .='
     /**
      * 保存或更新数据
      * @param  '.$_modelName.'  $tmpModel 更改后的模型对象
@@ -745,6 +1196,50 @@ class '.$_controllerName.' extends AbstractController{
      */
     public static function save($tmpModel,$isAdd=false)
     {
+';
+
+    if (IS_SPECIAL_TABLE == 'user')
+    {
+        $_controllerString .= "\n".'        if ($tmpModel->isProperyModified(\'username\') )
+        {
+            if (W2String::isTelephone($tmpModel->properyValue(\'username\')))
+            {
+                return HaoResult::init(ERROR_CODE::$USER_UNAME_NO_PHONE);
+            }
+            if (W2String::isEmail($tmpModel->properyValue(\'username\')))
+            {
+                return HaoResult::init(ERROR_CODE::$USER_UNAME_NO_EMAIL);
+            }
+            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'username\'=>$tmpModel->properyValue(\'username\') ) );
+            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
+            {
+                return HaoResult::init(ERROR_CODE::$USER_DUP_USERNAME);
+            }
+        }
+        if ($tmpModel->isProperyModified(\'telephone\') )
+        {
+            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'telephone\'=>$tmpModel->properyValue(\'telephone\') ) );
+            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
+            {
+                return HaoResult::init(ERROR_CODE::$USER_DUP_TELEPHONE);
+            }
+        }
+        if ($tmpModel->isProperyModified(\'email\') )
+        {
+            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'email\'=>$tmpModel->properyValue(\'email\') ) );
+            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
+            {
+                return HaoResult::init(ERROR_CODE::$USER_DUP_EMAIL);
+            }
+        }
+        if ($tmpModel->isProperyModified(\'password\'))
+        {
+            $tmpModel->setLastPasswordTime(date(\'Y-m-d H:i:s\'));
+        }
+';
+    }
+
+$_controllerString .= '
         return parent::save($tmpModel,$isAdd);
         // $tmpResult =  parent::save($tmpModel,$isAdd);
         // if ($tmpResult->isResultsOK())
@@ -762,8 +1257,8 @@ class '.$_controllerName.' extends AbstractController{
      */
     public static function actionList()
     {
-        $p_where = array();
-        '.str_pad('$p_where[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
+        $pWhere = array();
+        '.str_pad('$pWhere[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
 '.$_controllerStringList.'
 '.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestString(\'keyword\',false);
         if ($keyWord!=null)
@@ -771,31 +1266,28 @@ class '.$_controllerName.' extends AbstractController{
             $keyWhere = array();
             $keyWord = preg_replace(\'/\s+/\',\'%\',$keyWord);
 '.$_controllerKeySearchList.'
-            $p_where[] = \'(\'.implode(\' or \',$keyWhere).\')\';
+            $pWhere[] = \'(\'.implode(\' or \',$keyWhere).\')\';
         }':'').'
 
                 //两表一对一用关联查询
-                //$p_where[\'joinList\'] = array();
-                //$p_where[\'joinList\'][] = array(\'tbl_example t2\',array(\'t2.teacherID = t1.userID\',\'t2.id\'=>$keyWord));
+                //$pWhere[\'joinList\'] = array();
+                //$pWhere[\'joinList\'][] = array(\'tbl_example t2\',array(\'t2.teacherID = t1.userID\',\'t2.id\'=>$keyWord));
                 //两表一对多用exists查询
-                //$p_where[] = \'exists (select t2.id from tbl_example t2 where t2.teacherID = t1.userID limit 1)\';
+                //$pWhere[] = \'exists (select t2.id from tbl_example t2 where t2.teacherID = t1.userID limit 1)\';
 
         //根据权限不同，支持的筛选功能也可以不同
         switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'list\'))
         {
             case \'admin\'   : //有管理权限
-                '
-                .(array_key_exists('status',$_tableDataKeys)?'$p_where[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'')
-                .'
-                '
-                // .(array_key_exists('userID',$_tableDataKeys)?'$p_where[\'userID\']                       = W2HttpRequest::getRequestInt(\'userid\');//管理员可以筛选用户ID':'')
+'
+                .(array_key_exists('status',$_tableDataKeys)?'                $pWhere[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'')
                 .'
             case \'self\'    : //作者
             case \'normal\'  : //正常用户
-                '
+'
 // .(array_key_exists('userID',$_tableDataKeys)?'if ($auth == \'normal\')
 //                 {
-//                     $p_where[\'userID\']           = Utility::getCurrentUserID();//普通用户，默认只能筛选自己名下数据。
+//                     $pWhere[\'userID\']           = Utility::getCurrentUserID();//普通用户，默认只能筛选自己名下数据。
 //                 }':'')
 .'
             case \'draft\'   : //未激活
@@ -813,19 +1305,19 @@ class '.$_controllerName.' extends AbstractController{
         switch ( strtolower($_order) )
         {
 '.$_controllerStringAddOrder.'
-                $p_order = $_order;
+                $pOrder = $_order;
                 break;
             case \'\':
             case \'default\':
-                $p_order = \''.$_tableIdName.'\';
+                $pOrder = \''.$_tableIdName.'\';
                 break;
             default:
                 return HaoResult::init(ERROR_CODE::$ORDER_VALUE_ERROR);
                 break;
         }
 
-        $p_countThis=-1;
-        return static::aList($p_where,$p_order,$p_pageIndex=null,$p_pageSize=null,$p_countThis,$isDetail = false);
+        $pCountThis = -1; //此处必须设定为-1。除非你知道它的用法。
+        return static::aList($pWhere,$pOrder,$pPageIndex=null,$pPageSize=null,$pCountThis,$isDetail = false);
     }
 
     //详情
@@ -837,10 +1329,10 @@ class '.$_controllerName.' extends AbstractController{
     /**
      * load数据并进行读取权限判断
      */
-    protected static function loadList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,&$p_countThis=null,$isDetail = false)
+    protected static function loadList($pWhere=null,$pOrder=null,$pPageIndex=null,$pPageSize=null,&$pCountThis=null,$isDetail = false)
     {
 
-        $tmpResult = parent::loadList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis,$isDetail);
+        $tmpResult = parent::loadList($pWhere,$pOrder,$pPageIndex,$pPageSize,$pCountThis,$isDetail);
         if (is_object($tmpResult) && get_class($tmpResult)==\'HaoResult\')
         {
             return $tmpResult;
@@ -869,7 +1361,285 @@ class '.$_controllerName.' extends AbstractController{
 
         return $tmpResult;
     }
+';
+    if (IS_SPECIAL_TABLE == 'user')
+    {
+        $_controllerString .= "\n".'    //用户:修改密码／邮箱/手机（需要登录，并提供原始密码）（修改手机需要验证新手机）（联合登录用户，初次设定密码不需要原始密码）
+    public static function actionUpdateWithOldPassword()
+    {
 
+        $pWhere = array();
+        $tmpModel                    = Utility::getCurrentUserModel();
+        if (!is_object($tmpModel))
+        {
+            return HaoResult::init(ERROR_CODE::$NOT_USER);
+        }
+
+        $oldpassword              = W2HttpRequest::getRequestString(\'oldpassword\');
+
+        if (is_null($oldpassword))
+        {
+            if ($tmpModel->getPassword()!==null)
+            {
+                return HaoResult::init(ERROR_CODE::$USER_PLS_OLD_PWD);
+            }
+        }
+        else
+        {
+            if (!$tmpModel->isPasswordRight($oldpassword))
+            {
+                return HaoResult::init(ERROR_CODE::$USER_WRONG_OLD_PWD);
+            }
+        }
+
+        //修改密码
+        $newPassword = W2HttpRequest::getRequestString(\'newpassword\');
+        if (!is_null($newPassword) && $newPassword == $oldpassword)
+        {
+            return HaoResult::init(ERROR_CODE::$USER_WRONG_OLD_PWD);
+        }
+        $tmpModel    ->         setPassword($newPassword);
+
+        //如果传入当前密码，可以继续更改更多属性。
+        if (!is_null($oldpassword))
+        {
+            //修改手机需要检查新手机的校验码
+            $newTelephone = W2HttpRequest::getRequestTelephone(\'telephone\');
+            if (!is_null($newTelephone))
+            {
+                //检查校验码
+                $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode();
+                if (!$_resultSmsCheck->isResultsOK())
+                {
+                    return $_resultSmsCheck;
+                }
+                $tmpModel    ->        setTelephone($newTelephone);//用户手机号
+            }
+
+            //修改邮箱
+            $tmpModel    ->            setEmail(W2HttpRequest::getRequestEmail(\'email\'));//邮箱
+        }
+
+        return static::save($tmpModel);
+    }
+
+    //用户:修改密码（不登录，通过验证短信修改密码）
+    public static function actionUpdateWithVerifyCode()
+    {
+        $unsetKey = W2HttpRequest::getUnsetRequest(\'telephone,verifycode,newpassword\', $pAllowBlank = false);
+        if ( $unsetKey  !== null)
+        {
+            return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array(\'errorContent\'=>\'部分参数未提交数据: \'.$unsetKey));
+        }
+
+        //检查校验码
+        $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode();
+        if (!$_resultSmsCheck->isResultsOK())
+        {
+            return $_resultSmsCheck;
+        }
+
+        $pWhere = array();
+        $pWhere[\'telephone\']                    = W2HttpRequest::getRequestString(\'telephone\',false);
+        $pWhere[]                               = \'status <> \'.STATUS_DISABLED;
+
+        $tmpModel = UserHandler::loadModelFirstInList($pWhere);
+
+        $tmpModel    ->         setPassword(W2HttpRequest::getRequestString(\'newpassword\'));//修改密码
+
+        return static::save($tmpModel);
+    }
+
+    /*通用方法根据指定条件读取用户信息若成功则返回登录信息*/
+    public static function loginWithWhere($pWhere=array())
+    {
+        if ($_SERVER[\'REQUEST_METHOD\'] != \'POST\' )
+        {
+            return HaoResult::init(ERROR_CODE::$ONLY_POST_ALLOW);
+        }
+
+        $tmpModel = UserHandler::loadModelFirstInList($pWhere);
+
+        if (!is_object($tmpModel))
+        {
+            return HaoResult::init(ERROR_CODE::$USER_LOGIN_FAIL);
+        }
+        switch($tmpModel->getStatus())
+        {
+            case STATUS_DISABLED:
+                return HaoResult::init(ERROR_CODE::$USER_BEEN_DISABLED);
+                break;
+        }
+
+        $tmpModel->setLastLoginTime(date(\'Y-m-d H:i:s\'));
+        $savedModel = UserHandler::saveModel($tmpModel);
+        if (Utility::getHeaderValue(\'Devicetoken\')!=\'\' && class_exists(\'DeviceController\'))
+        {//登录后，绑定对应设备
+            DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),$savedModel);
+        }
+        UserModel::$authViewDisabled = static::$authViewDisabledList[\'self\'];
+        return HaoResult::init(ERROR_CODE::$OK,$savedModel,array(\'authInfo\'=>Utility::getHeaderAuthInfoForUserID($savedModel->getId())));
+    }
+
+    //登录
+    public static function actionLogin()
+    {
+        $pWhere = array();
+        $pWhere[\'password\']                     = Utility::getEncodedPwd(W2HttpRequest::getRequestString(\'password\',false));
+        $pWhere[]                                 = \'status <> \'.STATUS_DISABLED;
+        $account                                  = W2HttpRequest::getRequestString(\'account\',false);
+        if (W2String::isTelephone($account) )
+        {
+            $pWhere[\'telephone\']                    = $account;
+        }
+        else if (W2String::isEmail($account) )
+        {
+            $pWhere[\'email\']                    = $account;
+        }
+        else if (!is_null($account) )
+        {
+            $pWhere[\'username\']                    = $account;
+        }
+        else
+        {
+            return HaoResult::init(ERROR_CODE::$USER_PLS_ACCOUNT);
+        }
+        if (is_null($pWhere[\'password\']) )
+        {
+            return HaoResult::init(ERROR_CODE::$USER_PLS_PWD);
+        }
+        return UserController::loginWithWhere($pWhere);
+    }
+
+    //联合登录
+    public static function actionUnionLogin()
+    {
+        $unionToken                    = W2HttpRequest::getRequestString(\'uniontoken\');
+        $unionType                     = W2HttpRequest::getRequestString(\'uniontype\');
+
+        if (is_null($unionToken) || is_null($unionType)  )
+        {
+            return HaoResult::init(ERROR_CODE::$USER_PLS_PWD);
+        }
+
+        $pWhere = array();
+        $pWhere[]                               = \'status <> \'.STATUS_DISABLED;
+
+        $pWhere[\'joinList\'] = array();
+        $pWhere[\'joinList\'][] = array(\'unionLogin t2\',array(\'t2.userID = t1.id\',\'t2.unionToken\'=>$unionToken,\'t2.unionType\'=>$unionType));
+
+
+        $results = UserController::loginWithWhere($pWhere);
+
+        if ($results->isErrorCode(ERROR_CODE::$USER_LOGIN_FAIL))
+        {
+
+            $tmpModel = new UserModel();
+            $tmpResult = static::save($tmpModel,$isAdd=true);
+            if ($tmpResult->isResultsOK())
+            {
+                $unionLoginModel = UnionLoginHandler::loadModelByToken($unionToken,$unionType);
+                $unionLoginModel->setUserID($tmpResult->getResults()->getId());
+                UnionLoginHandler::saveModel($unionLoginModel);
+                return UserController::loginWithWhere($pWhere);
+            }
+            else
+            {
+                return $tmpResult;
+            }
+        }
+        return $results;
+    }
+
+    //登录用户可以关联联合登录账号
+    public static function actionSetUnionLogin()
+    {
+        $unionToken                    = W2HttpRequest::getRequestString(\'uniontoken\');
+        $unionType                     = W2HttpRequest::getRequestString(\'uniontype\');
+
+        if (is_null($unionToken) || is_null($unionType)  )
+        {
+            return HaoResult::init(ERROR_CODE::$USER_PLS_PWD);
+        }
+
+        if (Utility::getCurrentUserID()>0)//绑定账号
+        {
+            $unionLoginModel = UnionLoginHandler::loadModelByUserID(Utility::getCurrentUserID(),$unionType);
+            if (is_object($unionLoginModel))
+            {
+                $unionLoginModel->setUserID(\'NULL\');
+                $unionLoginModel->setModifyTime(date(\'Y-m-d H:i:s\'));
+                UnionLoginHandler::saveModel($unionLoginModel);
+            }
+            $unionLoginModel = UnionLoginHandler::loadModelByToken($unionToken,$unionType);
+            if ($unionLoginModel->getUserID()>0)
+            {
+                return HaoResult::init(ERROR_CODE::$USER_USED_UNION);
+            }
+            $unionLoginModel->setUserID(Utility::getCurrentUserID());
+            $unionLoginModel->setModifyTime(date(\'Y-m-d H:i:s\'));
+            UnionLoginHandler::saveModel($unionLoginModel);
+            return HaoResult::init(ERROR_CODE::$OK,$unionLoginModel);
+        }
+        return HaoResult::init(ERROR_CODE::$NOT_USER);
+    }
+
+    //获得登录者的信息
+    public static function actionGetMyDetail()
+    {
+
+        $tmpModel = Utility::getCurrentUserModel();
+        if (!is_object($tmpModel))
+        {
+            return HaoResult::init(ERROR_CODE::$NOT_USER);
+        }
+
+        $extraInfo = array();
+        $extraInfo[\'isPasswordNull\'] = $tmpModel->getPassword()==null;
+
+        UserModel::$authViewDisabled = static::$authViewDisabledList[\'self\'];
+        return HaoResult::init(ERROR_CODE::$OK,$tmpModel,$extraInfo);
+    }
+
+    /**注销登录*/
+    public static function actionLogOut()
+    {
+        if (Utility::getHeaderValue(\'Devicetoken\')!=null && class_exists(\'DeviceController\'))
+        {//注销设备对应的用户信息
+            DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),null);
+        }
+        return HaoResult::init(ERROR_CODE::$OK);
+    }
+
+    /**删除用户*/
+    public static function actionDelete()
+    {
+        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'delete\')!=\'admin\')
+        {
+            return HaoResult::init(ERROR_CODE::$ONLY_ADMIN_ALLOW);
+        }
+
+        $pWhere = array();
+
+        $pWhere[\'id in (%s)\']                   = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
+        $pWhere[\'id\']                           = W2HttpRequest::getRequestInt(\'id\');
+        $pWhere[\'telephone\']                    = W2HttpRequest::getRequestTelephone(\'telephone\',false);//用户手机号
+        $pWhere[\'username\']                     = W2HttpRequest::getRequestString(\'username\',false);    //用户名
+        $pWhere[\'email\']                        = W2HttpRequest::getRequestEmail(\'email\',false);        //用户邮箱
+
+        if (count(array_filter(array_values($pWhere)))>0)
+        {
+            $result = UserHandler::delete($pWhere);
+            return HaoResult::init(ERROR_CODE::$OK,$result);
+        }
+        else
+        {
+            return HaoResult::init(ERROR_CODE::$PARAM_ERROR);
+        }
+    }';
+    }
+
+$_controllerString .= '
 }
 ';
 if (!file_exists($_controllerFile))
@@ -927,12 +1697,12 @@ else if (getValueInArgv('-update') == 'yes')
 
 
     print("actionList - p_where\n");
-    $_fileListAdminString = preg_replace('/[\s\S]*?actionList\(\)[\s\S]*?\$p_where = array\(\).*([\s\S]+?)switch \([\s\S]*/','$1',$_fileString);
+    $_fileListAdminString = preg_replace('/[\s\S]*?actionList\(\)[\s\S]*?\$pWhere = array\(\).*([\s\S]+?)switch \([\s\S]*/','$1',$_fileString);
     $_fileListAdminStringTmp = $_fileListAdminString;
     foreach (explode("\n",$_controllerStringList) as $_string) {
         if ($_string!='' && strpos($_fileListAdminStringTmp,preg_replace('/[\s\S]*?(p_where.*?\])[\s\S]*/','$1',$_string))===false)
         {
-            $_fileListAdminStringTmp = preg_replace('/([\s\S]*\$p_where\[.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileListAdminStringTmp);
+            $_fileListAdminStringTmp = preg_replace('/([\s\S]*\$pWhere\[.*)/','$1'."\n".$_string.'//todo debug, php auto update ,pls checkit',$_fileListAdminStringTmp);
         }
     }
     $_fileString = str_replace($_fileListAdminString,$_fileListAdminStringTmp,$_fileString);
@@ -960,7 +1730,7 @@ else
 
 if (!file_exists($_apitestConfigFile))
 {
-    file_put_contents($_apitestConfigFile,implode("\n",$_apitestConfigArray));
+    file_put_contents($_apitestConfigFile,"/*\n".implode("\n",$_apitestConfigArray)."\n*/");
     print('成功，创建文件：'.$_apitestConfigFile."\n");
 }
 else if (getValueInArgv('-update') == 'yes')
@@ -1011,6 +1781,10 @@ else
 }
 
 
+chmod($_handlerFile,0664);
+chmod($_modelFile,0664);
+chmod($_controllerFile,0664);
+chmod($_apitestConfigFile,0664);
 
 
 

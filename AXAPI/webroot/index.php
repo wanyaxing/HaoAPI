@@ -123,7 +123,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
     }
 
     //打印接口返回的数据
-    if ( get_class($results) == 'HaoResult' )
+    if (is_object($results) && get_class($results) == 'HaoResult' )
     {
         if (defined('IS_AX_DEBUG'))
         {
