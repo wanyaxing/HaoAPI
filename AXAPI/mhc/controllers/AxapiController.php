@@ -96,4 +96,14 @@ class AxapiController extends AbstractController{
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
 
+    public static function actionCreateMhcWithTableName()
+    {
+        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
+        {
+            return HaoResult::init(ERROR_CODE::$NO_AUTH);
+        }
+
+        require_once(AXAPI_ROOT_PATH.'/mhc/create_mhc_with_table_name.php');
+    }
+
 }
