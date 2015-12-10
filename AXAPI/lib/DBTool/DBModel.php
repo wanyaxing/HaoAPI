@@ -272,6 +272,7 @@ class DBModel{
 			$condition='';
 			if(count($strWhereList)>0){
 				$condition=' where ' . join(' and ',$strWhereList);
+				$condition = str_replace(' = NULL',' is NULL',$condition);
 			}
 
 			return $condition;
