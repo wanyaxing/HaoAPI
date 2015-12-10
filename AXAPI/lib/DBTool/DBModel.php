@@ -810,9 +810,9 @@ class DBModel{
 			if (isset($p_where)){
 				$this->where($p_where);
 			}
-			else if (empty($this->whereToStr()))
+			else if ($this->whereToStr() == null)
 			{
-				print("DBModel.php: NO update data without where, if you want to do this, pls use updateAll.");exit();
+				throw new Exception("DBModel.php: NO update data without where, if you want to do this, pls use updateAll.");
 				return null;
 			}
 			$arr = array();
