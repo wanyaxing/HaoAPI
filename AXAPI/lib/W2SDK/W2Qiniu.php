@@ -489,7 +489,7 @@ class W2Qiniu {
 }
 
 //静态类的静态变量的初始化不能使用宏，只能用这样的笨办法了。
-if (W2Qiniu::$Qiniu_bucket==nul && defined('W2QINIU_QINIU_BUCKET'))
+if (W2Qiniu::$Qiniu_bucket==null && defined('W2QINIU_QINIU_BUCKET'))
 {
 	W2Qiniu::$Qiniu_bucket    = W2QINIU_QINIU_BUCKET;
 	W2Qiniu::$Qiniu_domain    = W2QINIU_QINIU_DOMAIN;
