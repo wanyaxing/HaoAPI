@@ -794,7 +794,7 @@ else if (IS_SPECIAL_TABLE=='smsVerify')
 
 if (IS_SPECIAL_TABLE=='user')
 {
-    $_apitestConfigArray[] = "\n".'apiList[apiList.length] = {
+    $_apitestConfigArray[] = "\n".'apiList.push({
         \'title\':\'用户:修改密码（不登录，需要验证短信）\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
@@ -805,9 +805,9 @@ if (IS_SPECIAL_TABLE=='user')
           ,{ \'key\':\'verify_code\'            ,\'type\':\'string\'    ,\'required\': true ,\'test-value\':\'123456\'                             ,\'title\':\'验证码\' ,\'desc\':\'必需\' }
           ,{ \'key\':\'newpassword\'           ,\'type\':\'md5\'        ,\'required\': true ,\'test-value\':\'123456\'                              ,\'title\':\'密码\' ,\'desc\':\'\' }
         ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:修改密码／邮箱/手机（需要登录，并提供原始密码）\'
         ,\'desc\':\'（修改手机需要验证新手机）<br/>（联合登录用户，初次设定密码不需要原始密码）\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
@@ -820,10 +820,10 @@ apiList[apiList.length] = {
           ,{ \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': false ,\'test-value\':\'13774298448\'                         ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
           ,{ \'key\':\'verify_code\'            ,\'type\':\'string\'    ,\'required\': false ,\'test-value\':\'123456\'                             ,\'title\':\'验证码\' ,\'desc\':\'如果修改手机号，需要验证新手机号。\' }
         ]
-      };
+      });
 
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:登录\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
@@ -833,33 +833,33 @@ apiList[apiList.length] = {
            { \'key\':\'account\'               ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'13774298448\'                     ,\'title\':\'支持手机号、用户名、邮箱登录\' ,\'desc\':\'\' }
           ,{ \'key\':\'password\'              ,\'type\':\'md5\'     ,\'required\':true ,\'test-value\':\'123456\'                         ,\'title\':\'密码\' ,\'desc\':\'\' }
        ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:联合登录\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
         ,\'action\':\'/user/union_login\'
         ,\'method\':\'post\'
         ,\'request\':[
-           { \'key\':\'uniontype\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
-          ,{ \'key\':\'uniontoken\'             ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'398ADCFAED79A49ACBE516EE89F7950B\'                     ,\'title\':\'联合登录唯一识别码\' ,\'desc\':\'\' }
+           { \'key\':\'union_type\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
+          ,{ \'key\':\'union_token\'             ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'398ADCFAED79A49ACBE516EE89F7950B\'                     ,\'title\':\'联合登录唯一识别码\' ,\'desc\':\'\' }
        ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:登录后绑定对应联合登录\'
         ,\'desc\':\'登录后调用该接口可新增绑定\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
         ,\'action\':\'/user/set_union_login\'
         ,\'method\':\'post\'
         ,\'request\':[
-           { \'key\':\'uniontype\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
-          ,{ \'key\':\'uniontoken\'             ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'398ADCFAED79A49ACBE516EE89F7950B\'                     ,\'title\':\'联合登录唯一识别码\' ,\'desc\':\'\' }
+           { \'key\':\'union_type\'              ,\'type\':\'int\'     ,\'required\':true ,\'test-value\':\'2\'                         ,\'title\':\'登录方式：2QQ 3微博 4微信\' ,\'desc\':\'\' }
+          ,{ \'key\':\'union_token\'             ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'398ADCFAED79A49ACBE516EE89F7950B\'                     ,\'title\':\'联合登录唯一识别码\' ,\'desc\':\'\' }
        ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:注销\'
         ,\'desc\':\'用户点击注销，本地删除其登录信息，同时调用本接口以便服务器解除其账号与设备的绑定信息。\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
@@ -868,9 +868,9 @@ apiList[apiList.length] = {
         ,\'request\':[
 
        ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:我的信息\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
@@ -879,11 +879,11 @@ apiList[apiList.length] = {
         ,\'request\':[
 
           ]
-      };
+      });
 
 
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'用户:删除（仅供管理员测试期间用)\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
@@ -894,43 +894,43 @@ apiList[apiList.length] = {
           ,{ \'key\':\'id\'                    ,\'type\':\'integer\'    ,\'required\':false ,\'test-value\':\'\'                         ,\'title\':\'\' ,\'desc\':\'\' }
           ,{ \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\':false ,\'test-value\':\'13112345678\'              ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
         ]
-      };'."\n";
+      });'."\n";
 }
 if (IS_SPECIAL_TABLE=='smsVerify')
 {
-    $_apitestConfigArray[] = "\n".'apiList[apiList.length] = {
+    $_apitestConfigArray[] = "\n".'apiList.push({
         \'title\':\'验证码:发送一条验证码到手机\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/smsverify/SendVerifyCode\'
+        ,\'action\':\'/sms_verify/send_verify_code\'
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'10000000000\'                         ,\'title\':\'\' ,\'desc\':\'\' }
            ,{ \'key\':\'usefor\'             ,\'type\':\'int\'     ,\'required\': true,\'test-value\':\'2\'                         ,\'title\':\'验证码用途\' ,\'desc\':\'1：注册用 2：登陆用 3：找回密码用\' }
         ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'验证码:确认验证码是否正确\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/smsverify/CheckVerifyCode\'
+        ,\'action\':\'/sms_verify/check_verify_code\'
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'13774298448\'                         ,\'title\':\'手机号码\' ,\'desc\':\'\' }
           ,{ \'key\':\'verify_code\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'123456\'                         ,\'title\':\'验证码\' ,\'desc\':\'\' }
         ]
-      };
+      });
 
-apiList[apiList.length] = {
+apiList.push({
         \'title\':\'验证码:剩余短信量\'
         ,\'desc\':\'\'
         ,\'time\':\''.date('Y-m-d H:i:s').'\'
-        ,\'action\':\'/smsverify/GetBalance\'
+        ,\'action\':\'/sms_verify/get_balance\'
         ,\'method\':\'get\'
         ,\'request\':[
         ]
-      };';
+      });';
 }
 $_controllerString = '<?php
 /**
@@ -1265,6 +1265,7 @@ $_controllerString .= '
         {
             $keyWhere = array();
             $keyWord = preg_replace(\'/\s+/\',\'%\',$keyWord);
+            $keyWord = DBTool::wrap2Sql($keyWord);//转义字符，防注入。
 '.$_controllerKeySearchList.'
             $pWhere[] = \'(\'.implode(\' or \',$keyWhere).\')\';
         }':'').'
@@ -1514,12 +1515,12 @@ $_controllerString .= '
     //联合登录
     public static function actionUnionLogin()
     {
-        $unionToken                    = W2HttpRequest::getRequestString(\'uniontoken\');
-        $unionType                     = W2HttpRequest::getRequestString(\'uniontype\');
+        $unionToken                    = W2HttpRequest::getRequestString(\'union_token\');
+        $unionType                     = W2HttpRequest::getRequestString(\'union_type\');
 
         if (is_null($unionToken) || is_null($unionType)  )
         {
-            return HaoResult::init(ERROR_CODE::$USER_PLS_PWD);
+            return HaoResult::init(ERROR_CODE::$PARAM_ERROR);
         }
 
         $pWhere = array();
@@ -1554,8 +1555,8 @@ $_controllerString .= '
     //登录用户可以关联联合登录账号
     public static function actionSetUnionLogin()
     {
-        $unionToken                    = W2HttpRequest::getRequestString(\'uniontoken\');
-        $unionType                     = W2HttpRequest::getRequestString(\'uniontype\');
+        $unionToken                    = W2HttpRequest::getRequestString(\'union_token\');
+        $unionType                     = W2HttpRequest::getRequestString(\'union_type\');
 
         if (is_null($unionToken) || is_null($unionType)  )
         {
