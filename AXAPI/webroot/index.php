@@ -144,16 +144,6 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         echo json_encode($results, JSON_UNESCAPED_UNICODE);
     }
 
-
-    define("AX_TIMER_END", microtime (true));//记录请求结束时间
-
-    if (defined('IS_AX_DEBUG'))
-    {
-        print("\n");print(W2Time::microtimetostr());print("\n");
-        printf('time cost of this page : %s s',number_format(AX_TIMER_END - AX_TIMER_START, 5, '.', '') );
-        print("\n");
-    }
-
     //记录接口日志
     file_put_log($_REQUEST,'access');
 

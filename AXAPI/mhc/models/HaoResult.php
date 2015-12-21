@@ -149,6 +149,20 @@ class HaoResult extends AbstractModel{
 
         return $this;
     }
+
+    public function getTimeCost()
+    {
+        if (defined('AX_TIMER_START'))
+        {
+            return number_format(microtime (true) - AX_TIMER_START, 5, '.', '');
+        }
+        return null;
+    }
+
+    public function getTimeNow()
+    {
+        return date('Y-m-d H:i:s');
+    }
 }
 
 ?>
