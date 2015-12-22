@@ -376,6 +376,10 @@ class Utility
 					'tmpArrString'=>implode( $tmpArr ),
 					'tmpArrMd5'=>$tmpStr,
 					'getallheaders()'=>getallheaders(),
+					'_GET'=>$_GET,
+					'_POST'=>$_POST,
+					'_FILES'=>$_FILES,
+					'_SERVER'=>$_SERVER,
 					);
 			}
 
