@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v151225 rand 和 now 不该使用缓存
 // v150923 优化t1逻辑和field逻辑，新增 fieldToStr() 和 fieldAdd()
 // v150806 新增whereAdd方法，重整了where相关的逻辑
 // v150805 默认$t1 = null;，如果有join 则t1 = t1
@@ -521,7 +522,14 @@ class DBModel{
 			$cacheKey = md5($sql);
 			if ($this->isUseCache)
 			{
-				if (array_key_exists($cacheKey, self::$cache))
+				if (
+                        strpos($sql,'rand()')!==false
+                        || strpos($sql,'now()')!==false
+                    )
+                {//查询的语句里可不能出现函数方法啊，那可不能用缓存。
+                    $w2CacheKey_fieldValues = null;
+                }
+                else if (array_key_exists($cacheKey, self::$cache))
 				{
 					$list = self::$cache[$cacheKey];
 				}
