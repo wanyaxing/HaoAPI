@@ -16,6 +16,17 @@ apiList.push({
 });
 
 apiList.push({
+  "title":"接口工具:测试首页数据"
+  ,"desc":""
+  ,"time":""
+  ,"action":"/axapi/get_home_table_for_test"
+  ,"method":"get"
+  ,"request":[
+      { "key":"sleep",        "type":"int",     "title":"延迟时间（单位：秒）",        "desc":"page",    "required":false,  "test-value":"0"}
+  ]
+});
+
+apiList.push({
   "title":"接口工具:查看日志（限管理员）"
   ,"desc":""
   ,"time":""

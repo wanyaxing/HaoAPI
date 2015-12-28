@@ -106,4 +106,49 @@ class AxapiController extends AbstractController{
         require_once(AXAPI_ROOT_PATH.'/mhc/create_mhc_with_table_name.php');
     }
 
+
+    public static function actionGetHomeTableForTest()
+    {
+        $result = array();
+        for ($i=0; $i < 10; $i++) {
+            switch (rand(0,5)) {
+                case 1:
+                    $result[] = UserHandler::loadModelFirstInList(array(),'rand()');
+                    break;
+                case 2:
+                    $result[] = SmsVerifyHandler::loadModelFirstInList(array(),'rand()');
+                    break;
+                case 3:
+                    $result[] = UnionLoginHandler::loadModelFirstInList(array(),'rand()');
+                    break;
+                case 4:
+                    $result[] = ['suibian'=>'随便','looklook'=>'seesee'];
+                    break;
+                case 5:
+                    $result[] = ['one'=>['two'=>['three'=>'four']]];
+                    break;
+            }
+
+        }
+
+        $sleep = W2HttpRequest::getRequestInt('sleep');
+        if ( $sleep>0)
+        {
+            sleep($sleep);
+        }
+        // echo('x');exit;
+        // sleep(rand(2,4));
+        return HaoResult::init(ERROR_CODE::$OK,$result);
+    }
+
+    public static function actionGetCodesOfHaoConnect()
+    {
+        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
+        {
+            return HaoResult::init(ERROR_CODE::$NO_AUTH);
+        }
+
+        require_once(AXAPI_ROOT_PATH.'/mhc/create_mhc_with_table_name.php');
+    }
+
 }
