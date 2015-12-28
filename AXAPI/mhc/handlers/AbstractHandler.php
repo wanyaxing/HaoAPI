@@ -381,15 +381,21 @@ class AbstractHandler {
                                         ,$p_pageSize
                                         ,$p_countThis
                                         );
+
             $w2CacheKey_fieldValues = $w2CacheKey.'_list';
             if ($_SERVER['REQUEST_METHOD'] == 'GET')
             {//只有GET请求才会使用缓存。为安全计，POST请求就耗点性能吧。
                 if ( !isset($p_where['userID']) || $p_where['userID'] != Utility::getCurrentUserID() )
                 {//查询与自己无关的数据，使用缓存。如果用户检索自己相关的数据时，不用缓存
+                    if (
+                            strpos($w2CacheKey,'rand()')!==false
+                            || strpos($w2CacheKey,'now()')!==false
+                        )
+                    {//查询的语句里可不能出现函数方法啊，那可不能用缓存。
 
-                    //尝试读取列表检索结果
-                    if (W2Cache::isCacheCanBeUsed($w2CacheKey_fieldValues))
-                    {
+                    }
+                    else if (W2Cache::isCacheCanBeUsed($w2CacheKey_fieldValues))
+                    {//尝试读取列表检索结果
                          $w2CacheObj_fieldValues = W2Cache::getObj($w2CacheKey_fieldValues);
                     }
 
