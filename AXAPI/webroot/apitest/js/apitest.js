@@ -56,6 +56,19 @@ function unix_to_datetime(unix) {
   return now.toLocaleString().replace(/年|月/g, "-").replace(/日/g, " ");
 }
 
+
+function JSON_stringify(s, emit_unicode)
+{
+   var json = JSON.stringify(s);
+   return emit_unicode ? json : json.replace(/[\u007f-\uffff]/g,
+      function(c) {
+        return '\\u'+('0000'+c.charCodeAt(0).toString(16)).slice(-4);
+      }
+   );
+}
+
+
+
 function range_to_badge(range)
 {
   var s = '';
@@ -244,7 +257,11 @@ function reFormGroup(_formType,_formRequest)
 
   _formGroup.attr('is-required',_formRequest['required']?'true':'false').trigger('mouseenter').trigger('mouseleave').attr('title',_formRequest['title']+"<br/>"+_formRequest['desc']).attr('data-html',"true").tooltip().show();
   var _inputs = _formGroup.find('input');
-  _inputs.eq(0).val(_formRequest['key']);
+  _inputs.eq(0).val(_formRequest['key'])
+               .attr('field-type',_formRequest['type'])
+               .attr('field-required',_formRequest['required'])
+               .attr('field-title',_formRequest['title'])
+               .attr('field-desc',_formRequest['desc']);
   if (_formRequest['type']=='file')
   {
     _inputs.eq(1).replaceWith('<input type="file"'+(_formType=='field'?' name="'+_formRequest['key']+'"':'')+(_formRequest['key'].indexOf('[]')>0?' multiple="multiple"':'')+'/>')
@@ -276,19 +293,17 @@ function reFormGroup(_formType,_formRequest)
   }
   if (_formRequest['click'])
   {
-    _inputs.eq(1).siblings('.input-group-addon').show().unbind().bind('click',_formRequest['click']);
+    _inputs.eq(1).siblings('.input-group-addon').show().unbind().bind('click',_formRequest['click']).parent().addClass('input-group');
   }
   else
   {
-    _inputs.eq(1).closest('.input-group').removeClass('input-group');
+    // _inputs.eq(1).closest('.input-group').removeClass('input-group');
   }
   $('#div_headerfield').scrollTop(99999);
 }
 
 function changePlan (p_plan) {
-    p_plan = decodeURI(p_plan);
     var planList = p_plan.split('|');
-    console.log(planList);
     switch(planList[0]){
         case '#api':
             var i = parseInt(planList[1]);
@@ -300,10 +315,81 @@ function changePlan (p_plan) {
               }
             }
             break;
+        case '#request':
+            if (planList.length>=3)
+            {
+              if (planList[1]!='undefined')
+              {
+                $('#div_switchgroup button[unique-id='+planList[1]+']').trigger('click');
+              }
+              if (planList[2]!='undefined')
+              {
+                $('#div_apilist .panel[unique-id='+planList[2]+'] h4 a').trigger('click');
+              }
+              if (planList.length>=4)
+              {
+                setTimeout(function() {
+                  try
+                  {
+                    json = JSON.parse(planList[3]);
+                    for (var i in json)
+                    {
+                      reFormGroup('field',json[i]);
+                    }
+                  }
+                  catch(e){
+                  }
+                }, 50);
+              }
+              if (planList.length==5)
+              {
+                setTimeout(function() {
+                  try
+                  {
+                    json = JSON.parse(planList[4]);
+                    for (var i in json)
+                    {
+                      reFormGroup('header',json[i]);
+                    }
+                  }
+                  catch(e){
+                  }
+                }, 50);
+              }
+            }
+
+            break;
 
         case 'help':
             break;
     }
+}
+
+function updatePlan()
+{
+  var buttonUniqueId = $('#div_switchgroup .btn-primary').attr('unique-id');
+  var apiUniqueId = $('.panel-collapse.in').closest('.panel').attr('unique-id');
+  var _posts = [];
+  $('form').find('[form-type=field]').each(function(){
+    var _key = $(this).val();
+    if (_key!='' && _key.indexOf('[]')<0)
+    {
+      var _val = $(this).parent().siblings().find("input").val();
+      _posts.push({'key':_key             ,'type':$(this).attr('field-type')     ,'required': $(this).attr('field-required') ,'test-value':_val                         ,'title':$(this).attr('field-title') ,'desc':$(this).attr('field-desc') });
+    }
+  });
+  var _headers = [];
+  $('form').find('[form-type=header]').each(function(){
+    var _key = $(this).val();
+    if (_key!='')
+    {
+      var _val = $(this).parent().siblings().find("input").val();
+      _headers.push({'key':_key             ,'type':$(this).attr('field-type')     ,'required': $(this).attr('field-required') ,'test-value':_val                         ,'title':$(this).attr('field-title') ,'desc':$(this).attr('field-desc')});
+    }
+  });
+  console.log(apiUniqueId);
+  _href = '#request'+'|'+buttonUniqueId+'|'+apiUniqueId+'|'+JSON_stringify(_posts,false)+'|'+JSON_stringify(_headers,false);
+  setCurrentUrl(_href);
 }
 
 function setCurrentUrl(_href)
@@ -316,7 +402,7 @@ function reFormApi(i)
 {
   var _api = apiList[i];
   document.getElementsByTagName('title')[0].innerHTML = _api['title']+'　　/　　API:测试工具';
-  setCurrentUrl('#api'+'|'+i+'|'+apiList[i]['title']);
+  // setCurrentUrl('#api'+'|'+i+'|'+apiList[i]['title']);
   if (_api['action'].indexOf('http')<0)
   {
     _api['action'] = window.location.protocol +'//'+ window.location.host
@@ -351,6 +437,7 @@ function reFormApi(i)
     }
   }
   // $('form').find('.input-group-addon').trigger('click');
+  // setTimeout(function() {updatePlan();}, 1000);
 }
 
 function reFormGroupApi(i,j)
@@ -423,7 +510,7 @@ function apiKeyBarInit()
       var _keyType = _keyTypeArray[i]['keyType'];
       var _keyPY = _keyTypeArray[i]['keyPY'];
       var _timeunix = _keyTypeArray[i]['timeunix'];
-      $('#switch_examples').append('<button type="button" class="btn btn-default" onclick="changeKeyType(this);" keytype="'+_keyType+'">'
+      $('#switch_examples').append('<button type="button" class="btn btn-default" onclick="changeKeyType(this);" keytype="'+_keyType+'" unique-id="'+hex_md5(_keyType)+'" >'
                                   +_keyType
                                   +( _sortType=='time'?range_to_badge(_now - _timeunix):(_lastKeyPY!=_keyPY?'<span class="badge">'+_keyPY+'</span>':''))
                                   +'</button>');
@@ -513,10 +600,10 @@ function apiListInit()
         _keyString += '</table>';
       }
 
-      var _panelString ='<div class="panel panel-default">\
+      var _panelString ='<div class="panel panel-default" unique-id="'+hex_md5(apiList[i]['title'])+'" >\
           <div class="panel-heading">\
             <h4 class="panel-title">\
-              <a id="btn_api_title_'+i+'" href="#api'+'|'+i+'|'+encodeURI(apiList[i]['title'])+'" data-toggle="collapse" data-parent="#list_api_btns" data-target="#collapseDiv'+i+'" onclick="reFormApi('+i+');" style="width: 100%;display: inline-block;">'
+              <a id="btn_api_title_'+i+'" href="javascript:;" data-toggle="collapse" data-parent="#list_api_btns" data-target="#collapseDiv'+i+'" onclick="reFormApi('+i+');" style="width: 100%;display: inline-block;">'
               +(range_to_badge(_now - _api['timeunix']))
               +_api['title']
               +'<span class="span-method">'+_api['method']+'</span>'
@@ -731,16 +818,14 @@ $(function(){
               ,processData: false//必须false才会避开jQuery对 formdata 的默认处理  告诉jQuery不要去处理发送的数据  XMLHttpRequest会对 formdata 进行正确的处理
           });
         }
-
+        setTimeout(function() {updatePlan()}, 100);
     });
     // //url 监控
     setInterval(function(){
         var _currentUrl = self.location.href;
         if (currentUrl != _currentUrl) {
-            console.log(currentUrl,_currentUrl)
             currentUrl = _currentUrl;
-            var _plan = currentUrl.replace(/^.*#/g,'#');
-            changePlan(_plan);
+            changePlan(self.location.hash);
         };
     }, 100);
 });

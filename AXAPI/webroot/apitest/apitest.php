@@ -59,7 +59,7 @@
     					      <input class="form-control" form-type="header" placeholder="header key" value="">
     				      </div>
     				      <div class="col-sm-8">
-                    <div class="input-group">
+                    <div>
       					      <input class="form-control"  type="text" placeholder="Enter the value" value="">
                       <div class="input-group-addon" style="display: none;">reload</div>
                     </div>
