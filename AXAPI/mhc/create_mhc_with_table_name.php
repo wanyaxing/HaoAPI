@@ -22,7 +22,7 @@ require_once(AXAPI_ROOT_PATH.'/lib/DBTool/DBModel.php');
 //加载基础方法
 require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
 
-if ((!isset($argv) || count($argv)<=1) && count(array_keys($_REQUEST))<=1)
+if ((!isset($argv) || count($argv)<=1) && count(array_keys($_REQUEST))==0)
 {
     print("\n".'需要参数：');
     print("\n".'-t 表名');
@@ -41,22 +41,25 @@ function getValueInArgv($argv_key)
     }
     global $argv;
 
-    if (!is_array($argv))
+    if (count(array_keys($_REQUEST))==0)
     {
-        print("\n".'无法获得参数'.$argv_key.'的值'."\n");
-        exit;
-    }
-    $index = array_search($argv_key,$argv);
-    if ($index!==false)
-    {
-        if (count($argv)>$index+1)
-        {
-            return $argv[$index+1];
-        }
-        else
+        if (!is_array($argv))
         {
             print("\n".'无法获得参数'.$argv_key.'的值'."\n");
             exit;
+        }
+        $index = array_search($argv_key,$argv);
+        if ($index!==false)
+        {
+            if (count($argv)>$index+1)
+            {
+                return $argv[$index+1];
+            }
+            else
+            {
+                print("\n".'无法获得参数'.$argv_key.'的值'."\n");
+                exit;
+            }
         }
     }
     return null;
@@ -161,7 +164,6 @@ class CMysql2PHP{
 
 $_tableName         = getValueInArgv('-t');
 $_tableNameCN       = getValueInArgv('-name');
-if (is_null($_tableNameCN)){$_tableNameCN = $_tableName;}
 $_handlerName       = W2String::camelCaseWithUcFirst($_tableName).'Handler';
 $_modelName         = W2String::camelCaseWithUcFirst($_tableName).'Model';
 $_controllerName    = W2String::camelCaseWithUcFirst($_tableName).'Controller';
@@ -265,6 +267,23 @@ if (!is_array($_tableDataKeys) || count($_tableDataKeys)==0)
  print('中止，表字段获取失败：'.$_tableName."\n");
  exit;
 }
+
+if (is_null($_tableNameCN))
+{
+    $createTableSyntaxes = DBTool::queryData('SHOW CREATE TABLE '.$_tableName);
+    if (count($createTableSyntaxes)>0)
+    {
+        $stringCTS = $createTableSyntaxes[0]['Create Table'];
+        if (preg_match('/[\s\S].*?ENGINE=.*COMMENT=\'(.*)\'[\s\S]*/',$stringCTS))
+        {
+            $_tableNameCN = preg_replace('/[\s\S]*?ENGINE=.*COMMENT=\'(.*?)\'[\s\S]*/','$1',$stringCTS);
+        }
+    }
+}
+
+if (is_null($_tableNameCN)){$_tableNameCN = $_tableName;}
+
+
 
 if ($_tableName=='user' && array_key_exists('password',$_tableDataKeys) && array_key_exists('telephone',$_tableDataKeys) && array_key_exists('level',$_tableDataKeys))
 {
@@ -661,6 +680,10 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_isAdmin = in_array($_fieldRow['Field'],array('userID','level','createTime','modifyTime'));
         $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
+        if (in_array($_fieldRow['Field'],array('createTime','modifyTime','lastLoginTime','lastPasswordTime')))
+        {
+            $_apitestConfigRequestUpdateTmp = '// '.$_apitestConfigRequestUpdateTmp;
+        }
         if ($_isAdmin )
         {
             $_apitestConfigRequestUpdateAdmin[]   =  $_apitestConfigRequestUpdateTmp;
