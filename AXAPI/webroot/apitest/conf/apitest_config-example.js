@@ -12,7 +12,7 @@ var headerList =[
     ,"title":'应用信息'
     ,"desc":''
     ,"required":true
-    ,"test-value":"teacher"
+    ,"test-value":"xxxweb"
     ,"click":null
   }
   ,{
