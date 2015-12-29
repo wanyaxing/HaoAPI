@@ -618,14 +618,15 @@ $(function(){
       $(this).addClass("btn-primary").siblings().removeClass("btn-primary");
     });
 
-    $('#textarea_results')[0].onchange = function()
-    {
+    $('#div_frames>ul>li').eq(0).find('a').bind({click:function(){
       var json,data;
-      data = $(this).val();
+      data = $('#textarea_results').val();
       try{ json = JSON.parse(data); }
       catch(e){
+          // console.log('json 解析失败');
           $('#div_json_view').html(data);
-          $('#div_frames>ul>li').eq(1).trigger("click");
+          setTimeout(function() {$('#div_frames>ul>li').eq(1).find('a').trigger("click");}, 100);
+
           return;
       }
 
@@ -637,7 +638,12 @@ $(function(){
       console.log(node);
       // node.expandAll();
       expandAll(node);
-    }
+    }});
+
+    // $('#textarea_results')[0].onchange = function()
+    // {
+
+    // }
 
     $('#btn_test_url').click(function(){
 
@@ -689,7 +695,7 @@ $(function(){
                     xhrTestingApi = null;
                     $('#textarea_results').val(data);
                     $('#textarea_results').trigger("change");
-                    $('#div_frames>ul>li').eq(0).trigger("click");
+                    $('#div_frames>ul>li').eq(0).find('a').trigger("click");
               },'text');
         }
         else
@@ -716,7 +722,7 @@ $(function(){
                     xhrTestingApi = null;
                     $('#textarea_results').val(data);
                     $('#textarea_results').trigger("change");
-                    $('#div_frames>ul>li').eq(0).trigger("click");
+                    $('#div_frames>ul>li').eq(0).find('a').trigger("click");
               }
 
               //Options to tell jQuery not to process data or worry about content-type.
