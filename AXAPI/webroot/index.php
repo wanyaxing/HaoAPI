@@ -12,9 +12,6 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
     //加载配置文件
     require_once(__dir__.'/../config.php');
 
-    //常用常量
-    require_once(AXAPI_ROOT_PATH.'/components/constants.php');
-
     //数据库操作工具
     require_once(AXAPI_ROOT_PATH.'/lib/DBTool/DBModel.php');
 
