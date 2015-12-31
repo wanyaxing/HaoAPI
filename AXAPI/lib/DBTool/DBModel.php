@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v151231 else if ($this->whereToStr() == null)
 // v151225 rand 和 now 不该使用缓存
 // v150923 优化t1逻辑和field逻辑，新增 fieldToStr() 和 fieldAdd()
 // v150806 新增whereAdd方法，重整了where相关的逻辑
@@ -881,7 +882,7 @@ class DBModel{
 			if (isset($p_where)){
 				$this->where($p_where);
 			}
-			else if (empty($this->whereToStr()))
+			else if ($this->whereToStr() == null)
 			{
 				throw new Exception('DBModel.php: NO update data without where, if you want to do this, pls use deleteAll.', 1);
 			}
