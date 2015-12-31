@@ -42,7 +42,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
                                         ,Utility::getCurrentUserID()
                                         ,count($_POST)>0?'POST':'GET'
                                         ,$GLOBALS['apiController'], $GLOBALS['apiAction']
-                                        ,is_string($p_content)?$p_content:json_encode($p_content, JSON_UNESCAPED_UNICODE)
+                                        ,is_string($p_content)?$p_content:Utility::json_encode_unicode($p_content)
                                     )
                             ,FILE_APPEND);
     }
@@ -86,7 +86,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
                 //返回错误信息
                 @ob_end_clean();//要清空缓冲区， 从而删除PHPs " 致命的错误" 消息。
                 $results = HaoResult::init(array(RUNTIME_CODE_ERROR_UNKNOWN,$errorMsg,$errorMsg),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$last_error['line'].' in '.$last_error['file'].': '.$last_error['message'].''):null);
-                echo json_encode($results->properties(), JSON_UNESCAPED_UNICODE);
+                echo Utility::json_encode_unicode($results->properties());
                 exit;
             }
         }
@@ -132,7 +132,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         else
         {
             header('Content-Type:text/javascript; charset=utf-8');
-            echo json_encode($results->properties(), JSON_UNESCAPED_UNICODE);
+            echo Utility::json_encode_unicode($results->properties());
         }
     }
     else if (is_string($results))
@@ -141,7 +141,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
     }
     else
     {
-        echo json_encode($results, JSON_UNESCAPED_UNICODE);
+        echo Utility::json_encode_unicode($results);
     }
 
     //记录接口日志

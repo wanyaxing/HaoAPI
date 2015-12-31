@@ -398,10 +398,25 @@ class Utility
 		}
 		else
 		{
-			return HaoResult::init(ERROR_CODE::$SIGNATURE_WRONG,$isAuthed);
+			return HaoResult::init(ERROR_CODE::$SIGNATURE_WRONG);
 		}
 
     }
+
+    /** PHP5.4以上使用JSON_UNESCAPED_UNICODE编码json字符，否则只能自己实现了。 */
+    public static function json_encode_unicode($data) {
+	    if (defined('JSON_UNESCAPED_UNICODE')) {
+	        return json_encode($data, JSON_UNESCAPED_UNICODE);
+	    }
+	    return preg_replace_callback('/(?<!\\\\)\\\\u([0-9a-f]{4})/i',
+		    function($m) {
+		        $d = pack("H*", $m[1]);
+		        $r = mb_convert_encoding($d, "UTF8", "UTF-16BE");
+		        return $r !== "?" && $r !== "" ? $r: $m[0];
+		    },
+		    json_encode($data)
+	    );
+	}
 
 }
 
