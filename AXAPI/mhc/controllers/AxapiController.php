@@ -26,7 +26,7 @@ class AxapiController extends AbstractController{
             case 'disabled': //封号
             case 'visitor' : //游客
             default :
-                return HaoResult::init(ERROR_CODE::$NO_AUTH);
+                // return HaoResult::init(ERROR_CODE::$NO_AUTH);
                 break;
         }
 
@@ -104,6 +104,8 @@ class AxapiController extends AbstractController{
         //}
 
         require_once(AXAPI_ROOT_PATH.'/mhc/create_mhc_with_table_name.php');
+
+        exit;
     }
 
 
@@ -113,13 +115,13 @@ class AxapiController extends AbstractController{
         for ($i=0; $i < 10; $i++) {
             switch (rand(0,5)) {
                 case 1:
-                    $result[] = UserHandler::loadModelFirstInList(array(),'rand()');
+                    // $result[] = UserHandler::loadModelFirstInList(array(),'rand()');
                     break;
                 case 2:
                     $result[] = SmsVerifyHandler::loadModelFirstInList(array(),'rand()');
                     break;
                 case 3:
-                    $result[] = UnionLoginHandler::loadModelFirstInList(array(),'rand()');
+                    // $result[] = UnionLoginHandler::loadModelFirstInList(array(),'rand()');
                     break;
                 case 4:
                     $result[] = array('suibian'=>'随便','looklook'=>'seesee');
