@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v151231 selectValues 如果查询的是多字段，则等同于select了。
 // v151231 else if ($this->whereToStr() == null)
 // v151225 rand 和 now 不该使用缓存
 // v150923 优化t1逻辑和field逻辑，新增 fieldToStr() 和 fieldAdd()
@@ -573,7 +574,7 @@ class DBModel{
 		}
 
 
-		//查询单独字段的值的数组，如不指定$field，则返回首条数据的首个字段的值组成的数组
+		//查询单独字段的值的数组，如不指定$field或指定了多个字段，则返回字段组成的字典组成的数组
 		public function selectValues($field=null)
 		{
 			if ($field!=null )
@@ -582,13 +583,20 @@ class DBModel{
 			}
 			$_data = $this->select();
 			$_values = array();
-			if (is_array($_data ))
+			if (is_array($_data))
 			{
-				foreach ($_data as $_d) {
-					foreach ($_d as $key => $value) {
-						$_values[] = $value;
-						break;
+				if (count($_data)>0 && count($_data[0]) == 1)
+				{
+					foreach ($_data as $_d) {
+						foreach ($_d as $key => $value) {
+							$_values[] = $value;
+							break;
+						}
 					}
+				}
+				else
+				{
+					return $_data;
 				}
 			}
 			return $_values;

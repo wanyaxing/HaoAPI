@@ -157,6 +157,37 @@ class AbstractModel {
         return ($this->$property===null && isset($this->snapshot[$property]))?($this->snapshot[$property]):($this->$property);
     }
 
+    /**
+     * 取出初始化时的所有元素
+     */
+    public function properiesOriginal()
+    {
+        $original = $this->snapshot;
+        if (!is_array($original))
+        {
+            $original = array();
+        }
+        return $original;
+    }
+
+    /**
+     * 取出所有有效值的组合
+     */
+    public function properiesValue($property)
+    {
+        $modifies = $this->propertiesModified();
+        $values = $this->properiesOriginal();
+        foreach ($modifies as $key => $value) {
+            $values[$key] = $value;
+        }
+        return $values;
+    }
+
+    /** 判断当前model是否新的model(即原快照都是空的值) */
+    public function isNewModel()
+    {
+        return $this->snapshot==null || count(array_filter($this->snapshot))==0;
+    }
     // ======================== variable ========================
 
     public $id;

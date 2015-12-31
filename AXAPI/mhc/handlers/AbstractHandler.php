@@ -354,7 +354,8 @@ class AbstractHandler {
     }
 
     /**
-     * 查询单独字段的值的数组，如不指定$field，则返回首条数据的首个字段的值组成的数组
+     * 查询单独字段的值的数组，如不指定$field，则返回首条数据的首个字段的值组成的数组.
+     * 如果是多个字段，则返回的是字典组成的数组。
      * @param  string  $p_field      [description]
      * @param  array   $p_where     这是一个数组字典，用来约束筛选条件，支持多种表达方式，如array('id'=>'13','replyCount>'=>5,'lastmodifTime>now()'),注意其中的key value的排列方式。
      * @param  string  $p_order     排序方式，如'lastmodifytime desc'
@@ -366,10 +367,17 @@ class AbstractHandler {
     public static function selectFields($p_field=null,$p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
     {
         $_fieldValues = null;
-        if ($p_field===null)
+
+        $isSelectAllKeys = false;
+        if ($p_field === null)
         {
             $p_field = static::getTabelIdName();
         }
+        if ($p_field == null)
+        {
+            $p_field = static::getTableDataKeys();
+        }
+
         if ( static::isUseCache() )
         {
             $w2CacheKey = sprintf('ax_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
@@ -573,8 +581,20 @@ class AbstractHandler {
      */
     public static function loadModelList($p_where=array(),$p_order=null,$p_pageIndex=1,$p_pageSize=DEFAULT_PAGE_SIZE,&$p_countThis=-1)
     {
-        $_pIds = static::selectFields(static::getTabelIdName(),$p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
-        return static::loadModelListByIds($_pIds);
+        $_fieldValues = static::selectFields(static::getTabelIdName(),$p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
+
+        if ( static::getTabelIdName() == null )
+        {
+            $_dataList = array();
+            foreach ($_fieldValues as $_d) {
+                $_dataList[] = static::createModel($_d);
+            }
+            return $_dataList;
+        }
+        else
+        {
+            return static::loadModelListByIds($_fieldValues);
+        }
     }
 
 
@@ -638,33 +658,41 @@ class AbstractHandler {
 
         AX_DEBUG($_updateData);
 
-        $_modelId = null;
-
-        if ( is_object( static::loadModelById( $p_model->getId() ) ) )//如果目标数据已存在，则更新
-        {
-            /** 更新数据 */
-            $_dbModel -> where(array(static::getTabelIdName() => $p_model->getId()))
-                      -> limit(1)
-                      ->update($_updateData);
-            $_modelId = $p_model->getId();
-
-            //更新请求缓存
-            static::cacheRemove($p_model->getId());
+        $newWhere = null;
+        if ($p_model->isNewModel())
+        {/** 新数据 */
+            $_dbModel -> insert($_updateData);
+            if (static::getTabelIdName()!=null)
+            {
+                $newWhere = $_dbModel->init()
+                            ->where($_updateData)->order(sprintf('%s desc',static::getTabelIdName()))
+                            ->field(static::getTabelIdName())
+                            ->selectSingle();
+            }
+            else
+            {
+                $newWhere = $_updateData;
+            }
         }
         else
         {
-            /** 新数据 */
-            $_dbModel -> insert($_updateData);
-            $_modelId = $_dbModel->init()
-                        ->where($_updateData)->order(sprintf('%s desc',static::getTabelIdName()))
-                        ->field(static::getTabelIdName())
-                        ->selectSingle();
-            $_modelId = is_array($_modelId)?$_modelId[static::getTabelIdName()]:0;
+            if (static::getTabelIdName()!=null)
+            {
+                $newWhere = array(static::getTabelIdName() => $p_model->getId());
+                $_dbModel -> where($newWhere)
+                          -> limit(1)
+                          ->update($_updateData);
+            }
+            else
+            {
+                $_dbModel -> where($p_model->properiesOriginal())
+                          -> limit(1)
+                          ->update($_updateData);
+                $newWhere = $p_model->properiesValue();
+            }
         }
 
-        static::resetW2CacheByModelId($_modelId);//更新缓存
-
-        return static::loadModelById($_modelId);
+        return static::loadModelFirstInList($newWhere);
     }
 
 
