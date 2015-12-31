@@ -98,10 +98,10 @@ class AxapiController extends AbstractController{
 
     public static function actionCreateMhcWithTableName()
     {
-        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
-        {
-            return HaoResult::init(ERROR_CODE::$NO_AUTH);
-        }
+        //if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
+       // {
+        //    return HaoResult::init(ERROR_CODE::$NO_AUTH);
+        //}
 
         require_once(AXAPI_ROOT_PATH.'/mhc/create_mhc_with_table_name.php');
     }
@@ -122,10 +122,10 @@ class AxapiController extends AbstractController{
                     $result[] = UnionLoginHandler::loadModelFirstInList(array(),'rand()');
                     break;
                 case 4:
-                    $result[] = ['suibian'=>'随便','looklook'=>'seesee'];
+                    $result[] = array('suibian'=>'随便','looklook'=>'seesee');
                     break;
                 case 5:
-                    $result[] = ['one'=>['two'=>['three'=>'four']]];
+                    $result[] = array('one'=>array('two'=>array('three'=>'four')));
                     break;
             }
 
