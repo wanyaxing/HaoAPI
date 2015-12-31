@@ -33,6 +33,8 @@ if (!defined('DB_HOST'))
     define('DB_DATABASE', 'dbhaoye');
     define('DB_USER'    , 'apihaoye');
     define('DB_PASSWORD', 'weiohaoyeI738');
+    // define('DB_PORT', '3306');
+    // define('DB_CHARSET', 'utf8mb4');
 }
 
 define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目录 */

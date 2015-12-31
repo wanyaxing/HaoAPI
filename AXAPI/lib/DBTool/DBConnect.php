@@ -13,9 +13,14 @@
 		//连接数据库
 		public function __construct()
 		{
-
 			$this->conn = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE,defined('DB_PORT')?strlen(DB_PORT):'3306',MYSQL_CLIENT_INTERACTIVE);
-			$this->conn->set_charset("utf8mb4");
+			if (!is_object($this->conn))
+			{
+				// var_export($this->conn);exit;
+				throw new Exception($this->conn, 1);
+
+			}
+			$this->conn->set_charset(defined('DB_CHARSET')?DB_CHARSET:'utf8');
 		}
 
 		public function getCoon()
