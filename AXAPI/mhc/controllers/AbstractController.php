@@ -243,10 +243,16 @@ class AbstractController {
 
     protected static function detail()
     {
+        $handlerlName = static::$handlerlName;
+        if (!class_exists($handlerlName))
+        {
+            return HaoResult::init(ERROR_CODE::$NO_TBALE_FOUND);
+        }
+        $tableIdName = $handlerlName::getTabelIdName();
         $p_where = array();
-        $p_where['id'] = W2HttpRequest::getRequestInt('id',null,false,false);
+        $p_where[$tableIdName] = W2HttpRequest::getRequestInt('id',null,false,false);
 
-        return static::aList($p_where,$p_order='id',$p_pageIndex=1,$p_pageSize=1,$p_countThis=-1,$isDetail = true);
+        return static::aList($p_where,$tableIdName,$p_pageIndex=1,$p_pageSize=1,$p_countThis=-1,$isDetail = true);
 
     }
 
