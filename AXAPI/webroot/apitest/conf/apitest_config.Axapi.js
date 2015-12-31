@@ -50,6 +50,7 @@ apiList.push({
   ,"request":[
      { "key":"-t"                  ,"type":"string"        ,"required": true ,"test-value":""                        ,"title":"表名" ,"desc":"严格大小写" }
     ,{ "key":"-name"               ,"type":"string"        ,"required": false ,"test-value":""                       ,"title":"接口分类（中文）如：用户、设备、留言" ,"desc":" 也可不填，可以取表COMMENT" }
+    ,{ "key":"-pri"               ,"type":"string"        ,"required": false ,"test-value":""                       ,"title":"默认取PRI且auto_increment的字段。若取不到，则可以在此处填一个字段，否则就是空了哦" ,"desc":" 也可不填，可以取表COMMENT" }
     ,{ "key":"-rm"                 ,"type":"string"      ,"required":false ,"test-value":""                         ,"title":"是否删除代码文件" ,"desc":"yes / no" }
     ,{ "key":"-update"             ,"type":"string"      ,"required":false ,"test-value":""                         ,"title":"是否更新代码文件" ,"desc":"yes / no" }
   ]

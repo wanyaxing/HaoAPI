@@ -1,7 +1,7 @@
 		#创建或覆盖密码文件
-		#htpasswd -bc /root/.pwdapitest 12345679 12345679
+		#htpasswd -bc /etc/.pwdapitest 12345679 12345679
 		#在密码文件中追加账号
-		#htpasswd -b /root/.pwdapitest test2 testpwd
+		#htpasswd -b /etc/.pwdapitest test2 testpwd
 
 AuthType Basic
 
@@ -9,7 +9,7 @@ AuthType Basic
 AuthName "apitest of AXAPI"
 
 		#AuthUserFile指的是保存用户名和密码的文件位置(绝对路径)
-AuthUserFile /root/.pwdapitest
+AuthUserFile /etc/.pwdapitest
 
 		#Require valid-user表示指定只有.htpasswd文件包含的合法用户才能访问。
 Require valid-user

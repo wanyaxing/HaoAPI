@@ -27,6 +27,7 @@ if ((!isset($argv) || count($argv)<=1) && count(array_keys($_REQUEST))==0)
     print("\n".'需要参数：');
     print("\n".'-t 表名');
     print("\n".'-name 中文标题');
+    print("\n".'-pri 关键id字段名（可选，默认取PRI且auto_increment的字段。若取不到，则可以在此处填一个字段，否则就是空了哦)');
     print("\n".'-rm yes');
     print("\n".'-update yes');
     exit;
@@ -241,14 +242,14 @@ else if (count($filesExists)>0)
 $_filedList = DBTool::queryData('show full columns from '.$_tableName);
 $_tableDataKeys = array();
 $_tableKeysImportantForAdd = array();
-$_tableIdName = '';
+$_tableIdName = getValueInArgv('-pri');;
 foreach ($_filedList as $_fieldRow) {
     if (in_array(strtolower($_fieldRow['Field']),$noAllowKeyInMysql))
     {
         print('警告：您不可以在mysql使用以下字符作为字段：'.$_fieldRow['Field']."\n");
         exit;
     }
-    if ($_fieldRow['Key']=='PRI')
+    if ($_tableIdName === null && $_fieldRow['Key']=='PRI' && $_fieldRow['Extra']=='auto_increment')
     {
         $_tableIdName = $_fieldRow['Field'];
     }
@@ -1303,8 +1304,8 @@ $_controllerString .= '
     public static function actionList()
     {
         $pWhere = array();
-        '.str_pad('$pWhere[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
-'.$_controllerStringList.'
+        '.($_tableIdName!=''?str_pad('$pWhere[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
+':'').$_controllerStringList.'
 '.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestString(\'keyword\',false);
         if ($keyWord!=null)
         {
