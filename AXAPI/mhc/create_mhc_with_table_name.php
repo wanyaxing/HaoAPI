@@ -65,7 +65,7 @@ function getValueInArgv($argv_key)
     return null;
 }
 
-$noAllowKeyInMysql = ['add','all','alter','analyze','and','as','asc','asensitive','before','between','bigint','binary','blob','both','by','call','cascade','case','change','char','character','check','collate','column','condition','connection','constraint','continue','convert','create','cross','current_date','current_time','current_timestamp','current_user','cursor','database','databases','day_hour','day_microsecond','day_minute','day_second','dec','decimal','declare','default','delayed','delete','desc','describe','deterministic','distinct','distinctrow','div','double','drop','dual','each','else','elseif','enclosed','escaped','exists','exit','explain','false','fetch','float','float4','float8','for','force','foreign','from','fulltext','goto','grant','group','having','high_priority','hour_microsecond','hour_minute','hour_second','if','ignore','in','index','infile','inner','inout','insensitive','insert','int','int1','int2','int3','int4','int8','integer','interval','into','is','iterate','join','key','keys','kill','label','leading','leave','left','like','limit','linear','lines','load','localtime','localtimestamp','lock','long','longblob','longtext','loop','low_priority','match','mediumblob','mediumint','mediumtext','middleint','minute_microsecond','minute_second','mod','modifies','natural','not','no_write_to_binlog','null','numeric','on','optimize','option','optionally','or','order','out','outer','outfile','precision','primary','procedure','purge','raid0','range','read','reads','real','references','regexp','release','rename','repeat','replace','require','restrict','return','revoke','right','rlike','schema','schemas','second_microsecond','select','sensitive','separator','set','show','smallint','spatial','specific','sql','sqlexception','sqlstate','sqlwarning','sql_big_result','sql_calc_found_rows','sql_small_result','ssl','starting','straight_join','table','terminated','then','tinyblob','tinyint','tinytext','to','trailing','trigger','true','undo','union','unique','unlock','unsigned','update','usage','use','using','utc_date','utc_time','utc_timestamp','values','varbinary','varchar','varcharacter','varying','when','where','while','with','write','x509','xor','year_month','zerofill','action','bit','date','enum','no','text','time','timestamp'];
+$noAllowKeyInMysql = array('add','all','alter','analyze','and','as','asc','asensitive','before','between','bigint','binary','blob','both','by','call','cascade','case','change','char','character','check','collate','column','condition','connection','constraint','continue','convert','create','cross','current_date','current_time','current_timestamp','current_user','cursor','database','databases','day_hour','day_microsecond','day_minute','day_second','dec','decimal','declare','default','delayed','delete','desc','describe','deterministic','distinct','distinctrow','div','double','drop','dual','each','else','elseif','enclosed','escaped','exists','exit','explain','false','fetch','float','float4','float8','for','force','foreign','from','fulltext','goto','grant','group','having','high_priority','hour_microsecond','hour_minute','hour_second','if','ignore','in','index','infile','inner','inout','insensitive','insert','int','int1','int2','int3','int4','int8','integer','interval','into','is','iterate','join','key','keys','kill','label','leading','leave','left','like','limit','linear','lines','load','localtime','localtimestamp','lock','long','longblob','longtext','loop','low_priority','match','mediumblob','mediumint','mediumtext','middleint','minute_microsecond','minute_second','mod','modifies','natural','not','no_write_to_binlog','null','numeric','on','optimize','option','optionally','or','order','out','outer','outfile','precision','primary','procedure','purge','raid0','range','read','reads','real','references','regexp','release','rename','repeat','replace','require','restrict','return','revoke','right','rlike','schema','schemas','second_microsecond','select','sensitive','separator','set','show','smallint','spatial','specific','sql','sqlexception','sqlstate','sqlwarning','sql_big_result','sql_calc_found_rows','sql_small_result','ssl','starting','straight_join','table','terminated','then','tinyblob','tinyint','tinytext','to','trailing','trigger','true','undo','union','unique','unlock','unsigned','update','usage','use','using','utc_date','utc_time','utc_timestamp','values','varbinary','varchar','varcharacter','varying','when','where','while','with','write','x509','xor','year_month','zerofill','action','bit','date','enum','no','text','time','timestamp');
 
 $noAllowKeyInMysql[] = 'asString';
 $noAllowKeyInMysql[] = 'asInt';
@@ -318,7 +318,7 @@ class '.$_handlerName.' extends AbstractHandler {
     //====================关键字段，若设定为NULL则支持智能识别（需连接数据库）,所以，还是推荐创建时就手动设定好=====================
     public static $tableName     = \''.$_tableName.'\';   //对应表名
     public static $tableIdName   = \''.$_tableIdName.'\'    ;   //对应的表的主键字段
-    public static $tableDataKeys = '.str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))).';//对应表的常用字段数组
+    public static $tableDataKeys = array('.trim(str_replace('"',"'" , json_encode(array_keys($_tableDataKeys))),'[]').');//对应表的常用字段数组
 
     public static $modelName     = \''.$_modelName.'\';//对应的模型的类名
     public static $cache         = array();//类自身用缓存空间
@@ -629,7 +629,10 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('status','userID','level','createTime','modifyTime'));
-        $_controllerStringTmp = "\n".'                $tmpModel  ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerStringTmp = "\n".'                $tmpModel  ->'
+                                    .str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT)
+                                    .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
+                                    .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array($_fieldRow['Field'],$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
@@ -678,7 +681,10 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if ($_fieldRow['Field']!='id')
     {
         $_isAdmin = in_array($_fieldRow['Field'],array('userID','level','createTime','modifyTime'));
-        $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'.str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT).'('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'
+                                          .str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT)
+                                          .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
+                                          .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestUpdateTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if (in_array($_fieldRow['Field'],array('createTime','modifyTime','lastLoginTime','lastPasswordTime')))
         {
@@ -744,14 +750,23 @@ $_controllerKeyFieldList = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     if (CMysql2PHP::getPhpProp($_fieldRow) == 'datetime' || CMysql2PHP::getPhpProp($_fieldRow) == 'date' )
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field']).'start') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerStringList .= "\n".'        '
+                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].' >= \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT)
+                                      .str_pad(' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field']).'start') .';',70,' ',STR_PAD_RIGHT)
+                                      .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'start'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'>=起始时间（之后）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
-        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field']).'end') .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerStringList .= "\n".'        '
+                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].' < \\\'%s\\\'\']',40,' ',STR_PAD_RIGHT)
+                                      .str_pad(' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field']).'end') .';',70,' ',STR_PAD_RIGHT)
+                                      .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'end'.'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\'<结束时间（之前）：'.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
     else if ($_fieldRow['Field']=='status')
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = STATUS_NORMAL;//默认列表页只筛选STATUS_NORMAL状态的数据';
+        $_controllerStringList .= "\n".'        '
+                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT)
+                                      .str_pad(' = STATUS_NORMAL;',70,' ',STR_PAD_RIGHT)
+                                      .'//默认列表页只筛选STATUS_NORMAL状态的数据';
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
     // else if ($_fieldRow['Field']=='userID')
@@ -761,13 +776,16 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     // }
     else
     {
-        $_controllerStringList .= "\n".'        '.str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT).' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field'])) .';'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerStringList .= "\n".'        '
+                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT)
+                                      .str_pad(' = '. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field'])) .';',70,' ',STR_PAD_RIGHT)
+                                      .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
     }
 
     if (CMysql2PHP::getPhpProp($_fieldRow) == 'string')
     {
-        $_controllerKeySearchList .= "\n".'            '.str_pad('$keyWhere[] = sprintf(\''.$_fieldRow['Field'].' like \\\'%%%s%%\\\'\',',40,' ',STR_PAD_RIGHT).'$keyWord);'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_controllerKeySearchList .= "\n".'            '.str_pad('$keyWhere[] = sprintf(\''.$_fieldRow['Field'].' like \\\'%%%s%%\\\'\',',60,' ',STR_PAD_RIGHT).'$keyWord);'.(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_controllerKeyFieldList[] = $_fieldRow['Field'];
     }
 }
@@ -1292,10 +1310,15 @@ $_controllerString .= '
         {
             $keyWhere = array();
             $keyWord = preg_replace(\'/\s+/\',\'%\',$keyWord);
+
+            //------- 自行拼接sql语句，请务必注意sql注入的问题。 -----
             $keyWord = DBTool::wrap2Sql($keyWord);//转义字符，防注入。
 '.$_controllerKeySearchList.'
+
+            //将上述模糊查询代码使用or关联后用括号括起来，放入pWhere
             $pWhere[] = \'(\'.implode(\' or \',$keyWhere).\')\';
         }':'').'
+
 
                 //两表一对一用关联查询
                 //$pWhere[\'joinList\'] = array();
