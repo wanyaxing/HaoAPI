@@ -71,8 +71,8 @@ class W2Array {
 	 */
 	public static function maxValueInListArray($p_array,$p_keyInList)
 	{
-
-		return static::maxListInArray($p_array,$p_keyInList)[$p_keyInList];
+		$result = static::maxListInArray($p_array,$p_keyInList);
+		return $result[$p_keyInList];
 	}
 
 	/**
@@ -83,7 +83,8 @@ class W2Array {
 	 */
 	public static function minValueInListArray($p_array,$p_keyInList)
 	{
-		return static::minListInArray($p_array,$p_keyInList)[$p_keyInList];
+		$result = static::minListInArray($p_array,$p_keyInList);
+		return $result[$p_keyInList];
 	}
 
 	/**
