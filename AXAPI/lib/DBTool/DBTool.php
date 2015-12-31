@@ -215,7 +215,7 @@ class DBTool
 
 	        if(strlen($_mysqli->error)>0){
 	            // $_data = 2;
-	            file_put_log([$_mysqli->error,$_sql],'error');
+	            file_put_log(array($_mysqli->error,$_sql),'error');
 	            throw new Exception($_mysqli->error,E_ERROR);
 	        }
 		    self::debug('executeSql END');
@@ -267,7 +267,7 @@ class DBTool
 		        else
 		        {
 			        if(strlen($_mysqli->error)>0){
-			        	file_put_log([$_mysqli->error,$_sql],'error');
+			        	file_put_log(array($_mysqli->error,$_sql),'error');
 			            throw new Exception($_mysqli->error,E_ERROR);
 			        }
 		        }
