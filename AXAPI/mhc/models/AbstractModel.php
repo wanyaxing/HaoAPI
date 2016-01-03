@@ -173,7 +173,7 @@ class AbstractModel {
     /**
      * 取出所有有效值的组合
      */
-    public function properiesValue($property)
+    public function properiesValue()
     {
         $modifies = $this->propertiesModified();
         $values = $this->properiesOriginal();

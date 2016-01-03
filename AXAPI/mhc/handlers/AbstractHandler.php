@@ -75,6 +75,25 @@ class AbstractHandler {
     }
 
     /**
+     * 通过表格字段数据筛选数组
+     * @return array
+     */
+    public static function filterTableDataKeysInArray($tArray,$isConvertNull = false){
+        $filteredArray = array();
+        foreach ($tArray as $key => $value) {
+            if ( in_array($key, static::getTableDataKeys() )  )
+            {
+                if ($isConvertNull && $value===null)
+                {
+                    $value = 'NULL';//DBModel的特殊原因，null值在查询或处理时会被忽略，所以如果不想忽略，必须强指定为字符串'NULL'。（而如果想使用字符串NULL赋值，暂不支持。）
+                }
+                $filteredArray[$key] = $value;
+            }
+        }
+        return $filteredArray;
+    }
+
+    /**
      * 当前handler所面向的主要表名称，默认会从类名中截取字符作为表名
      * @return string 表名
      */
@@ -87,18 +106,18 @@ class AbstractHandler {
     }
 
     /**
-     * 当前handler所面向的表的主键名，默认为表字段的第一个字段
+     * 当前handler所面向的表的主键名，如果没有就为空。（开发时最好每个表都指定主键）
      * @return string 表名
      */
     public static function getTabelIdName() {
-        if (static::$tableIdName == null)
-        {
-        	$_fieldList = static::getTableDataKeys();
-        	if (count($_fieldList)>0)
-        	{
-        		static::$tableIdName = $_fieldList[0];
-        	}
-        }
+        // if (static::$tableIdName == null)
+        // {
+        // 	$_fieldList = static::getTableDataKeys();
+        // 	if (count($_fieldList)>0)
+        // 	{
+        // 		static::$tableIdName = $_fieldList[0];
+        // 	}
+        // }
         return static::$tableIdName;
     }
 
@@ -132,7 +151,7 @@ class AbstractHandler {
 	public static function createModel($p_data=null){
 		$_cls = static::getModelName();
         $_model = $_cls::instance($p_data);//创建model实例
-    	if (is_array($p_data) && array_key_exists(static::getTabelIdName(),$p_data))
+    	if (static::getTabelIdName()!=null && is_array($p_data) && array_key_exists(static::getTabelIdName(),$p_data))
     	{
     		$_model->setId($p_data[static::getTabelIdName()]);
     	}
@@ -382,7 +401,7 @@ class AbstractHandler {
         {
             $w2CacheKey = sprintf('ax_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
                                         ,static::getTabelName()
-                                        ,$p_field
+                                        ,is_array($p_field)?implode(',',$p_field):$p_field
                                         ,W2Array::sortAndBuildQuery($p_where)
                                         ,$p_order
                                         ,$p_pageIndex
@@ -685,10 +704,10 @@ class AbstractHandler {
             }
             else
             {
-                $_dbModel -> where($p_model->properiesOriginal())
+                $_dbModel -> where(static::filterTableDataKeysInArray($p_model->properiesOriginal(),true))
                           -> limit(1)
                           ->update($_updateData);
-                $newWhere = $p_model->properiesValue();
+                $newWhere = static::filterTableDataKeysInArray($p_model->properiesValue(),true);
             }
         }
 

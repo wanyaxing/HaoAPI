@@ -13,8 +13,6 @@ error_reporting(-1);                    //打印出所有的 错误信息
 
 //加载配置文件
 require_once(__dir__.'/../config.php');
-//常用常量
-require_once(AXAPI_ROOT_PATH.'/components/constants.php');
 
 //数据库操作工具
 require_once(AXAPI_ROOT_PATH.'/lib/DBTool/DBModel.php');
@@ -27,7 +25,7 @@ if ((!isset($argv) || count($argv)<=1) && count(array_keys($_REQUEST))==0)
     print("\n".'需要参数：');
     print("\n".'-t 表名');
     print("\n".'-name 中文标题');
-    print("\n".'-pri 关键id字段名（可选，默认取PRI且auto_increment的字段。若取不到，则可以在此处填一个字段，否则就是空了哦)');
+    print("\n".'-pri 主键字段名（可选，默认取PRI且auto_increment的字段。若取不到，则可以在此处填一个字段，否则就是空了哦)');
     print("\n".'-rm yes');
     print("\n".'-update yes');
     exit;
@@ -269,6 +267,14 @@ if (!is_array($_tableDataKeys) || count($_tableDataKeys)==0)
  exit;
 }
 
+if ($_tableIdName == null)
+{
+    print('注意：未发现主键字段。 如果您要自定义主键字段，请使用 -pri 参数。'."\n");
+    print('注意：因为没有主键字段，所以默认生成的接口只有「新建」和「列表」两个接口。'."\n");
+    print('注意：不支持「更新」和「详情」接口，如有类似需求，请自行实现接口。'."\n");
+    print("\n");
+}
+
 if (is_null($_tableNameCN))
 {
     $createTableSyntaxes = DBTool::queryData('SHOW CREATE TABLE '.$_tableName);
@@ -456,7 +462,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
 
 $_modelFucStrings = array();
 foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
-    $strSetGet = "\n".'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'()
+    $strSetGet = "\n".(!is_null($_fieldRow['Comment'])?'    /**'.$_fieldRow['Comment'].'**/'."\n":'').'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'()
     {
         return $this->'.$_tableKey.';
     }
@@ -464,7 +470,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
 
     if (IS_SPECIAL_TABLE=='user' && $_tableKey=='password')
     {
-        $strSetGet .= "\n".'    public function setPassword($password,$isNeedEncodePwd = true)//axing edit 密码需要加密后存储
+        $strSetGet .= "\n".(!is_null($_fieldRow['Comment'])?'    /**'.$_fieldRow['Comment'].'**/'."\n":'').'    public function setPassword($password,$isNeedEncodePwd = true)//axing edit 密码需要加密后存储
     {
 
         $this->password = ($isNeedEncodePwd && $password!=null)?Utility::getEncodedPwd($password):$password;
@@ -474,7 +480,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     }
     else
     {
-        $strSetGet .= "\n".'    public function set'.W2String::camelCaseWithUcFirst($_tableKey).'($'.$_tableKey.')
+        $strSetGet .= "\n".(!is_null($_fieldRow['Comment'])?'    /**'.$_fieldRow['Comment'].'**/'."\n":'').'    public function set'.W2String::camelCaseWithUcFirst($_tableKey).'($'.$_tableKey.')
     {
         $this->'.$_tableKey.' = $'.$_tableKey.';
 
@@ -485,7 +491,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     {
         if ($_tableKey=='telephone')
         {
-            $strSetGet .= "\n".'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'Local()
+            $strSetGet .= "\n".(!is_null($_fieldRow['Comment'])?'    /**'.$_fieldRow['Comment'].'**/'."\n":'').'    public function get'.W2String::camelCaseWithUcFirst($_tableKey).'Local()
     {
         return preg_replace(\'/(.*?)(\d\d\d\d)(\d\d\d\d)$/\', \'$1****$3\', $this->getTelephone());
     }';
@@ -707,7 +713,7 @@ $_apitestConfigSingleUpdate .= implode("\n".'          ,',array_merge($_apitestC
         ]
       });
 ';
-if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin')
+if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin' || $_tableIdName=='')
 {
 
 }
@@ -818,7 +824,7 @@ $_apitestConfigSingle .= implode("\n".'          ,',$_apitestConfigRequestDetail
         ]
       });
 ';
-if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin')
+if (IS_SPECIAL_TABLE == 'smsVerify' || IS_SPECIAL_TABLE == 'unionLogin' || $_tableIdName=='')
 {
 
 }
@@ -1188,49 +1194,54 @@ $_controllerString .= ''.$_controllerStringNormal.'
         return static::save($tmpModel,$isAdd=true);
     }
 
-
-    /**
-     * 修改数据
-     * @return HaoResult
-     */
-    public static function actionUpdate()
-    {
-        $pId = W2HttpRequest::getRequestInt(\'id\',null,false,false);
-
-        $tmpModel = '.$_handlerName.'::loadModelById($pId);
-
-        switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'update\',$tmpModel))
-        {
-            case \'admin\'://有管理权限
-'.$_controllerStringUpdateAdmin.'
-            case \'self\'://作者
-'.$_controllerStringUpdateNormal.'
-                break;
-            case \'normal\'://正常用户
-                return HaoResult::init(ERROR_CODE::$NO_AUTH);
-                break;
-            case \'draft\'://未激活
-            case \'pending\'://待审禁言
-            case \'disabled\'://封号
-                return HaoResult::init(ERROR_CODE::$NO_AUTH);
-                break;
-
-            case \'visitor\'://游客
-                return HaoResult::init(ERROR_CODE::$ONLY_USER_ALLOW);
-                break;
-
-            case \'empty\':
-                return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
-                break;
-
-            default:
-                return HaoResult::init(ERROR_CODE::$NO_AUTH);
-                break;
-        }
-
-        return static::save($tmpModel);
-    }
 ';
+if ($_tableIdName!='')
+{//只有存在主键的数据才支持自动创建更新代码。（因为没有主键就没法用默认id更新啦，想要通过其他方式更新的，请自行设计对应接口。）
+$_controllerString .= '
+        /**
+         * 修改数据
+         * @return HaoResult
+         */
+        public static function actionUpdate()
+        {
+            $pId = W2HttpRequest::getRequestInt(\'id\',null,false,false);
+
+            $tmpModel = '.$_handlerName.'::loadModelById($pId);
+
+            switch ( $auth = static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),\'update\',$tmpModel))
+            {
+                case \'admin\'://有管理权限
+    '.$_controllerStringUpdateAdmin.'
+                case \'self\'://作者
+    '.$_controllerStringUpdateNormal.'
+                    break;
+                case \'normal\'://正常用户
+                    return HaoResult::init(ERROR_CODE::$NO_AUTH);
+                    break;
+                case \'draft\'://未激活
+                case \'pending\'://待审禁言
+                case \'disabled\'://封号
+                    return HaoResult::init(ERROR_CODE::$NO_AUTH);
+                    break;
+
+                case \'visitor\'://游客
+                    return HaoResult::init(ERROR_CODE::$ONLY_USER_ALLOW);
+                    break;
+
+                case \'empty\':
+                    return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
+                    break;
+
+                default:
+                    return HaoResult::init(ERROR_CODE::$NO_AUTH);
+                    break;
+            }
+
+            return static::save($tmpModel);
+        }
+    ';
+
+}
 }
 
 $_controllerString .='
@@ -1371,13 +1382,18 @@ $_controllerString .= '
         $pCountThis = -1; //此处必须设定为-1。除非你知道它的用法。
         return static::aList($pWhere,$pOrder,$pPageIndex=null,$pPageSize=null,$pCountThis,$isDetail = false);
     }
-
-    //详情
-    public static function actionDetail()
-    {
-        return static::detail();
-    }
-
+';
+if ($_tableIdName!='')
+{//有主键才能支持默认用id查详情，不然只能去列表里查了。
+$_controllerString .= '
+        //详情
+        public static function actionDetail()
+        {
+            return static::detail();
+        }
+    ';
+}
+$_controllerString .= '
     /**
      * load数据并进行读取权限判断
      */

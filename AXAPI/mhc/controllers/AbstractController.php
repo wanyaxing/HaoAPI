@@ -142,42 +142,6 @@ class AbstractController {
 
     protected static function loadList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,&$p_countThis=-1,$isDetail = false)
     {
-        if ( $_SERVER['REQUEST_METHOD'] != 'GET' )
-        {
-            return HaoResult::init(ERROR_CODE::$ONLY_GET_ALLOW);
-        }
-        if ($p_where===null)
-        {
-            $p_where = array();
-            $p_where['id in (%s)'] = W2HttpRequest::getRequestArrayString('ids');
-        }
-
-        if ($p_order===null)
-        {
-            $p_order = 'id';
-        }
-
-        $_isReverse = W2HttpRequest::getRequestBool('isreverse',true);
-        if ($_isReverse && strpos($p_order,' ')===false)
-        {
-            $p_order .=' desc';
-        }
-
-
-        if ($p_pageIndex===null)
-        {
-            $p_pageIndex = W2HttpRequest::getRequestInt('page',null,false,true,1);
-        }
-
-        if ($p_pageSize===null)
-        {
-            $p_pageSize = W2HttpRequest::getRequestInt('size',null,true,true,DEFAULT_PAGE_SIZE);
-        }
-
-        if ($p_countThis===-1)
-        {
-            $p_countThis = W2HttpRequest::getRequestBool('iscountall')?1:-1;
-        }
 
         $_clsHandler = static::getHandlerName();
         $resultList = $_clsHandler::loadModelList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
@@ -203,7 +167,7 @@ class AbstractController {
         }
 
         $_isReverse = W2HttpRequest::getRequestBool('isreverse',true);
-        if ($_isReverse && strpos($p_order,' ')===false)
+        if ($_isReverse && $p_order!=null && strpos($p_order,' ')===false)
         {
             $p_order .=' desc';
         }
