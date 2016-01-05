@@ -10,8 +10,7 @@ apiList.push({
     ,{ "key":"avatar",     "type":"file",    "title":"avatar",     "desc":"",    "required":false,  "test-value":""}
     ,{ "key":"photos[]",   "type":"file",    "title":"avatar",     "desc":"",    "required":false,  "test-value":""}
     ,{ "key":"age",        "type":"int",     "title":"age",        "desc":"",    "required":false,  "test-value":"29"}
-    ,{ "key":"content",    "type":"string",  "title":"content",    "desc":"",    "required":false,  "test-value":"see more detail , https://github.com/wanyaxing/apitest.php"
-    }
+    ,{ "key":"content",    "type":"string",  "title":"content",    "desc":"",    "required":false,  "test-value":"see more detail , https://github.com/wanyaxing/apitest.php"}
   ]
 });
 
@@ -53,5 +52,16 @@ apiList.push({
     ,{ "key":"-pri"               ,"type":"string"        ,"required": false ,"test-value":""                       ,"title":"默认取PRI且auto_increment的字段。若取不到，则可以在此处填一个字段，否则就是空了哦" ,"desc":" 也可不填，可以取表COMMENT" }
     ,{ "key":"-rm"                 ,"type":"string"      ,"required":false ,"test-value":""                         ,"title":"是否删除代码文件" ,"desc":"yes / no" }
     ,{ "key":"-update"             ,"type":"string"      ,"required":false ,"test-value":""                         ,"title":"是否更新代码文件" ,"desc":"yes / no" }
+  ]
+});
+
+apiList.push({
+  "title":"接口工具:HaoConnect代码文件快速生成（限管理员）"
+  ,"desc":""
+  ,"time":""
+  ,"action":"/axapi/update_codes_of_hao_connect"
+  ,"method":"post"
+  ,"request":[
+     { "key":"-package"                  ,"type":"string"        ,"required": true ,"test-value":"com.haoxi.demo"                        ,"title":"安卓项目目标路径" ,"desc":"" }
   ]
 });
