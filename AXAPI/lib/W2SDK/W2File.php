@@ -59,8 +59,42 @@ class W2File {
      */
     public static function directory($dir){
         // echo $dir;
-        return   is_dir ( $dir )  or  (W2File::directory(dirname( $dir ))  and   mkdir ( $dir , 0777));
+        return   is_dir ( $dir )  or  (W2File::directory(dirname( $dir ))  and  mkdir ( $dir ) );
     }
+
+    /**
+     * 删除目标文件夹（及其所有子文件）
+     * @param  [type] $dir [description]
+     * @return [type]      [description]
+     */
+    public static function deldir($dir) {
+        //先删除目录下的文件：
+        if (is_dir($dir))
+        {
+            $dh = opendir($dir);
+            while ($file = readdir($dh)) {
+                if ($file != "." && $file != "..") {
+                    $fullpath = $dir."/".$file;
+                    if (!is_dir($fullpath)) {
+                        unlink($fullpath);
+                    } else {
+                        static::deldir($fullpath);
+                    }
+                }
+            }
+
+            closedir($dh);
+            //删除当前文件夹：
+            if (rmdir($dir))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 }
 
 /**
@@ -73,7 +107,7 @@ if(array_key_exists('argv', $GLOBALS) && realpath($argv[0]) == __file__){
     var_dump(loadContentByFile($f1));
     var_dump(loadArrayByFile($f1));
     var_dump(loadObjectByFile($f1));
-    
+
     $f2 = '/Users/Wan/Project/_file-upload/bb';
     writeFile($f2, array('a'=>1,'b'=>2,'c'=>3,'d'=>4));
     var_dump(loadContentByFile($f2));

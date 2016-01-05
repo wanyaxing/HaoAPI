@@ -393,8 +393,9 @@ class W2String {
     //驼峰式字符串（首字母小写）
     public static function camelCase($str)
     {
+        $str = preg_replace('/[^a-zA-Z0-9]/', ' ', $str);
         //使用空格隔开后，每个单词首字母大写
-        $str = ucwords(str_replace('_', ' ', $str));
+        $str = ucwords($str);
         //小写字符串的首字母，然后删除空格
         $str = str_replace(' ','',lcfirst($str));
         return $str;
