@@ -72,7 +72,7 @@ class W2Web {
                         $_headerData[] = $value;
                     }
                 }
-                $p_header = $_headerData;
+                $p_header = array(implode("\n",$_headerData));
             }
             curl_setopt($_curl, CURLOPT_HTTPHEADER, $p_header);
         }
