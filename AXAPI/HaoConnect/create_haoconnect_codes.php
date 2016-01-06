@@ -456,6 +456,7 @@ public class '.$modelName.'Connect extends HaoConnect {
             $resultFileContent .= '    * @param  params  参数'."\n";
             foreach ($apiObj['request'] as $request) {
                  $resultFileContent .= '    *                        '
+                                        . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
                                         . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
                                         . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
                                         . $request['title']
