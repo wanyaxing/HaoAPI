@@ -104,8 +104,6 @@ class W2SMS {
     	}
 		return $_r;
     }
-
-
 }
 
 
