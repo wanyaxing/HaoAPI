@@ -332,7 +332,7 @@ class AbstractHandler {
         {
             if (count($_idsTmp)>1)
             {
-                $_dbModel->where(sprintf('%s in (%s)',static::getTabelIdName(),implode(',',$_idsTmp)))
+                $_dbModel->where(sprintf('%s in (\'%s\')',static::getTabelIdName(),implode('\',\'',$_idsTmp)))
                 		->limit(sprintf('%d,%d'
     		                                ,0
     		                                ,count($_idsTmp)
@@ -340,7 +340,7 @@ class AbstractHandler {
             }
             else
             {
-                $_dbModel->where(sprintf('%s = %s',static::getTabelIdName(),implode(',',$_idsTmp)))
+                $_dbModel->where(sprintf('%s = \'%s\'',static::getTabelIdName(),implode(',',$_idsTmp)))
                 			->limit(sprintf('%d,%d'
                                     ,0
                                     ,1
