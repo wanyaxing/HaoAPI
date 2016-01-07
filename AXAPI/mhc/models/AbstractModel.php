@@ -26,7 +26,7 @@ class AbstractModel {
         $_o ->setModelType(str_replace('Model', '', $p_cls));
         if (is_array($p_data)) {
             foreach ($p_data as $_k => $_v) {
-                $_m = 'set'.ucfirst($_k);
+                $_m = 'set'. (W2String::camelCaseWithUcFirst($_k));
                 if (method_exists($_o,$_m)) {
                     call_user_func(array($_o, $_m), $_v);
                 // } else {
