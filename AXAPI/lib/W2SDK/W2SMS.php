@@ -108,12 +108,12 @@ class W2SMS {
 
 
 //静态类的静态变量的初始化不能使用宏，只能用这样的笨办法了。
-if (W2SMS::$SMS_USER == nul && defined('W2SMS_USER'))
+if (W2SMS::$SMS_USER == null && defined('W2SMS_USER'))
 {
 	W2SMS::$SMS_USER      = W2SMS_USER;
 	W2SMS::$SMS_PASSWD    = W2SMS_PASSWD;
 }
-if (W2SMS::$UCPASS_ACCOUNTSID == nul && defined('W2SMS_UCPASS_ACCOUNTSID'))
+if (W2SMS::$UCPASS_ACCOUNTSID == null && defined('W2SMS_UCPASS_ACCOUNTSID'))
 {
 	W2SMS::$UCPASS_ACCOUNTSID      = W2SMS_UCPASS_ACCOUNTSID;
 	W2SMS::$UCPASS_TOKEN           = W2SMS_UCPASS_TOKEN;
