@@ -62,6 +62,5 @@ apiList.push({
   ,"action":"/axapi/update_codes_of_hao_connect"
   ,"method":"post"
   ,"request":[
-     { "key":"-package"                  ,"type":"string"        ,"required": true ,"test-value":"com.haoxi.demo"                        ,"title":"安卓项目目标路径" ,"desc":"" }
   ]
 });

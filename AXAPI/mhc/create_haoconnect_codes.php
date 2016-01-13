@@ -60,13 +60,10 @@ function getValueInArgv($argv_key)
     return null;
 }
 
-global $_javaPackageName;
-
-$_javaPackageName = getValueInArgv('-package');
 
 global $_phpPath,$_javaPath,$_iosPath;
 $_phpPath         = __dir__.'/php/HaoConnect/';
-$_javaPath        = __dir__.'/java/HaoConnect/';
+$_javaPath        = __dir__.'/java/HaoConnect/src/main/java/com/haoxi/HaoConnect/';
 $_iosPath         = __dir__.'/ios/HaoConnect/';
 
 global $_modelList;
@@ -154,14 +151,11 @@ class '.$modelName.'Result extends HaoResult {
         exit;
     }
     $resultFileContent = '';
-    if ($_javaPackageName!=null)
-    {
-        $resultFileContent .= 'package '.$_javaPackageName.'.HaoConnect.results;
+        $resultFileContent .= 'package com.haoxitech.HaoConnect.results;
 
-import '.$_javaPackageName.'.HaoConnect.HaoResult;
+import com.haoxitech.HaoConnect.HaoResult;
 
 ';
-    }
     $resultFileContent .= 'public class '.$modelName.'Result extends HaoResult {
 ';
     foreach ($keyList as $keyStr => $description) {
@@ -246,7 +240,6 @@ foreach(  (array)glob($_apitestConfigPath . "apitest-config.*.js" ) as $_jobFile
 
 function createConnectFromConfig($_jobFile)
 {
-    global $_javaPackageName;
     global $_phpPath,$_javaPath,$_iosPath;
     global $_modelList;
     $fileInfo = pathinfo($_jobFile);
@@ -426,18 +419,15 @@ class '.$modelName.'Connect extends HaoConnect {
         exit;
     }
     $resultFileContent = '';
-    if ($_javaPackageName!=null)
-    {
-        $resultFileContent .= 'package '.$_javaPackageName.'.HaoConnect.connects;
-import '.$_javaPackageName.'.HaoConnect.HaoConnect;
-import '.$_javaPackageName.'.HaoConnect.HaoConnectResponse;
+    $resultFileContent .= 'package com.haoxitech.HaoConnect.connects;
+import com.haoxitech.HaoConnect.HaoConnect;
+import com.haoxitech.HaoConnect.HaoConnectResponse;
 
 ';
-        if ($modelName == 'User')
-        {
-            $resultFileContent .= "\n".'import com.google.gson.JsonObject;';
-            $resultFileContent .= "\n".'import '.$_javaPackageName.'.HaoConnect.HaoResult;';
-        }
+    if ($modelName == 'User')
+    {
+        $resultFileContent .= "\n".'import com.google.gson.JsonObject;';
+        $resultFileContent .= "\n".'import com.haoxitech.HaoConnect.HaoResult;';
     }
     $resultFileContent .= 'import java.util.Map;
 import android.content.Context;

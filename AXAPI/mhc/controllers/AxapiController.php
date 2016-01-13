@@ -108,6 +108,18 @@ class AxapiController extends AbstractController{
         exit;
     }
 
+    public static function actionUpdateCodesOfHaoConnect()
+    {
+        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
+        {
+            return HaoResult::init(ERROR_CODE::$NO_AUTH);
+        }
+
+        require_once(AXAPI_ROOT_PATH.'/mhc/create_haoconnect_codes.php');
+
+        exit;
+    }
+
 
     public static function actionGetHomeTableForTest()
     {
@@ -143,14 +155,6 @@ class AxapiController extends AbstractController{
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
 
-    public static function actionUpdateCodesOfHaoConnect()
-    {
-        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
-        {
-            return HaoResult::init(ERROR_CODE::$NO_AUTH);
-        }
 
-        require_once(AXAPI_ROOT_PATH.'/HaoConnect/create_haoconnect_codes.php');
-    }
 
 }
