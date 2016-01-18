@@ -62,9 +62,9 @@ function getValueInArgv($argv_key)
 
 
 global $_phpPath,$_javaPath,$_iosPath;
-$_phpPath         = __dir__.'/php/HaoConnect/';
-$_javaPath        = __dir__.'/java/HaoConnect/src/main/java/com/haoxi/HaoConnect/';
-$_iosPath         = __dir__.'/ios/HaoConnect/';
+$_phpPath         = AXAPI_ROOT_PATH.'/../HaoConnect/php/HaoConnect/';
+$_javaPath        = AXAPI_ROOT_PATH.'/../HaoConnect/android/HaoConnect/src/main/java/com/haoxitech/HaoConnect/';
+$_iosPath         = AXAPI_ROOT_PATH.'/../HaoConnect/ios/HaoConnect/';
 
 global $_modelList;
 $_modelList = array();
