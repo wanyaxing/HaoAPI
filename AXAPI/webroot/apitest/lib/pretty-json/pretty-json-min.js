@@ -30,7 +30,7 @@ PrettyJSON.util = {
 }
 
 PrettyJSON.tpl.Node = '' + '<span class="node-container">' + '<span class="node-top node-bracket" />' + '<span class="node-content-wrapper">' + '<ul class="node-body" />' + '</span>' + '<span class="node-down node-bracket" />' + '</span>';
-PrettyJSON.tpl.Leaf = '' + '<span class="leaf-container">' + '<span class="<%= type %>" onmouseover="selectPrettySpan(this,event);"> <%=data%></span><span><%= coma %></span>' + '</span>';//asinw edit
+PrettyJSON.tpl.Leaf = '' + '<span class="leaf-container">' + '<span class="<%= type %>" ondblclick="selectPrettySpan(this,event);"> <%=data%></span><span><%= coma %></span>' + '</span>';//asinw edit
 PrettyJSON.view.Node = Backbone.View.extend({
     tagName: 'span',
     data: null,
@@ -88,6 +88,11 @@ PrettyJSON.view.Node = Backbone.View.extend({
         return this;
     },
     renderChilds: function() {
+        var  keyDescList = {};//axing add
+        if (this.data['modelType'] && getDescriptionsInModel)
+        {
+            keyDescList = getDescriptionsInModel(this.data['modelType']);
+        }
         var count = 1;
         _.each(this.data,
         function(val, key) {
@@ -115,6 +120,11 @@ PrettyJSON.view.Node = Backbone.View.extend({
             },
             this);
             var li = $('<li/>');
+            if (keyDescList[key])//axing add
+            {
+                li.attr('title',keyDescList[key]);
+                li.tooltip({'placement':'left','delay': { "show": 0, "hide": 0 }});
+            }
             var colom = '&nbsp;:&nbsp;';
             var left = $('<span />');
             var right = $('<span />').append(child.el); (this.type == 'array') ? left.html('') : left.html(key + colom);

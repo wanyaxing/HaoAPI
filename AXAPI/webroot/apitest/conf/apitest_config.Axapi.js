@@ -64,3 +64,14 @@ apiList.push({
   ,"request":[
   ]
 });
+
+apiList.push({
+  "title":"接口工具:获得Model对应字段的描述"
+  ,"desc":""
+  ,"time":""
+  ,"action":"/axapi/get_descriptions_in_model"
+  ,"method":"get"
+  ,"request":[
+    { "key":"model_name"             ,"type":"string"      ,"required":true ,"test-value":"user"                         ,"title":"model名" ,"desc":"" }
+  ]
+});

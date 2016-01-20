@@ -3,6 +3,7 @@ var xhrTestingApi = null;
 var todayPassedTime = null;
 var _keyTypes = {};
 var _sortType = null;
+var descriptionsList = {};
 
 
 Date.prototype.format = function(format)
@@ -812,6 +813,62 @@ function configJsonInit()
 
 }
 
+function getDescriptionsInModel(modelName)
+{
+    if (!descriptionsList[modelName] && descriptionsList!==false)
+    {
+
+        var _link = 'js/desc_of_model.php?model_name='+encodeURIComponent(modelName);
+
+        var _method = 'get'
+
+        $.ajax({
+
+            type: _method
+
+            ,
+            url: _link
+
+            ,
+            dataType: "json"
+
+            ,async:false//是否使用异步
+
+            ,
+            success: function(result) {
+                if (result['errorCode'] && result['errorCode']!=0)
+                {
+                    descriptionsList = false;
+                }
+                else
+                {
+                    descriptionsList[modelName] = result;
+                }
+            }
+
+            ,error :function(){
+                descriptionsList = false;
+            }
+
+            //Options to tell jQuery not to process data or worry about content-type.
+            ,
+            cache: (_method == 'get')
+            ,
+            contentType: false
+            //必须false才会自动加上正确的Content-Type 告诉jQuery不要去设置Content-Type请求头
+            ,
+            processData: false
+            //必须false才会避开jQuery对 formdata 的默认处理  告诉jQuery不要去处理发送的数据  XMLHttpRequest会对 formdata 进行正确的处理
+        });
+
+    }
+    if (descriptionsList[modelName])
+    {
+        return descriptionsList[modelName];
+    }
+    return {};
+}
+
 $(function() {
     configJsonInit();
 
@@ -904,7 +961,7 @@ $(function() {
                 dateFormat: "DD/MM/YYYY - HH24:MI:SS"
 
             });
-            console.log(node);
+            // console.log(node);
             // node.expandAll();
             expandAll(node);
 
