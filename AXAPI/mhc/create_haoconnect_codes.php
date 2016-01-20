@@ -124,25 +124,7 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )/* Match md5_2
 
     $_modelList[] = $modelName;
 
-    $keyList = array();
-    $content = file_get_contents($_jobFile);
-    preg_match_all('/(\/\*[^\/]*?\*\/|\/\/.*|)\s+public function get(.*?)\(/',$content,$matches,PREG_SET_ORDER);
-    foreach ($matches as $match) {
-        $description = $match[1];
-        $keyStr = lcfirst($match[2]);
-        $keyList[$keyStr] = $description;
-    }
-
-
-    preg_match_all('/(\/\*[^\/]*?\*\/|\/\/.*|)\s+public \$(.*);/',$content,$matches,PREG_SET_ORDER);
-    foreach ($matches as $match) {
-        $description = $match[1];
-        $keyStr = lcfirst(W2String::camelCase($match[2]));
-        if ($description!='' && array_key_exists($keyStr,$keyList) && $keyList[$keyStr]==null)
-        {
-            $keyList[$keyStr] = $description;
-        }
-    }
+    $keyList = Utility::getDescriptionsInModel($modelName);
 
     //--------------------------     php           --------------------------------
     $_resultFilePath = $_phpPath . 'results/';

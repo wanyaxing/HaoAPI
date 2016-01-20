@@ -418,6 +418,34 @@ class Utility
 	    );
 	}
 
+	public static function getDescriptionsInModel($modelName)
+	{
+	    $keyList = array();
+		$_modelFilePath = AXAPI_ROOT_PATH.'/mhc/models/'.W2String::camelCaseWithUcFirst($modelName).'Model.php';
+		if (file_exists($_modelFilePath))
+		{
+		    $content = file_get_contents($_modelFilePath);
+		    preg_match_all('/(\/\*[^\/]*?\*\/|\/\/.*|)\s+public function get(.*?)\(/',$content,$matches,PREG_SET_ORDER);
+		    foreach ($matches as $match) {
+		        $description = $match[1];
+		        $keyStr = lcfirst($match[2]);
+		        $keyList[$keyStr] = $description;
+		    }
+
+
+		    preg_match_all('/(\/\*[^\/]*?\*\/|\/\/.*|)\s+public \$(.*);/',$content,$matches,PREG_SET_ORDER);
+		    foreach ($matches as $match) {
+		        $description = $match[1];
+		        $keyStr = lcfirst(W2String::camelCase($match[2]));
+		        if ($description!='' && array_key_exists($keyStr,$keyList) && $keyList[$keyStr]==null)
+		        {
+		            $keyList[$keyStr] = $description;
+		        }
+		    }
+		}
+		return $keyList;
+	}
+
 }
 
 //-------------------全局方法-----------------------

@@ -120,6 +120,13 @@ class AxapiController extends AbstractController{
         exit;
     }
 
+    public static function actionGetDescriptionsInModel()
+    {
+        $modelName = W2HttpRequest::getRequestString('model_name',false);
+
+        return Utility::getDescriptionsInModel($modelName);
+    }
+
 
     public static function actionGetHomeTableForTest()
     {
