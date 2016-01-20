@@ -58,11 +58,7 @@ class DBTool
 		public static function wrap2Sql($p_str, $p_withSingleQuotes=false){
 			if (isset($p_str))
 			{
-			    // $_str = str_replace(array('<','>','"',"'"), array('&lt;','&gt;','&quot;','&#39;'), $p_str);
-			    // $_str = str_replace('\'', '\'\'', $p_str);
 			    $_str = mysqli_real_escape_string(self::getCoon(),$p_str);
-			    // $_str = str_replace("_","\_",$_str);
-			    // $_str = str_replace("%","\%",$_str);
 			    if ($p_withSingleQuotes) {
 			        $_str = '\''.$_str.'\'';
 			    }
