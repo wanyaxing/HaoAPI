@@ -65,11 +65,19 @@ class AbstractHandler {
      * 获得常规的表格字段数据
      * @return array 表格字段
      */
-    public static function getTableDataKeys(){
+    public static function getTableDataKeys($isWithSingleQuote = false){
         if (static::$tableDataKeys == null)
         {
             $_dbModel = static::newDBModel();
             static::$tableDataKeys = $_dbModel->getMeta();
+        }
+        if ($isWithSingleQuote)
+        {
+            $newKeys = array();
+            foreach (static::$tableDataKeys as $key => $value) {
+                $newKeys[] = '`'.$value.'`';
+            }
+            return $newKeys;
         }
         return static::$tableDataKeys;
     }
@@ -346,7 +354,7 @@ class AbstractHandler {
                                     ,1
                                     ));
             }
-            $_data = $_dbModel->field(static::getTableDataKeys())->select();
+            $_data = $_dbModel->field(static::getTableDataKeys(true))->select();
             if (count($_data)>0) {
                 foreach ($_data as $_index=>$_d) {
                     $_obj = static::createModel($_d);
@@ -387,14 +395,13 @@ class AbstractHandler {
     {
         $_fieldValues = null;
 
-        $isSelectAllKeys = false;
         if ($p_field === null)
         {
             $p_field = static::getTabelIdName();
         }
         if ($p_field == null)
         {
-            $p_field = static::getTableDataKeys();
+            $p_field = static::getTableDataKeys(true);
         }
 
         if ( static::isUseCache() )
@@ -718,7 +725,7 @@ class AbstractHandler {
     /**
      * 直接插入数据
      * @param  array  $p_values  需要插入的数据
-     * @return [type]          [description]
+     * @return DBModel
      */
     public static function insert($p_values=array())
     {
