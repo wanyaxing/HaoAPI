@@ -429,15 +429,15 @@ class '.$modelName.'Connect extends HaoConnect {
     $resultFileContent = '';
     $resultFileContent .= 'package com.haoxitech.HaoConnect.connects;
 import com.haoxitech.HaoConnect.HaoConnect;
-import com.haoxitech.HaoConnect.HaoConnectResponse;
-
+import com.haoxitech.HaoConnect.HaoResultHttpResponseHandler;
+import com.loopj.android.http.RequestHandle;
 ';
     if ($modelName == 'User')
     {
         $resultFileContent .= "\n".'import com.google.gson.JsonObject;';
         $resultFileContent .= "\n".'import com.haoxitech.HaoConnect.HaoResult;';
     }
-    $resultFileContent .= 'import java.util.Map;
+    $resultFileContent .= "\n".'import java.util.Map;
 import android.content.Context;
 
 public class '.$modelName.'Connect extends HaoConnect {
@@ -470,56 +470,56 @@ public class '.$modelName.'Connect extends HaoConnect {
         $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
                                     || ($modelName=='User' && $funcName=='LogOut')
                                     ;
-        $resultFileContent .= '    public static void request'.$funcName.'(Map<String, Object> params, '.($isDoSomethingForResult?'final':'').' HaoConnectResponse response, Context context)
+        $resultFileContent .= '    public static RequestHandle request'.$funcName.'(Map<String, Object> params, '.($isDoSomethingForResult?'final':'').' HaoResultHttpResponseHandler response, Context context)
     {
-        request("'.$apiObj['action'].'", params, '.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').', ';
+        return request("'.$apiObj['action'].'", params, '.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').', ';
         if ($isDoSomethingForResult)
         {
             if ($modelName=='User' && $funcName=='Login')
             {
-                $resultFileContent .= 'new HaoConnectResponse() {
+                $resultFileContent .= 'new HaoResultHttpResponseHandler() {
             @Override
-            public void requestOnSuccess(HaoResult result) {
+            public void onSuccess(HaoResult result) {
                 if (result.isResultsOK()) {
                     Object authInfo = result.find("extraInfo>authInfo");
                     if (authInfo instanceof JsonObject) {
                         HaoConnect.setCurrentUserInfo(((JsonObject) authInfo).get("Userid").getAsString(), ((JsonObject) authInfo).get("Logintime").getAsString(), ((JsonObject) authInfo).get("Checkcode").getAsString());
                     }
                 }
-                response.requestOnSuccess(result);
+                response.onSuccess(result);
             }
 
             @Override
-            public void requestOnStart() {
-                response.requestOnStart();
+            public void onStart() {
+                response.onStart();
             }
 
             @Override
-            public void requestOnFail(HaoResult result) {
-                response.requestOnFail(result);
+            public void onFail(HaoResult result) {
+                response.onFail(result);
             }
         }';
             }
             else if ($modelName=='User' && $funcName=='LogOut')
             {
-                $resultFileContent .= 'new HaoConnectResponse() {
+                $resultFileContent .= 'new HaoResultHttpResponseHandler() {
             @Override
-            public void requestOnSuccess(HaoResult result) {
+            public void onSuccess(HaoResult result) {
                 if (result.isResultsOK())
                 {
                     HaoConnect.setCurrentUserInfo("","","");
-                    response.requestOnSuccess(result);
+                    response.onSuccess(result);
                 }
             }
 
             @Override
-            public void requestOnStart() {
-                response.requestOnStart();
+            public void onStart() {
+                response.onStart();
             }
 
             @Override
-            public void requestOnFail(HaoResult result) {
-                response.requestOnFail(result);
+            public void onFail(HaoResult result) {
+                response.onFail(result);
             }
         }';
             }
@@ -571,7 +571,7 @@ public class '.$modelName.'Connect extends HaoConnect {
                                      ;
             }
         }
-        $resultFileContent .= '* @param completionBlock(HaoResult *responseDic)   请求成功'."\n";
+        $resultFileContent .= '* @param completionBlock(HaoResult *result)   请求成功'."\n";
         $resultFileContent .= '* @param      errorBlock(HaoResult *error)         请求失败'."\n";
         $resultFileContent .= '*/'."\n";
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
@@ -581,20 +581,20 @@ public class '.$modelName.'Connect extends HaoConnect {
                                     ;
 
 
-        $resultFileContent .= '+ (void)request'.$funcName.':(NSMutableDictionary *)params'."\n"
+        $resultFileContent .= '+ (MKNetworkOperation *)request'.$funcName.':(NSMutableDictionary *)params'."\n"
                                                 .str_pad('',18+strlen($funcName)-12,' ',STR_PAD_LEFT)
-                                                .'OnCompletion:(void (^)(HaoResult *responseDic))completionBlock'."\n"
+                                                .'OnCompletion:(void (^)(HaoResult *result))completionBlock'."\n"
                                                 .str_pad('',18+strlen($funcName)-7,' ',STR_PAD_LEFT)
-                                                     .'onError:(void (^)( HaoResult * error))errorBlock
+                                                     .'onError:(void (^)( HaoResult *error))errorBlock
 {
 
-    [self request:@"'.$apiObj['action'].'" params:params httpMethod:'.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').' onCompletion:^(HaoResult *responseDic) {';
+    return [self request:@"'.$apiObj['action'].'" params:params httpMethod:'.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').' onCompletion:^(HaoResult *result) {';
         if ($isDoSomethingForResult)
         {
             if ($modelName=='User' && $funcName=='Login')
             {
-                $resultFileContent .= "\n".'        if ([responseDic isResultsOK]) {
-            id extraInfo = [responseDic find:@"extraInfo>authInfo"];
+                $resultFileContent .= "\n".'        if ([result isResultsOK]) {
+            id extraInfo = [result find:@"extraInfo>authInfo"];
             if ([extraInfo isKindOfClass:[NSDictionary class]]) {
                 NSString * loginTime = [extraInfo objectForKey:@"Logintime"];
                 NSString * userid    = [extraInfo objectForKey:@"Userid"];
@@ -605,12 +605,12 @@ public class '.$modelName.'Connect extends HaoConnect {
             }
             else if ($modelName=='User' && $funcName=='LogOut')
             {
-                $resultFileContent .= "\n".'        if ([responseDic isResultsOK]) {//注销成功
+                $resultFileContent .= "\n".'        if ([result isResultsOK]) {//注销成功
             [self setCurrentUserInfo:@"" :@"" :@""];
         }';
             }
         }
-        $resultFileContent .= "\n".'        completionBlock(responseDic);
+        $resultFileContent .= "\n".'        completionBlock(result);
     } onError:^(HaoResult *error) {
         errorBlock(error);
     }];
@@ -647,9 +647,9 @@ public class '.$modelName.'Connect extends HaoConnect {
         }
         $resultFileContent .= "\n".'/**     '.$apiObj['title']."*/\n";
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
-        $resultFileContent .= '+ (void)request'.$funcName.':(NSMutableDictionary *)params'."\n"
+        $resultFileContent .= '+ (MKNetworkOperation *)request'.$funcName.':(NSMutableDictionary *)params'."\n"
                                                 .str_pad('',18+strlen($funcName)-12,' ',STR_PAD_LEFT)
-                                                .'OnCompletion:(void (^)(HaoResult *responseDic))completionBlock'."\n"
+                                                .'OnCompletion:(void (^)(HaoResult *result))completionBlock'."\n"
                                                 .str_pad('',18+strlen($funcName)-7,' ',STR_PAD_LEFT)
                                                      .'onError:(void (^)( HaoResult * error))errorBlock;';
         $resultFileContent .= "\n";
