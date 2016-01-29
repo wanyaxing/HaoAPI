@@ -73,11 +73,11 @@ class AbstractHandler {
         }
         if ($isWithSingleQuote)
         {
-            $newKeys = array();
+            $quotedKeys = array();
             foreach (static::$tableDataKeys as $key => $value) {
-                $newKeys[] = '`'.$value.'`';
+                $quotedKeys[] = '`'.trim($value,'`').'`';
             }
-            return $newKeys;
+            return $quotedKeys;
         }
         return static::$tableDataKeys;
     }

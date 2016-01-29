@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v160129 insert with qutoedKeys
 // v151231 selectValues 如果查询的是多字段，则等同于select了。
 // v151231 else if ($this->whereToStr() == null)
 // v151225 rand 和 now 不该使用缓存
@@ -807,8 +808,12 @@ class DBModel{
 			}
 			else
 			{
+	            $quotedKeys = array();
+	            foreach ($fieldList as $key => $value) {
+	                $quotedKeys[] = '`'.trim($value,'`').'`';
+	            }
 				//准备执行的SQL语句
-			 	$sql= sprintf('INSERT INTO %s (%s) VALUES (%s)',$this->tableName,implode(',', $fieldList),implode(',', $valueList));;
+			 	$sql= sprintf('INSERT INTO %s (%s) VALUES (%s)',$this->tableName,implode(',',$quotedKeys),implode(',', $valueList));;
 
 				return	DBTool::executeSql($sql);
 

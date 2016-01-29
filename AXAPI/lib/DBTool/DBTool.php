@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v160129 where with qutoedKeys
 // v151014 	(is_string($p_value) || is_int($p_value)))
 // v150923 优化t1逻辑
 // v150317 fix 别名，（和！的情况
@@ -178,13 +179,17 @@ class DBTool
 				{
 					$conditions[] =  $p_strFormat . $p_value;
 				}
-				else if ( (in_array(strtolower($p_value),array('now()','null'))) )
+				else
 				{
-					$conditions[] =  sprintf('%s = NULL',$p_strFormat);
-				}
-				else if ( null !== $p_value && (is_string($p_value) || is_int($p_value)))
-				{
-					$conditions[] =  sprintf('%s = \'%s\'',$p_strFormat,$p_value);
+					$p_strFormat = '`'.trim($p_strFormat,'`').'`';
+					if ( (in_array(strtolower($p_value),array('now()','null'))) )
+					{
+						$conditions[] =  sprintf('%s = NULL',$p_strFormat);
+					}
+					else if ( null !== $p_value && (is_string($p_value) || is_int($p_value)))
+					{
+						$conditions[] =  sprintf('%s = \'%s\'',$p_strFormat,$p_value);
+					}
 				}
 			}
 
