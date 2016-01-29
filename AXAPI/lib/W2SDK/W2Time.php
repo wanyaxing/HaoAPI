@@ -60,7 +60,9 @@ class W2Time {
     public static function microtimetostr($p_microtime=null,$p_format='Y-m-d H:i:s.u e')
     {
         if (is_null($p_microtime)){$p_microtime = microtime(true);}
-        return DateTime::createFromFormat('U.u', $p_microtime)->setTimeZone(new DateTimeZone(date_default_timezone_get()))->format($p_format);
+        $defaultTimeZone = date_default_timezone_get();
+        $timeZone = new DateTimeZone(is_null($defaultTimeZone)?'Asia/Shanghai':$defaultTimeZone);
+        return DateTime::createFromFormat('U.u', $p_microtime)->setTimeZone($timeZone)->format($p_format);
     }
 
     /**
