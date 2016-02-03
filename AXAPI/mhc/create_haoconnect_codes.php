@@ -277,7 +277,11 @@ function createConnectFromConfig($_jobFile)
             else
             {
                 $apiObj['action'] = trim($apiObj['action'],'/');
-                $apiList[] = $apiObj;
+                if (!array_key_exists($apiObj['action'] , $apiList))
+                {
+                    $apiList[$apiObj['action']] = array();
+                }
+                $apiList[$apiObj['action']][] = $apiObj;
             }
         } catch (Exception $e) {
             var_export($apiString);
@@ -297,27 +301,26 @@ function createConnectFromConfig($_jobFile)
     $resultFileContent = '<?php
 class '.$modelName.'Connect extends HaoConnect {
 ';
-    foreach ($apiList as $apiObj) {
-        if (!isset($apiObj['action']))
-        {
-            $resultFileContent .= "\n"."\n".'    /** 此处有接口代码丢失，请联系管理员。 */'."\n";
-            continue;
-        }
-        $resultFileContent .= "\n"."\n".'    /**'."\n".'    * '.$apiObj['title']."\n";
-        if (is_array($apiObj['request']))
-        {
-            $resultFileContent .= '    * @param  list $params  参数'."\n";
-            foreach ($apiObj['request'] as $request) {
-                 $resultFileContent .= '    *                        '
-                                        . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
-                                        . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
-                                        . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
-                                        . $request['title']
-                                        . "\n"
-                                     ;
+    foreach ($apiList as $action => $apiObjs) {
+        $apiObj = $apiObjs[0];
+        foreach ($apiObjs as $apiObj) {
+            $resultFileContent .= "\n"."\n".'    /**'."\n".'    * '.$apiObj['title']."\n";
+            if (is_array($apiObj['request']))
+            {
+                $resultFileContent .= '    * @param  list $params  参数'."\n";
+                foreach ($apiObj['request'] as $request) {
+                     $resultFileContent .= '    *                        '
+                                            . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
+                                            . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
+                                            . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
+                                            . $request['title']
+                                            . "\n"
+                                         ;
+                }
             }
         }
         $resultFileContent .= '    * @return '.(in_array($modelName,$_modelList)?$modelName:'Hao').'Result'."\n".'    */'."\n";
+
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
         $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
                                     || ($modelName=='User' && $funcName=='LogOut')
@@ -442,29 +445,27 @@ import android.content.Context;
 
 public class '.$modelName.'Connect extends HaoConnect {
 ';
-    foreach ($apiList as $apiObj) {
-        if (!isset($apiObj['action']))
-        {
-            $resultFileContent .= "\n"."\n".'    /** 此处有接口代码丢失，请联系管理员。 */'."\n";
-            continue;
-        }
-        $resultFileContent .= "\n"."\n".'    /**'."\n".'    * '.$apiObj['title']."\n";
-        if (is_array($apiObj['request']))
-        {
-            $resultFileContent .= '    * @param  params  参数'."\n";
-            foreach ($apiObj['request'] as $request) {
-                 $resultFileContent .= '    *                        '
-                                        . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
-                                        . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
-                                        . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
-                                        . $request['title']
-                                        . "\n"
-                                     ;
+    foreach ($apiList as $action => $apiObjs) {
+        $apiObj = $apiObjs[0];
+        foreach ($apiObjs as $apiObj) {
+            $resultFileContent .= "\n"."\n".'    /**'."\n".'    * '.$apiObj['title']."\n";
+            if (is_array($apiObj['request']))
+            {
+                $resultFileContent .= '    * @param  params  参数'."\n";
+                foreach ($apiObj['request'] as $request) {
+                     $resultFileContent .= '    *                        '
+                                            . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
+                                            . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
+                                            . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
+                                            . $request['title']
+                                            . "\n"
+                                         ;
+                }
             }
+            $resultFileContent .= '    * @param  response 异步方法'."\n";
+            $resultFileContent .= '    * @param  context  请求所在的页面对象'."\n";
+            $resultFileContent .= '    */'."\n";
         }
-        $resultFileContent .= '    * @param  response 异步方法'."\n";
-        $resultFileContent .= '    * @param  context  请求所在的页面对象'."\n";
-        $resultFileContent .= '    */'."\n";
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
 
         $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
@@ -551,29 +552,27 @@ public class '.$modelName.'Connect extends HaoConnect {
 
 @implementation '.$modelName.'Connect
 ';
-    foreach ($apiList as $apiObj) {
-        if (!isset($apiObj['action']))
-        {
-            $resultFileContent .= "\n"."\n".'/** 此处有接口代码丢失，请联系管理员。 */'."\n";
-            continue;
-        }
-        $resultFileContent .= "\n"."\n".'/**'."\n".'* '.$apiObj['title']."\n";
-        if (is_array($apiObj['request']))
-        {
-            $resultFileContent .= '* @param  NSMutableDictionary * params  参数'."\n";
-            foreach ($apiObj['request'] as $request) {
-                 $resultFileContent .= '*                        '
-                                        . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
-                                        . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
-                                        . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
-                                        . $request['title']
-                                        . "\n"
-                                     ;
+    foreach ($apiList as $action => $apiObjs) {
+        $apiObj = $apiObjs[0];
+        foreach ($apiObjs as $apiObj) {
+            $resultFileContent .= "\n"."\n".'/**'."\n".'* '.$apiObj['title']."\n";
+            if (is_array($apiObj['request']))
+            {
+                $resultFileContent .= '* @param  NSMutableDictionary * params  参数'."\n";
+                foreach ($apiObj['request'] as $request) {
+                     $resultFileContent .= '*                        '
+                                            . str_pad($request['key'],20,' ',STR_PAD_RIGHT)
+                                            . str_pad($request['type'],20,' ',STR_PAD_RIGHT)
+                                            . str_pad($request['required']?'*':'',10,' ',STR_PAD_RIGHT)
+                                            . $request['title']
+                                            . "\n"
+                                         ;
+                }
             }
+            $resultFileContent .= '* @param completionBlock(HaoResult *result)   请求成功'."\n";
+            $resultFileContent .= '* @param      errorBlock(HaoResult *error)         请求失败'."\n";
+            $resultFileContent .= '*/'."\n";
         }
-        $resultFileContent .= '* @param completionBlock(HaoResult *result)   请求成功'."\n";
-        $resultFileContent .= '* @param      errorBlock(HaoResult *error)         请求失败'."\n";
-        $resultFileContent .= '*/'."\n";
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
 
         $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
