@@ -27,7 +27,11 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
      */
     function file_put_log($p_content='',$p_type='access')
     {
-
+        try {
+            $currentUserId = Utility::getCurrentUserID();
+        } catch (Exception $e) {
+            $currentUserId = 0;
+        }
         file_put_contents(sprintf('%s/%s-%s.log'
                             ,AXAPI_ROOT_PATH.'/logs/'
                             ,$p_type
