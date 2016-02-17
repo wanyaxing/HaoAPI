@@ -174,7 +174,7 @@ class AbstractHandler {
      * @return boolean        是/否
      */
     public static function cacheExsits($p_key){
-        return static::$isUseCache && array_key_exists($p_key, static::$cache);
+        return static::isUseCache() && array_key_exists($p_key, static::$cache);
     }
 
     /**
