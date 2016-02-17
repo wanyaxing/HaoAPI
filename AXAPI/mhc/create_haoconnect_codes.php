@@ -638,8 +638,6 @@ public class '.$modelName.'Connect extends HaoConnect {
 @interface '.$modelName.'Connect : HaoConnect
 ';
 
-    foreach ($apiList as $apiObj) {
-
     foreach ($apiList as $action => $apiObjs) {
         $apiObj = $apiObjs[0];
 
