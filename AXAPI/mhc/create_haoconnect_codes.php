@@ -639,12 +639,20 @@ public class '.$modelName.'Connect extends HaoConnect {
 ';
 
     foreach ($apiList as $apiObj) {
+
+    foreach ($apiList as $action => $apiObjs) {
+        $apiObj = $apiObjs[0];
+
         if (!isset($apiObj['action']))
         {
             $resultFileContent .= "\n"."\n".'/** 此处有接口代码丢失，请联系管理员。 */'."\n";
             continue;
         }
-        $resultFileContent .= "\n".'/**     '.$apiObj['title']."*/\n";
+
+        foreach ($apiObjs as $apiObj) {
+            $resultFileContent .= "\n".'/**     '.$apiObj['title']."*/\n";
+        }
+
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
         $resultFileContent .= '+ (MKNetworkOperation *)request'.$funcName.':(NSMutableDictionary *)params'."\n"
                                                 .str_pad('',18+strlen($funcName)-12,' ',STR_PAD_LEFT)
