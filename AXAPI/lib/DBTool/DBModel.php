@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v160219 分页参数错误。
 // v160129 insert with qutoedKeys
 // v151231 selectValues 如果查询的是多字段，则等同于select了。
 // v151231 else if ($this->whereToStr() == null)
@@ -749,6 +750,10 @@ class DBModel{
 			{
 				$pageIndexMax = $this->realPageMax($pageSize);
 				$pageIndex += $pageIndexMax+1; //分页从1开始，第一页就是1.
+				if ($pageIndex <= 0)
+		        {
+		        	throw new Exception('分页参数错误。',E_ERROR);
+		        }
 			}
 			return $pageIndex;
 		}
