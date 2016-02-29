@@ -85,29 +85,29 @@ W2File::deldir($_iosPath . 'connects/');
 umask(0);
 
 // ===================== config update  ====================================
-$_configExampleFilePath = $_phpPath . 'HaoConfig-example.php';
-$_configFilePath = $_phpPath . 'HaoConfig.php';
-$_configFileContent = file_get_contents($_configExampleFilePath);
-$_configFileContent = str_replace('$apiHost                          = \'???.???.com\'','$apiHost                          = \''.$_SERVER['HTTP_HOST'].'\'',$_configFileContent);
-$_configFileContent = str_replace('$SECRET_HAX_CONNECT               = \'?????????????\'','$SECRET_HAX_CONNECT               = \''.SECRET_HAX_PC.'\'',$_configFileContent);
-file_put_contents($_configFilePath,$_configFileContent);
+// $_configExampleFilePath = $_phpPath . 'HaoConfig-example.php';
+// $_configFilePath = $_phpPath . 'HaoConfig.php';
+// $_configFileContent = file_get_contents($_configExampleFilePath);
+// $_configFileContent = str_replace('$apiHost                          = \'???.???.com\'','$apiHost                          = \''.$_SERVER['HTTP_HOST'].'\'',$_configFileContent);
+// $_configFileContent = str_replace('$SECRET_HAX_CONNECT               = \'?????????????\'','$SECRET_HAX_CONNECT               = \''.SECRET_HAX_PC.'\'',$_configFileContent);
+// file_put_contents($_configFilePath,$_configFileContent);
 
 
-$_configExampleFilePath = $_javaPath . 'HaoConfig_example.java';
-$_configFilePath = $_javaPath . 'HaoConfig.java';
-$_configFileContent = file_get_contents($_configExampleFilePath);
-$_configFileContent = str_replace('HAOCONNECT_APIHOST         = "???.???.com"','HAOCONNECT_APIHOST         = "'.$_SERVER['HTTP_HOST'].'"',$_configFileContent);
-$_configFileContent = str_replace('HAOCONNECT_SECRET_HAX      = "secret=???"','HAOCONNECT_SECRET_HAX      = "'.SECRET_HAX_ANDROID.'"',$_configFileContent);
-file_put_contents($_configFilePath,$_configFileContent);
+// $_configExampleFilePath = $_javaPath . 'HaoConfig_example.java';
+// $_configFilePath = $_javaPath . 'HaoConfig.java';
+// $_configFileContent = file_get_contents($_configExampleFilePath);
+// $_configFileContent = str_replace('HAOCONNECT_APIHOST         = "???.???.com"','HAOCONNECT_APIHOST         = "'.$_SERVER['HTTP_HOST'].'"',$_configFileContent);
+// $_configFileContent = str_replace('HAOCONNECT_SECRET_HAX      = "secret=???"','HAOCONNECT_SECRET_HAX      = "'.SECRET_HAX_ANDROID.'"',$_configFileContent);
+// file_put_contents($_configFilePath,$_configFileContent);
 
 
 
-$_configExampleFilePath = $_iosPath . 'HaoConfig-example.h';
-$_configFilePath = $_iosPath . 'HaoConfig.h';
-$_configFileContent = file_get_contents($_configExampleFilePath);
-$_configFileContent = str_replace('HAOCONNECT_APIHOST             =@"???.???.com"','HAOCONNECT_APIHOST             =@"'.$_SERVER['HTTP_HOST'].'"',$_configFileContent);
-$_configFileContent = str_replace('HAOCONNECT_SECRET_HAX          =@"secret=???";','HAOCONNECT_SECRET_HAX          =@"'.SECRET_HAX_IOS.'";',$_configFileContent);
-file_put_contents($_configFilePath,$_configFileContent);
+// $_configExampleFilePath = $_iosPath . 'HaoConfig-example.m';
+// $_configFilePath = $_iosPath . 'HaoConfig.h';
+// $_configFileContent = file_get_contents($_configExampleFilePath);
+// $_configFileContent = str_replace('HAOCONNECT_APIHOST             =@"???.???.com"','HAOCONNECT_APIHOST             =@"'.$_SERVER['HTTP_HOST'].'"',$_configFileContent);
+// $_configFileContent = str_replace('HAOCONNECT_SECRET_HAX          =@"secret=???";','HAOCONNECT_SECRET_HAX          =@"'.SECRET_HAX_IOS.'";',$_configFileContent);
+// file_put_contents($_configFilePath,$_configFileContent);
 
 
 // ===================== Models => Results  ====================================
