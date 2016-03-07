@@ -78,7 +78,7 @@ class CMysql2PHP{
         'int'       =>  'integer',
         'float'     =>  'float',
         'double'    =>  'float',
-        // 'decimal'   =>  'decimal',
+        'decimal'   =>  'float',
         'datetime'  =>  'datetime',
         'timestamp' =>  'datetime',
         'time'      =>  'datetime',
