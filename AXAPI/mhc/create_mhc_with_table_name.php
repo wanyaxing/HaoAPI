@@ -609,6 +609,7 @@ $_apitestConfigArray = array();
 $_apitestConfigSingle = 'apiList.push({
         \'title\':\''.($_tableNameCN.':'.'查看表结构（限管理员）').'\'
         ,\'desc\':\'\'
+        ,\'genre\':\'\'
         ,\'action\':\''.W2String::under_score($_tableName).'/columns\'
         ,\'method\':\'get\'
         ,\'request\':[]

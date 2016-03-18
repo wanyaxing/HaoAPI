@@ -20,10 +20,11 @@
 	<link href="lib/bootstrap/bootstrap.css" rel="stylesheet">
   <link href="lib/pretty-json/pretty-json.css" rel="stylesheet">
   <!-- <link href="lib.css?v=150106.4" rel="stylesheet"> -->
-	<link href="css/apitest.css" rel="stylesheet">
+	<link href="css/apitest.css?v=160318" rel="stylesheet">
 </head>
 <body>
 	<div id="main">
+  <div class="btn-group" id="genres_list"></div>
   <div id="div_switchgroup">
     <div class="btn-group navbar-btn" id="switch_examples">
     </div>
@@ -109,7 +110,7 @@
 <script type="text/javascript" src="lib/pretty-json/underscore-min.js" ></script>
 <script type="text/javascript" src="lib/pretty-json/backbone-min.js" ></script>
 <script type="text/javascript" src="lib/pretty-json/pretty-json-min.js" ></script>
-<script type="text/javascript" src="js/apitest.js" ></script>
+<script type="text/javascript" src="js/apitest.js?v=160318" ></script>
 <?php
   if (file_exists('apitest-config.js'))
   {

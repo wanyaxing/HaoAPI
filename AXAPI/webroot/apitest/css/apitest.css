@@ -75,6 +75,9 @@ iframe{
 #div_form{
     padding: 0 30px;
 }
+#genres_list{
+    padding-left: 15px;
+}
 #div_switchgroup{
     overflow: auto;
     padding-left: 15px;

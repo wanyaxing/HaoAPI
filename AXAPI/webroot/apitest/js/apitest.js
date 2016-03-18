@@ -388,20 +388,29 @@ function changePlan(p_plan) {
         case '#request':
         if (planList.length >= 3)
         {
-            if (planList[1] != 'undefined')
+            if (planList.length == 6 && planList[5]!='')
             {
-                $('#div_switchgroup button[unique-id=' + planList[1] + ']').trigger('click');
-
+                _genreUnSelected = JSON.parse(planList[5]);
+                for (var i in _genreUnSelected)
+                {
+                    $('#genres_list .input_api_genre[genre='+_genreUnSelected[i]+']').attr('checked',false);
+                }
+                if (_genreUnSelected.length>0)
+                {
+                    apiListInit();
+                }
             }
-            if (planList[2] != 'undefined')
-            {
-                $('#div_apilist .panel[unique-id=' + planList[2] + '] h4 a').trigger('click');
-
-            }
-            if (planList.length >= 4)
-            {
-                setTimeout(function() {
-                    try
+            setTimeout(function(){
+                if (planList[1] != 'undefined')
+                {
+                    $('#div_switchgroup button[unique-id=' + planList[1] + ']').trigger('click');
+                }
+                if (planList[2] != 'undefined')
+                {
+                    $('#div_apilist .panel[unique-id=' + planList[2] + '] h4 a').trigger('click');
+                }
+                setTimeout(function(){
+                    if (planList.length >= 4)
                     {
                         json = JSON.parse(planList[3]);
                         for (var i in json)
@@ -409,19 +418,8 @@ function changePlan(p_plan) {
                             reFormGroup('field', json[i]);
 
                         }
-
                     }
-                    catch(e) {
-                        }
-
-                },
-                50);
-
-            }
-            if (planList.length == 5)
-            {
-                setTimeout(function() {
-                    try
+                    if (planList.length == 5)
                     {
                         json = JSON.parse(planList[4]);
                         for (var i in json)
@@ -429,15 +427,10 @@ function changePlan(p_plan) {
                             reFormGroup('header', json[i]);
 
                         }
-
                     }
-                    catch(e) {
-                        }
+                },50);
+            },50);
 
-                },
-                50);
-
-            }
 
         }
 
@@ -490,8 +483,12 @@ function updatePlan()
         }
 
     });
-    console.log(apiUniqueId);
-    _href = '#request' + '|' + buttonUniqueId + '|' + apiUniqueId + '|' + JSON_stringify(_posts, false) + '|' + JSON_stringify(_headers, false);
+
+    var _genreUnSelected = $('#genres_list .input_api_genre').not(':checked').map(function(){
+        return $(this).attr('genre');
+    }).get();
+
+    _href = '#request' + '|' + buttonUniqueId + '|' + apiUniqueId + '|' + JSON_stringify(_posts, false) + '|' + JSON_stringify(_headers, false)+ '|'  + JSON_stringify(_genreUnSelected, false);
     setCurrentUrl(_href);
 
 }
@@ -621,11 +618,9 @@ function apiKeyBarInit()
         _keyTypeArray.sort(function compare(a, b) {
             // return a['keyPY'].localeCompare(b['keyPY']);
             return a['keyType'].localeCompare(b['keyType']);
-
         });
-
     }
-    else if (_sortType == 'time')
+    else
     {
         if (!_sortType) {
             sortKeyBar('time');
@@ -636,8 +631,8 @@ function apiKeyBarInit()
             return a['timeunix'] <= b['timeunix'] ? 1: -1;
 
         });
-
     }
+
     $('#switch_examples').empty();
     var _lastKeyPY = null;
     for (var i in _keyTypeArray)
@@ -673,8 +668,42 @@ function apiKeyBarInit()
 
 function apiListInit()
  {
-    var _listNode = $('#list_api_btns');
+    if ($('#genres_list').html() == '')
+    {
+        var _genreList = {};
+        for (var i in apiList)
+        {
+            var _api = apiList[i];
+            if (_api['genre'] && _api['genre']!='')
+            {
+                var _genres = _api['genre'].split(',');
+                for (var k in _genres)
+                {
+                    var _genre = $.trim(_genres[k]);
+                    if (!_genreList[_genre])
+                    {
+                        _genreList[_genre] = 0;
+                    }
+                    _genreList[_genre] ++;
+                }
+            }
+        }
+        $('#genres_list').hide();
+        for (var _genre in _genreList)
+        {
+            $('#genres_list').append('<label><input type="checkbox" class="input_api_genre" genre="'+_genre+'" checked onclick="apiListInit()"/>'+_genre+'</label>');
+            $('#genres_list').show();
+        }
+    }
+
+    var _genresSelected = $('#genres_list .input_api_genre:checked').map(function(){
+        return $(this).attr('genre');
+    }).get();
+
+
+    var _listNode = $('#list_api_btns').empty();
     var _now = (new Date()).getTime() / 1000;
+    _keyTypes = {};
 
     for (var i in apiList)
     {
@@ -688,7 +717,6 @@ function apiListInit()
         else
         {
             _api['timeunix'] = 1;
-
         }
         for (var j in _api['request'])
         {
@@ -699,18 +727,14 @@ function apiListInit()
                 if (_api['request'][j]['timeunix'] > _api['timeunix'])
                 {
                     _api['timeunix'] = _api['request'][j]['timeunix'];
-
                 }
-
             }
-
         }
 
     }
 
     apiList.sort(function compare(a, b) {
         return a['timeunix'] <= b['timeunix'] ? 1: -1;
-
     });
 
     for (var i in apiList)
@@ -765,20 +789,39 @@ function apiListInit()
     <div class="panel-body">' + _keyString + '</div>\
     </div>\
     </div>';
+
+        if (_api['genre'] && _api['genre']!='')
+        {
+            var _isGenreSelected = false;
+            var _genres = _api['genre'].split(',');
+            for (var k in _genres)
+            {
+                var _genre = $.trim(_genres[k]);
+                console.log(_genre,_genresSelected,$.inArray(_genre,_genresSelected));
+                if ($.inArray(_genre,_genresSelected)>=0)
+                {
+                    _isGenreSelected = true;
+                    continue;
+                }
+            }
+            if (!_isGenreSelected)
+            {
+                continue;
+            }
+        }
         if (_api['title'].match(/[：:]/g))
         {
             var _keyType = _api['title'].replace(/([：:]).*/g, '$1');
             if (!_keyTypes[_keyType])
             {
                 _keyTypes[_keyType] = _api['timeunix'];
-
             }
-
         }
         _listNode.append(_panelString);
-
     }
     _listNode.collapse();
+
+
 
     reFormHeader();
 
