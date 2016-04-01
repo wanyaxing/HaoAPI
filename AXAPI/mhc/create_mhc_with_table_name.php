@@ -255,7 +255,7 @@ foreach ($_filedList as $_fieldRow) {
     {
         if (!in_array($_fieldRow['Field'],array('id','userID','status','createTime','modifyTime')))
         {
-            $_tableKeysImportantForAdd[] = $_fieldRow['Field'];
+            $_tableKeysImportantForAdd[] = W2String::under_score($_fieldRow['Field']);
         }
     }
     $_tableDataKeys[$_fieldRow['Field']] = $_fieldRow;
@@ -641,7 +641,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
                                     .str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT)
                                     .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
                                     .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
-        $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array($_fieldRow['Field'],$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
+        $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array(W2String::under_score($_fieldRow['Field']),$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
         {
             $_apitestConfigRequestAddAdmin[]   =  $_apitestConfigRequestAddTmp;
