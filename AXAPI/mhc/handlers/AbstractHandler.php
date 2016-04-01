@@ -853,6 +853,7 @@ class AbstractHandler {
         }
         $pIds = (is_array($pIds)) ? $pIds : explode(',', $pIds);
 
+        /** @var DBModel */
         $_dbModel = static::newDBModel();
         $_idsTmp = array();
         foreach ($pIds as $_key => $pId) {
@@ -866,23 +867,17 @@ class AbstractHandler {
             if (count($_idsTmp)>1)
             {
                 $_dbModel->where(sprintf('%s in (%s)',static::getTabelIdName(),implode(',',$_idsTmp)))
-                          ->limit(sprintf('%d,%d'
-                                            ,0
-                                            ,count($_idsTmp)
-                                            ));
+                          ->limit(count($_idsTmp));
             }
             else
             {
                 $_dbModel ->where(sprintf('%s = %s',static::getTabelIdName(),implode(',',$_idsTmp)))
-                           ->limit(sprintf('%d,%d'
-                                    ,0
-                                    ,1
-                                    ));
+                           ->limit(1);
             }
             $_data = $_dbModel->isUseCache(false)->delete();
             if ($_data>0) {
                 foreach ($_idsTmp as $_index=>$_d) {
-                    static::resetW2CacheByModelId($pWhere['id']);//更新缓存
+                    static::resetW2CacheByModelId($_d);//更新缓存
                 }
             }
         }
