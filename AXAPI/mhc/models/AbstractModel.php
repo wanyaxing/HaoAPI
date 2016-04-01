@@ -87,7 +87,7 @@ class AbstractModel {
                     {
                         $data = $result->properties($p_foundDeepModelList);
                     }
-                    else if (is_array($result) && array_key_exists(0, $result))
+                    else if (is_array($result))//&& array_key_exists(0, $result)
                     {
                         $data = array();
                         foreach ($result as $_key => $_value) {
