@@ -335,7 +335,7 @@ class W2PayWx {
      * https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2
      * @param  string $partner_trade_no 商户订单号，需保持唯一性
      * @param  string $openid           商户appid下，某用户的openid
-     * @param  float $amount           企业付款金额，单位为分
+     * @param  float $amount           企业付款金额，单位为分，默认最少1元。
      * @param  string $desc             企业付款操作说明信息。必填。
      * @param  string $check_name       是否校验姓名，默认NO_CHECK
      * @param  string $re_user_name     如果需要校验姓名，此处传输真实姓名
