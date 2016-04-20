@@ -396,6 +396,50 @@ class W2PayWx {
         return 'no pem file found';
     }
 
+    /**
+     * 查询企业付款结果
+     * https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_3
+     * @param  string $partner_trade_no 商户订单号，需保持唯一性
+     * @return array
+     */
+    public static function getTransferInfo($partner_trade_no) {
+
+        $xmlArray                                   = array();                   //发数据给微信服务器用的xml格式
+        $xmlArray['appid']                          = static::$APPID;            //微信分配的公众账号ID（企业号corpid即为此appId）
+        $xmlArray['mch_id']                         = static::$MCH_ID;           //商户号
+        $xmlArray['nonce_str']                      = md5(uniqid());             //订单对应的随机字符串，不长于32位。
+        $xmlArray['partner_trade_no']               = $partner_trade_no;         //商户订单号，需保持唯一性
+
+        $xmlArray['sign']                           = static::getSign($xmlArray);
+
+        if( isset(static::$APICLIENT_CERT,static::$APICLIENT_KEY))
+        {
+            $_curl = curl_init();
+            curl_setopt($_curl,CURLOPT_SSLCERTTYPE,'PEM');
+            curl_setopt($_curl,CURLOPT_SSLCERT,static::$APICLIENT_CERT);
+            curl_setopt($_curl,CURLOPT_SSLKEY,static::$APICLIENT_KEY);
+            $xmlData = static::arrayToXml($xmlArray);
+            $postStr = W2Web::loadStringByUrl('https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo','post',$xmlData,null,30,'body',$_curl);
+            $postArray = static::xmlToArray(($postStr));
+
+            if(is_array($postArray)){
+                // if($postArray['return_code'] == 'SUCCESS')
+                // {
+                //     if ($postArray['result_code'] == 'SUCCESS')
+                //     {
+                //     }
+                // }
+                return $postArray;
+            }
+            else
+            {
+                var_export($postStr);
+                exit;
+            }
+        }
+        return 'no pem file found';
+    }
+
 
     /**
      * 将字典转化成xml
