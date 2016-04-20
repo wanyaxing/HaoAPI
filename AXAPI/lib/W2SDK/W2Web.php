@@ -19,13 +19,11 @@ class W2Web {
      * @param string result all/header/body(default)
      * @return array|string 根据设置参数里的result返回结果, 默认是body
      */
-    public static function loadStringByUrl($p_url, $p_method='get', $p_postData=null, $p_header=null, $p_timeout=30, $p_result='body'){
-        /*
-        if (isset($p_method) && is_array($p_method)) {
-            return W2Web::loadStringByUrlWithArrayOptions($p_url, $p_method);
+    public static function loadStringByUrl($p_url, $p_method='get', $p_postData=null, $p_header=null, $p_timeout=30, $p_result='body',$_curl = null){
+        if (is_null($_curl))
+        {
+            $_curl = curl_init();
         }
-        */
-        $_curl = curl_init();
         if (isset($p_method)) {
             if (strcasecmp($p_method,'post')==0)
             {
