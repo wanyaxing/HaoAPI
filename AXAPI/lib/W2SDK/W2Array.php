@@ -175,4 +175,24 @@ class W2Array {
 		return $values;
 	}
 
+	/**
+	 * 将对象转化成字典
+	 * @param  object|array $array
+	 * @return array
+	 */
+	public static function objectToArray($array)
+	{
+	    if(is_object($array))
+	    {
+	        $array = (array)$array;
+	    }
+	    if(is_array($array))
+	    {
+	        foreach($array as $key=>$value)
+	        {
+	            $array[$key] = W2Array::objectToArray($value);
+	        }
+	    }
+     	return $array;
+	}
 }
