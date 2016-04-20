@@ -72,6 +72,30 @@ define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目�
 
 
 
+/** 微信公众号与用户互动接口的基本配置 */
+// define('W2WEIXIN_APPID',        'wxb8998842c013');
+// define('W2WEIXIN_SECRET',       '839400f099923bba4081e2');
+
+/** 支付宝支付相关配置 */
+// define('W2PAYALI_PARTNER',          'qq4204113@163.com');
+// define('W2PAYALI_SELLER_ID',        '2088722749816095');
+// define('W2PAYALI_PRIVATE_KEY_PATH', realpath(AXAPI_ROOT_PATH.'/lib/alipay/key/rsa_private_key.pem'));
+// define('W2PAYALI_NOTIFY_URL',       'http://'.$_SERVER['HTTP_HOST'].'/pay/pay_notify_of_ali.php');
+
+
+/** 微信支付或微信公众号支付的相关配置 */
+// define('W2PAYWX_APPID',            'wxb7988976c013');
+// define('W2PAYWX_MCH_ID',           '1280568339301');
+// define('W2PAYWX_SIGN_KEY',         'so4il9l6787945Xjsri2r3xsfkk');
+// define('W2PAYWX_NOTIFY_URL',       'http://'.$_SERVER['HTTP_HOST'].'/pay/pay_notify_of_wx.php');
+
+/** 微信高级支付互动的配置（如退款） */
+// define('W2PAYWX_APICLIENT_CERT',      AXAPI_ROOT_PATH.'/lib/wxpay/cert/apiclient_cert.pem');
+// define('W2PAYWX_APICLIENT_KEY',       AXAPI_ROOT_PATH.'/lib/wxpay/cert/apiclient_key.pem');
+
+
+
+
 //================= 系统运行代码 =================
 /** Success */
 define('RUNTIME_CODE_OK',        0);

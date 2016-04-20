@@ -11,9 +11,9 @@
     require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
 
 
-    $partner_trade_no = 'haoxitechtesttransfersid1461057499';//订单号，请确认唯一。注意引入环境变量，如测试服、正式服不可重复。
+    $partner_trade_no = 'haoxitechtesttransfersid1461057500';//订单号，请确认唯一。注意引入环境变量，如测试服、正式服不可重复。
     $openid = 'oQ0zpwpfn5uQfj-_7VWCuxdX5URM';
-    $amount = 1;
+    $amount = 3.68;
     $desc = '给axing付款，测试一下。';
 
     $result = W2PayWx::promotionTransfers($partner_trade_no,$openid,$amount,$desc);
