@@ -60,7 +60,7 @@ class HaoResult extends AbstractModel{
     {
         $extraInfo = $this->getExtraInfo();
 
-        if (!is_array($extraInfo))
+        if (!is_array($extraInfo) && $extraInfo!==null)
         {
             $extraInfo =  array($extraInfo);
         }
@@ -74,7 +74,7 @@ class HaoResult extends AbstractModel{
             $extraInfo[] = $value;
         }
 
-        return $this;
+        return $this->setExtraInfo($extraInfo);
     }
 
     /** @var int 错误码 */
