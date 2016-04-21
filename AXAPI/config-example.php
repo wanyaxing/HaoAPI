@@ -77,10 +77,12 @@ define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目�
 // define('W2WEIXIN_SECRET',       '839400f099923bba4081e2');
 
 /** 支付宝支付相关配置 */
-// define('W2PAYALI_PARTNER',          'qq4204113@163.com');
-// define('W2PAYALI_SELLER_ID',        '2088722749816095');
-// define('W2PAYALI_PRIVATE_KEY_PATH', realpath(AXAPI_ROOT_PATH.'/lib/alipay/key/rsa_private_key.pem'));
-// define('W2PAYALI_NOTIFY_URL',       'http://'.$_SERVER['HTTP_HOST'].'/pay/pay_notify_of_ali.php');
+// define('W2PAYALI_PARTNER',             '2088021001234567');             // PID 在 https://b.alipay.com/order/pidAndKey.htm
+// define('W2PAYALI_SELLER_ID',           'test@example.com');            // 支付宝账号
+// define('W2PAYALI_PRIVATE_KEY_PATH',    realpath(AXAPI_ROOT_PATH.'/lib/alipay/key/rsa_private_key.pem'));
+// define('W2PAYALI_ALI_PUBLIC_KEY_PATH', realpath(AXAPI_ROOT_PATH.'/lib/alipay/key/alipay_public_key.pem'));
+// define('W2PAYALI_NOTIFY_URL',          'http://'.$_SERVER['HTTP_HOST'].'/pay/pay_notify_of_ali.php');
+
 
 
 /** 微信支付或微信公众号支付的相关配置 */

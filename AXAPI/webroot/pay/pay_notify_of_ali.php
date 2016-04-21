@@ -1,8 +1,9 @@
 <?php
 /*
- * 功能：支付宝服务器异步通知页面 版本：3.3 日期：2012-07-23 说明： 以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。 该代码仅供学习和研究支付宝接口使用，只是提供一个参考。 ************************页面功能说明************************* 创建该页面文件时，请留心该页面文件中无任何HTML代码及空格。 该页面不能在本机电脑测试，请到服务器上做测试。请确保外部可以访问该页面。 该页面调试工具请使用写文本函数logResult，该函数已被默认关闭，见alipay_notify_class.php中的函数verifyNotify 如果没有收到该页面返回的 success 信息，支付宝会在24小时内按一定的时间策略重发通知
+ * 支付宝服务器异步通知页面
+ * https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.1tBt5r&treeId=59&articleId=103666&docType=1
  */
-date_default_timezone_set ( 'PRC' );
+	date_default_timezone_set ( 'PRC' );
 
     //加载配置文件
     require_once(__dir__.'/../../config.php');
@@ -13,32 +14,25 @@ date_default_timezone_set ( 'PRC' );
     //加载基础方法
     require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
 
-	require_once(AXAPI_ROOT_PATH.'/lib/alipay/alipay.config.php');
-	require_once(AXAPI_ROOT_PATH.'/lib/alipay/lib/alipay_notify.class.php');
-
-$tmpLog = array ();
-$tmpLog ['ip'] = $_SERVER ['REMOTE_ADDR'];
-$tmpLog ['user_agent'] = $_SERVER ['HTTP_USER_AGENT'];
 // 计算得出通知验证结果
-$alipayNotify = new AlipayNotify ( $alipay_config );
-$verify_result = $alipayNotify->verifyNotify ();
+$verify_result = W2PayAli::getSignVeryfy();
 
 if ($verify_result) { // 验证成功
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 请在这里加上商户的业务逻辑程序代
-
-	// ——请根据您的业务逻辑来编写程序（以下代码仅作参考）——
 
 	// 获取支付宝的通知返回参数，可参考技术文档中服务器异步通知参数列表
 
 	// 商户订单号
-	$out_trade_no = $_POST ['out_trade_no'];
+	$out_trade_no = $_POST['out_trade_no'];
 
 	// 支付宝交易号
-	$trade_no = $_POST ['trade_no'];
+	$trade_no     = $_POST['trade_no'];
 
 	// 交易状态
-	$trade_status = $_POST ['trade_status'];
+	// WAIT_BUYER_PAY	交易创建，等待买家付款。
+	// TRADE_CLOSED	在指定时间段内未支付时关闭的交易；在交易完成全额退款成功时关闭的交易。
+	// TRADE_SUCCESS	交易成功，且可对该交易做操作，如：多级分润、退款等。
+	// TRADE_FINISHED	交易成功且结束，即不可再做任何操作。
+	$trade_status = $_POST['trade_status'];
 
 	$isSuccess = false;
 	if ($_POST ['trade_status'] == 'TRADE_FINISHED') {
@@ -66,30 +60,23 @@ if ($verify_result) { // 验证成功
 		// logResult("这里写入想要调试的代码变量值，或其他运行的结果记录");
 	}
 	if ($isSuccess) {
+		// ///////////////////////////////////////////////////////////////////////
 		//todo 这里根据订单支付成功后，处理对应的数据库中的订单的状态。
-		$orderFac = DBModel::instance('orderDetail')->where(array('id'=>$out_trade_no));
-		$tmpOrder = $orderFac->selectSingle();
-		if (is_array($tmpOrder))
-		{
-			if ($tmpOrder['orderStatus']==0)
-			{
-				$orderFac->update(array('orderStatus'=>32));
-			}
-		}
+		//
+		//
+		// ///////////////////////////////////////////////////////////////////////
 	}
-	// ——请根据您的业务逻辑来编写程序（以上代码仅作参考）——
 	echo "success"; // 请不要修改或删除
 	$tmpLog ['verify_result'] = 'success';
-	// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 } else {
 	// 验证失败
 	echo "fail";
 	$tmpLog ['verify_result'] = 'fail';
-
-	// 调试用，写文本函数记录程序运行情况是否正常
-	// logResult("这里写入想要调试的代码变量值，或其他运行的结果记录");
 }
 
+//记录回调被访问日志
+$tmpLog ['ip']         = $_SERVER ['REMOTE_ADDR'];
+$tmpLog ['user_agent'] = $_SERVER ['HTTP_USER_AGENT'];
 $logKeyArray = array('notify_type','notify_id','sign_type','sign','out_trade_no','subject','payment_type','trade_no','trade_status','seller_id','seller_email','buyer_id','buyer_email','total_fee','quantity','price','body','gmt_create','gmt_payment','is_total_fee_adjust','use_coupon','discount','refund_status','gmt_refund');
 foreach ($logKeyArray as $logKey) {
 	if (array_key_exists($logKey,$_POST))

@@ -8,10 +8,11 @@
  */
 
 class W2PayAli {
-    public static $PARTNER        = null;
-    public static $SELLER_ID     = null;
+    public static $PARTNER              = null;
+    public static $SELLER_ID            = null;
     public static $PRIVATE_KEY_PATH     = null;
-    public static $NOTIFY_URL     = null;
+    public static $ALI_PUBLIC_KEY_PATH     = null;
+    public static $NOTIFY_URL           = null;
 
     /**
      * 计算支付宝支付用的订单信息字符串
@@ -28,7 +29,7 @@ class W2PayAli {
         $SELLER           = static::$SELLER_ID;
 
         $private_key_path = static::$PRIVATE_KEY_PATH;
-        $notify_url       = static::$SELLER_ID;
+        $notify_url       = static::$NOTIFY_URL;
 
         $orderInfo        = 'partner="' . $PARTNER . '"';
 
@@ -76,18 +77,58 @@ class W2PayAli {
         // 调用银行卡支付，需配置此参数，参与签名， 固定值 （需要签约《无线银行卡快捷支付》才能使用）
         // $orderInfo .= '&paymethod="expressGateway"';
 
-
+        //使用客户的密钥加密
         $sign    = urlencode(W2RSA::rsaSign($orderInfo, $private_key_path));
         $payInfo = $orderInfo . '&sign="' . $sign . '"&' . 'sign_type="RSA"';
 
         return $payInfo;
     }
+
+    /**
+     * 字典根据key值按字母排序后获得签名
+     * https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=4_3
+     * @param  array $list  参与运算的数据
+     * @return string       计算后的签名
+     */
+    public static function getOrderString($list)
+    {
+        $post_array = array();
+        foreach($list as $k=>$v){
+            if($k != 'sign' && $k != 'sign_type' && !is_null($v) && !(is_array($v) && count($v)==0) ){
+                $post_array[] = $k .'='. $v;
+            }
+        }
+        sort($post_array);
+        return implode('&',$post_array);
+    }
+
+    /**
+     * 判断POST数据是否可验支付宝家的公钥
+     * @param  array $post   数据字典
+     * @param  string $sign  校验串
+     * @return bool       true
+     */
+    public static function getSignVeryfy($post=null,$sign=null)
+    {
+        if (!isset($post))
+        {
+            $post = $_POST;
+        }
+        if (!isset($sign) && isset($_POST['sign']))
+        {
+            $sign = $_POST['sign'];
+        }
+        $orderString = static::getOrderString($post);
+        return W2RSA::rsaVerify($orderString,static::$ALI_PUBLIC_KEY_PATH,$sign);
+    }
+
 }
 
 if (W2PayAli::$PARTNER==null && defined('W2PAYALI_PARTNER'))
 {
-    W2PayAli::$PARTNER                = W2PAYALI_PARTNER;
-    W2PayAli::$SELLER_ID              = W2PAYALI_SELLER_ID;
-    W2PayAli::$PRIVATE_KEY_PATH       = W2PAYALI_PRIVATE_KEY_PATH;
-    W2PayAli::$NOTIFY_URL             = W2PAYALI_NOTIFY_URL;
+    W2PayAli::$PARTNER                   = W2PAYALI_PARTNER;
+    W2PayAli::$SELLER_ID                 = W2PAYALI_SELLER_ID;
+    W2PayAli::$PRIVATE_KEY_PATH          = W2PAYALI_PRIVATE_KEY_PATH;
+    W2PayAli::$ALI_PUBLIC_KEY_PATH       = W2PAYALI_ALI_PUBLIC_KEY_PATH;
+    W2PayAli::$NOTIFY_URL                = W2PAYALI_NOTIFY_URL;
 }
