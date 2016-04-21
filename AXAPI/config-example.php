@@ -11,6 +11,15 @@ if (!defined('AXAPI_ROOT_PATH'))
     define('AXAPI_ROOT_PATH', __dir__ );
 }
 
+if (!isset($_SERVER['HTTP_HOST']) || $_SERVER['HTTP_HOST'] == 'api-haoframe.example.com')
+{//1是开发模式  2是正式环境
+    define('AXAPI_DEPLOY_STATUS', 1 );
+}
+else
+{
+    define('AXAPI_DEPLOY_STATUS', 2 );
+}
+
 //加载类 并注册自动加载事件。
 require_once(AXAPI_ROOT_PATH.'/components/autoload.php');
 require_once(AXAPI_ROOT_PATH.'/mhc/models/HaoResult.php');
