@@ -220,7 +220,12 @@ class AbstractController {
 
     }
 
-    //保存
+    /**
+     * 保存
+     * @param  AbstractModel  $tmpModel 元素被修改的Model对象
+     * @param  boolean $isAdd           是否新增
+     * @return HaoResult
+     */
     protected static function save($tmpModel,$isAdd=false)
     {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' )
