@@ -59,7 +59,7 @@ class W2PayWx {
         $postStr = W2Web::loadStringByUrl('https://api.mch.weixin.qq.com/pay/unifiedorder','post',$xmlData);
         $postArray = static::xmlToArray(($postStr));
 
-        if(is_array($postArray) && ($postArray['sign']) == (static::getSign($postArray)) ){
+        if(is_array($postArray) && isset($postArray['sign']) && ($postArray['sign']) == (static::getSign($postArray)) ){
             if($postArray['return_code'] == 'SUCCESS' && $postArray['result_code'] == 'SUCCESS'){
                 $appid       = $postArray['appid'];
                 $noncestr    = $postArray['nonce_str'];
@@ -97,7 +97,8 @@ class W2PayWx {
         }
         else
         {
-            throw new Exception('sign from wx callback is error');
+            var_export($postStr);
+            exit;
         }
 
         return 'error when connect with wx';
