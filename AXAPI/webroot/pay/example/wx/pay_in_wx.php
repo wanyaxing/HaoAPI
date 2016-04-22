@@ -6,7 +6,7 @@
     date_default_timezone_set ( 'PRC' );
 
     //加载配置文件
-    require_once(__dir__.'/../../../config.php');
+    require_once(__dir__.'/../../../../config.php');
 
     //数据库操作工具
     require_once(AXAPI_ROOT_PATH.'/lib/DBTool/DBModel.php');

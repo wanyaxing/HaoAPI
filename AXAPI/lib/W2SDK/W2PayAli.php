@@ -8,12 +8,14 @@
  */
 
 class W2PayAli {
-    public static $PARTNER              = null;
-    public static $SELLER_ID            = null;
-    public static $PRIVATE_KEY_PATH     = null;
-    public static $ALI_PUBLIC_KEY_PATH     = null;
-    public static $NOTIFY_URL           = null;
+    public static $PARTNER                      = null;  //PID 在 https://b.alipay.com/order/pidAndKey.htm
+    public static $SELLER_ID                    = null;
+    public static $PRIVATE_KEY_PATH             = null;
+    public static $ALI_PUBLIC_KEY_PATH          = null;
+    public static $NOTIFY_URL                   = null;
+    public static $NOTIFY_URL_OF_REFUND                   = null;
 
+    public static $alipay_gateway_new           = 'https://mapi.alipay.com/gateway.do?';
     /**
      * 计算支付宝支付用的订单信息字符串
      * @param  [type] $out_trade_no 商户网站唯一订单号
@@ -78,28 +80,94 @@ class W2PayAli {
         // $orderInfo .= '&paymethod="expressGateway"';
 
         //使用客户的密钥加密
-        $sign    = urlencode(W2RSA::rsaSign($orderInfo, $private_key_path));
+        $sign    = urlencode(W2RSA::rsaSign($orderInfo, static::$PRIVATE_KEY_PATH));
         $payInfo = $orderInfo . '&sign="' . $sign . '"&' . 'sign_type="RSA"';
 
         return $payInfo;
     }
 
-    /**
-     * 字典根据key值按字母排序后获得签名
-     * https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=4_3
-     * @param  array $list  参与运算的数据
-     * @return string       计算后的签名
-     */
-    public static function getOrderString($list)
+    public static function refundSingle($batch_no,$out_trade_no,$refund_fee,$desc)
     {
-        $post_array = array();
-        foreach($list as $k=>$v){
-            if($k != 'sign' && $k != 'sign_type' && !is_null($v) && !(is_array($v) && count($v)==0) ){
-                $post_array[] = $k .'='. $v;
-            }
+        $detail_data = $out_trade_no . '^' . $refund_fee . '^' . $desc;
+        return static::refund($batch_no,$detail_data);
+    }
+    //https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.8jmjPJ&treeId=66&articleId=103600&docType=1
+    public static function refund($batch_no,$detail_data)
+    {
+        $xmlArray = array();
+
+        $xmlArray['service']        = 'refund_fastpay_by_platform_pwd';  // 服务接口名称， 固定值
+        $xmlArray['partner']        = static::$PARTNER;                  //PID 签约的支付宝账号对应的支付宝唯一用户号。以2088开头的16位纯数字组成。
+        $xmlArray['_input_charset'] = 'utf-8';                           //参数编码， 固定值
+        $xmlArray['seller_email']   = static::$SELLER_ID;                // 签约卖家支付宝账号
+        $xmlArray['notify_url']     = static::$NOTIFY_URL_OF_REFUND;     // 服务器异步通知页面路径
+
+        $xmlArray['refund_date']    = date('Y-m-d H:i:s');               // 退款请求的当前时间。格式为：yyyy-MM-dd hh:mm:ss。
+        $xmlArray['batch_no']       = $batch_no;                         // 每进行一次即时到账批量退款，都需要提供一个批次号，通过该批次号可以查询这一批次的退款交易记录，对于每一个合作伙伴，传递的每一个批次号都必须保证唯一性。格式为：退款日期（8位）+流水号（3～24位）。不可重复，且退款日期必须是当天日期。流水号可以接受数字或英文字符，建议使用数字，但不可接受“000”。
+        $xmlArray['batch_num']      = substr_count($detail_data,'#')+1;  // 即参数detail_data的值中，“#”字符出现的数量加1，最大支持1000笔（即“#”字符出现的最大数量为999个）。
+        $xmlArray['detail_data']    = $detail_data;                      // 退款请求的明细数据。格式详情参见下面的“单笔数据集参数说明”。
+/*
+单笔数据集参数说明
+单笔数据集格式为：第一笔交易退款数据集#第二笔交易退款数据集#第三笔交易退款数据集…#第N笔交易退款数据集；
+交易退款数据集的格式为：原付款支付宝交易号^退款总金额^退款理由；
+不支持退分润功能。
+单笔数据集（detail_data）注意事项
+detail_data中的退款笔数总和要等于参数batch_num的值；
+“退款理由”长度不能大于256字节，“退款理由”中不能有“^”、“|”、“$”、“#”等影响detail_data格式的特殊字符；
+detail_data中退款总金额不能大于交易总金额；
+一笔交易可以多次退款，退款次数最多不能超过99次，需要遵守多次退款的总金额不超过该笔交易付款金额的原则。
+*/
+
+        $orderString             = static::createLinkstring($xmlArray);
+        $xmlArray['sign']        = W2RSA::rsaSign($orderString, static::$PRIVATE_KEY_PATH);                             //签名方式
+        $xmlArray['sign_type']   = 'RSA';                                   //签名方式
+
+        $result = array();
+        $result['url'] = static::$alipay_gateway_new.'_input_charset='.trim(strtolower($xmlArray['_input_charset']));
+        $result['formData'] = $xmlArray;
+        return $result;
+
+    }
+
+    /**
+     * 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+     * @param $para 需要拼接的数组
+     * return 拼接完成以后的字符串
+     */
+    public static function createLinkstring($para) {
+        ksort($para);
+        reset($para);
+        $arg  = "";
+        while (list ($key, $val) = each ($para)) {
+            $arg.=$key."=".$val."&";
         }
-        sort($post_array);
-        return implode('&',$post_array);
+        //去掉最后一个&字符
+        $arg = substr($arg,0,count($arg)-2);
+
+        //如果存在转义字符，那么去掉转义
+        if(get_magic_quotes_gpc()){$arg = stripslashes($arg);}
+
+        return $arg;
+    }
+
+    /**
+     * 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串，并对字符串做urlencode编码
+     * @param $para 需要拼接的数组
+     * return 拼接完成以后的字符串
+     */
+    public static function createLinkstringUrlencode($para)
+    {
+        $arg  = "";
+        while (list ($key, $val) = each ($para)) {
+            $arg.=$key."=".urlencode($val)."&";
+        }
+        //去掉最后一个&字符
+        $arg = substr($arg,0,count($arg)-2);
+
+        //如果存在转义字符，那么去掉转义
+        if(get_magic_quotes_gpc()){$arg = stripslashes($arg);}
+
+        return $arg;
     }
 
     /**
@@ -118,7 +186,7 @@ class W2PayAli {
         {
             $sign = $_POST['sign'];
         }
-        $orderString = static::getOrderString($post);
+        $orderString = static::createLinkstring($post);
         return W2RSA::rsaVerify($orderString,static::$ALI_PUBLIC_KEY_PATH,$sign);
     }
 
@@ -131,4 +199,5 @@ if (W2PayAli::$PARTNER==null && defined('W2PAYALI_PARTNER'))
     W2PayAli::$PRIVATE_KEY_PATH          = W2PAYALI_PRIVATE_KEY_PATH;
     W2PayAli::$ALI_PUBLIC_KEY_PATH       = W2PAYALI_ALI_PUBLIC_KEY_PATH;
     W2PayAli::$NOTIFY_URL                = W2PAYALI_NOTIFY_URL;
+    W2PayAli::$NOTIFY_URL_OF_REFUND                = W2PAYALI_NOTIFY_URL_OF_REFUND;
 }
