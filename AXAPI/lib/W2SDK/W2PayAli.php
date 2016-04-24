@@ -10,10 +10,13 @@
 class W2PayAli {
     public static $PARTNER                      = null;  //PID 在 https://b.alipay.com/order/pidAndKey.htm
     public static $SELLER_ID                    = null;
+    public static $MD5_KEY                    = null;
+    public static $ACCOUNT_NAME                 = null;
     public static $PRIVATE_KEY_PATH             = null;
     public static $ALI_PUBLIC_KEY_PATH          = null;
     public static $NOTIFY_URL                   = null;
-    public static $NOTIFY_URL_OF_REFUND                   = null;
+    public static $NOTIFY_URL_OF_REFUND         = null;
+    public static $NOTIFY_URL_OF_TRANS          = null;
 
     public static $alipay_gateway_new           = 'https://mapi.alipay.com/gateway.do?';
     /**
@@ -86,9 +89,38 @@ class W2PayAli {
         return $payInfo;
     }
 
+    /**
+     * 退款
+     * @param  string $batch_no     每进行一次即时到账批量退款，都需要提供一个批次号，通过该批次号可以查询这一批次的退款交易记录，对于每一个合作伙伴，传递的每一个批次号都必须保证唯一性。格式为：退款日期（8位）+流水号（3～24位）。不可重复，且退款日期必须是当天日期。流水号可以接受数字或英文字符，建议使用数字，但不可接受“000”。
+     * @param  string $out_trade_no 原付款支付宝交易号
+     * @param  string $refund_fee   退款金额
+     * @param  string $desc         退款理由；
+     * @return array               {'url':'http://xxx','formData':{...}}
+     */
     public static function refundSingle($batch_no,$out_trade_no,$refund_fee,$desc)
     {
-        $detail_data = $out_trade_no . '^' . $refund_fee . '^' . $desc;
+        $refundList = array(
+                array(
+                         'out_trade_no'=>$out_trade_no
+                        ,'refund_fee'  =>$refund_fee
+                        ,'desc'        =>$desc
+                    )
+            );
+        return static::refundMany($batch_no,$refundList);
+    }
+    /**
+     * 退款
+     * @param  string $batch_no     每进行一次即时到账批量退款，都需要提供一个批次号，通过该批次号可以查询这一批次的退款交易记录，对于每一个合作伙伴，传递的每一个批次号都必须保证唯一性。格式为：退款日期（8位）+流水号（3～24位）。不可重复，且退款日期必须是当天日期。流水号可以接受数字或英文字符，建议使用数字，但不可接受“000”。
+     * @param  array  $refundList  支付清单 [ {'out_trade_no':'xxx','refund_fee':'xxx','desc':'xxx'},{},... ]
+     * @return array               {'url':'http://xxx','formData':{...}}
+     */
+    public static function refundMany($batch_no,$refundList=array())
+    {
+        $detail_data = array();
+        foreach ($refundList as $refundData) {
+            $detail_data[] = $refundData['out_trade_no'] . '^' . $refundData['refund_fee'] . '^' . $refundData['desc'];
+        }
+        $detail_data = implode('#',$detail_data);
         return static::refund($batch_no,$detail_data);
     }
     //https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.8jmjPJ&treeId=66&articleId=103600&docType=1
@@ -129,6 +161,84 @@ detail_data中退款总金额不能大于交易总金额；
 
     }
 
+
+
+    /**
+     * 付款给单个支付宝账号
+     * 操作者的电脑需要安装支付宝数字证书哦
+     * @param  int    $batch_no     批量付款批次号。11～32位的数字或字母或数字与字母的组合，且区分大小写。注意：批量付款批次号用作业务幂等性控制的依据，一旦提交受理，请勿直接更改批次号再次上传。
+     * @param  string $trans_no      流水号1
+     * @param  string $trans_account 收款方账号1
+     * @param  string $trans_name    收款账号姓名1
+     * @param  bool   $trans_fee     付款金额1
+     * @param  string $trans_desc    备注说明1
+     * @return array               {'url':'http://xxx','formData':{...}}
+     */
+    public static function batchTransSingle($batch_no,$trans_no,$trans_account,$trans_name,$trans_fee,$trans_desc)
+    {
+        $transList = array(
+                array(
+                         'trans_no'         =>$trans_no
+                        ,'trans_account'    =>$trans_account
+                        ,'trans_name'       =>$trans_name
+                        ,'trans_fee'        =>$trans_fee
+                        ,'trans_desc'       =>$trans_desc
+                    )
+            );
+        return static::batchTransMany($batch_no,$transList);
+    }
+    /**
+     * 批量付款给多个支付宝账号
+     * @param  string $batch_no
+     * @param  array  $transList  支付清单 [ {'trans_no':'xxx','trans_account':'xxx','trans_name':'xxx','trans_fee':'xxx','trans_desc':'xxx'},{},... ]
+     * @return array               {'url':'http://xxx','formData':{...}}
+     */
+    public static function batchTransMany($batch_no,$transList=array())
+    {
+        $detail_data = array();
+        foreach ($transList as $transData) {
+            $detail_data[] = $transData['trans_no'] . '^' . $transData['trans_account'] . '^' . $transData['trans_name'] . '^' . $transData['trans_fee'] . '^' . $transData['trans_desc'];
+        }
+        $detail_data = implode('|',$detail_data);
+        return static::batchTrans($batch_no,$detail_data);
+    }
+    //https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.Q5NyE3&treeId=64&articleId=103773&docType=1
+    public static function batchTrans($batch_no,$detail_data)
+    {
+        $xmlArray = array();
+
+        $xmlArray['service']        = 'batch_trans_notify';              // 服务接口名称， 固定值
+        $xmlArray['_input_charset'] = 'utf-8';                           // 参数编码， 固定值
+        $xmlArray['partner']        = static::$PARTNER;                  // PID 签约的支付宝账号对应的支付宝唯一用户号。以2088开头的16位纯数字组成。
+        $xmlArray['notify_url']     = static::$NOTIFY_URL_OF_TRANS;      // 服务器异步通知页面路径
+        $xmlArray['account_name']   = static::$ACCOUNT_NAME;             // 付款方的支付宝账户名。
+        $xmlArray['email']          = static::$SELLER_ID;                // 付款方的支付宝账号。
+        $xmlArray['batch_no']       = $batch_no;                         // 批量付款批次号。11～32位的数字或字母或数字与字母的组合，且区分大小写。注意：批量付款批次号用作业务幂等性控制的依据，一旦提交受理，请勿直接更改批次号再次上传。
+
+        $xmlArray['pay_date']       = date('Ymd');                       // 支付时间（必须为当前日期）。 格式：YYYYMMDD。
+        $xmlArray['detail_data']    = $detail_data;                      // 付款的详细数据，最多支持1000笔。 格式为：流水号1^收款方账号1^收款账号姓名1^付款金额1^备注说明1|流水号2^收款方账号2^收款账号姓名2^付款金额2^备注说明2。 每条记录以“|”间隔。
+        $xmlArray['batch_num']      = substr_count($detail_data,'|')+1;  // 批量付款笔数（最多1000笔）。
+        $batch_fee = 0;
+        foreach (explode('|',$detail_data) as $detail) {
+            list ($trans_no,$trans_account,$trans_name,$trans_fee,$trans_desc) = explode('^',$detail);
+            $batch_fee += $trans_fee;
+        }
+        $xmlArray['batch_fee']      = $batch_fee;                        // 付款文件中的总金额。 格式：10.01，精确到分。
+
+
+        $orderString             = static::createLinkstring($xmlArray);
+        $xmlArray['sign']        = W2RSA::rsaSign($orderString, static::$PRIVATE_KEY_PATH);                             //签名方式
+        $xmlArray['sign_type']   = 'RSA';                                   //签名方式
+        // $xmlArray['sign']        = md5($orderString . static::$MD5_KEY);                             //签名方式
+        // $xmlArray['sign_type']   = 'MD5';                                   //签名方式
+
+        $result = array();
+        $result['url'] = static::$alipay_gateway_new.'_input_charset='.trim(strtolower($xmlArray['_input_charset']));
+        $result['formData'] = $xmlArray;
+        return $result;
+
+    }
+
     /**
      * 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
      * @param $para 需要拼接的数组
@@ -139,7 +249,9 @@ detail_data中退款总金额不能大于交易总金额；
         reset($para);
         $arg  = "";
         while (list ($key, $val) = each ($para)) {
-            $arg.=$key."=".$val."&";
+            if($key != 'sign' && $key != 'sign_type' && !is_null($val) && !(is_array($val) && count($val)==0) ){
+                $arg.=$key."=".$val."&";
+            }
         }
         //去掉最后一个&字符
         $arg = substr($arg,0,count($arg)-2);
@@ -159,7 +271,9 @@ detail_data中退款总金额不能大于交易总金额；
     {
         $arg  = "";
         while (list ($key, $val) = each ($para)) {
-            $arg.=$key."=".urlencode($val)."&";
+            if($key != 'sign' && $key != 'sign_type' && !is_null($val) && !(is_array($val) && count($val)==0) ){
+                $arg.=$key."=".urlencode($val)."&";
+            }
         }
         //去掉最后一个&字符
         $arg = substr($arg,0,count($arg)-2);
@@ -187,7 +301,22 @@ detail_data中退款总金额不能大于交易总金额；
             $sign = $_POST['sign'];
         }
         $orderString = static::createLinkstring($post);
-        return W2RSA::rsaVerify($orderString,static::$ALI_PUBLIC_KEY_PATH,$sign);
+        if (isset($post['sign_type']))
+        {
+            switch ($post['sign_type']) {
+                case 'RSA':
+                    return W2RSA::rsaVerify($orderString,static::$ALI_PUBLIC_KEY_PATH,$sign);
+                    break;
+                case 'MD5':
+                    return md5($orderString . static::$MD5_KEY) == $sign;
+                    break;
+
+                default:
+                    # code...
+                    break;
+            }
+        }
+        return false;
     }
 
 }
@@ -196,8 +325,11 @@ if (W2PayAli::$PARTNER==null && defined('W2PAYALI_PARTNER'))
 {
     W2PayAli::$PARTNER                   = W2PAYALI_PARTNER;
     W2PayAli::$SELLER_ID                 = W2PAYALI_SELLER_ID;
+    W2PayAli::$MD5_KEY                   = W2PAYALI_MD5_KEY;
+    W2PayAli::$ACCOUNT_NAME              = W2PAYALI_ACCOUNT_NAME;
     W2PayAli::$PRIVATE_KEY_PATH          = W2PAYALI_PRIVATE_KEY_PATH;
     W2PayAli::$ALI_PUBLIC_KEY_PATH       = W2PAYALI_ALI_PUBLIC_KEY_PATH;
     W2PayAli::$NOTIFY_URL                = W2PAYALI_NOTIFY_URL;
-    W2PayAli::$NOTIFY_URL_OF_REFUND                = W2PAYALI_NOTIFY_URL_OF_REFUND;
+    W2PayAli::$NOTIFY_URL_OF_REFUND      = W2PAYALI_NOTIFY_URL_OF_REFUND;
+    W2PayAli::$NOTIFY_URL_OF_TRANS       = W2PAYALI_NOTIFY_URL_OF_TRANS;
 }

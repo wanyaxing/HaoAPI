@@ -81,4 +81,4 @@ foreach ($logKeyArray as $logKey) {
 	}
 }
 $tmpLog['create_time'] = date('Y-m-d H:i:s') ;
-DBModel::instance('refundOrderAliLog')->insert($tmpLog);
+DBModel::instance('payRefundAliLog')->insert($tmpLog);

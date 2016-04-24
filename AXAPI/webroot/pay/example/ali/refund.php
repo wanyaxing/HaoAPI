@@ -11,17 +11,25 @@
     require_once(AXAPI_ROOT_PATH.'/components/Utility.php');
 
 
-    $out_trade_no = '2016042121001004080207164278';//订单号，请确认唯一。注意引入环境变量，如测试服、正式服不可重复。
 
-    $batch_no = date('Ymd').'haoframealirefunddev';
+    $batch_no = date('Ymd').'haorefunddev'.substr(uniqid(),0,8);
 
-    $refund_fee = 0.01;
+    $refundList = array(
+            array(
+                     'out_trade_no'=>'2016042421001004080210384626'
+                    ,'refund_fee'  =>0.01
+                    ,'desc'        =>'退给阿星第一笔交易的退款'
+                )
+            ,array(
+                     'out_trade_no'=>'2016042421001004080208404361'
+                    ,'refund_fee'  =>0.01
+                    ,'desc'        =>'退给阿星第二笔交易的退款'
+                )
+        );
 
-    $desc = '给阿星的退款';
+    $result = W2PayAli::refundMany($batch_no,$refundList);
 
-    $result = W2PayAli::refundSingle($batch_no,$out_trade_no,$refund_fee,$desc);
-
-    $sHtml = "<form id='alipaysubmit' name='alipaysubmit' action='".$result['url']."' method='POST'>";
+    $sHtml = "<form id='alipaysubmit' name='alipaysubmit' action='".$result['url']."' method='POST' target=_blank>";
     while (list ($key, $val) = each ($result['formData'])) {
         $sHtml.= "<input type='hidden' name='".$key."' value='".$val."'/>";
     }
