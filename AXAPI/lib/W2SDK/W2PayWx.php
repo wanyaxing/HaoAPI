@@ -97,7 +97,8 @@ class W2PayWx {
         }
         else
         {
-            var_export($postStr);
+            print("error when connect wx server:\n");
+            print_r($postStr);
             exit;
         }
 
