@@ -743,9 +743,9 @@ class AbstractHandler {
     {
         $_dbModel = static::newDBModel();
         $result = $_dbModel ->update($pValues,$pWhere);
-        if (isset($pWhere['id']))
+        if (array_key_exists(static::getTabelIdName(),$pWhere))
         {
-            static::resetW2CacheByModelId($pWhere['id']);//更新缓存
+            static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
         }
         return $result ;
     }
@@ -759,9 +759,9 @@ class AbstractHandler {
     {
         $_dbModel = static::newDBModel();
         $result = $_dbModel->delete($pWhere);
-        if (isset($pWhere['id']))
+        if (array_key_exists(static::getTabelIdName(),$pWhere))
         {
-            static::resetW2CacheByModelId($pWhere['id']);//更新缓存
+            static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
         }
         return $result ;
     }

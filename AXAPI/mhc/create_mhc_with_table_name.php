@@ -1707,7 +1707,14 @@ $_controllerString .= '
 
         if (count(array_filter(array_values($pWhere)))>0)
         {
-            $result = UserHandler::delete($pWhere);
+            $result = array();
+            $targetModels = UserHandler::loadModelList($pWhere);
+            foreach ($targetModels as $targetModel) {
+                $result[] = array(
+                                     \'targetModel\'=>$targetModel
+                                    ,\'status\'=>UserHandler::removeModel($targetModel)
+                                );
+            }
             return HaoResult::init(ERROR_CODE::$OK,$result);
         }
         else
