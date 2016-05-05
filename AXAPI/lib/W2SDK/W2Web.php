@@ -117,8 +117,8 @@ class W2Web {
      * @param string url
      * @return array Json 数组
      */
-    public static function loadJsonByUrl($p_url, $p_method='get', $p_postData=null, $p_header=null, $p_timeout=30, $p_result='body'){
-        $_c = W2Web::loadStringByUrl($p_url, $p_method, $p_postData, $p_header, $p_timeout, $p_result);
+    public static function loadJsonByUrl($p_url, $p_method='get', $p_postData=null, $p_header=null, $p_timeout=30, $p_result='body',$_curl = null){
+        $_c = W2Web::loadStringByUrl($p_url, $p_method, $p_postData, $p_header, $p_timeout, $p_result, $_curl);
         return isset($_c)?json_decode($_c, true):$_c;
     }
 
