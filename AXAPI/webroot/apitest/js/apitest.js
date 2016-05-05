@@ -797,7 +797,7 @@ function apiListInit()
             for (var k in _genres)
             {
                 var _genre = $.trim(_genres[k]);
-                console.log(_genre,_genresSelected,$.inArray(_genre,_genresSelected));
+                // console.log(_genre,_genresSelected,$.inArray(_genre,_genresSelected));
                 if ($.inArray(_genre,_genresSelected)>=0)
                 {
                     _isGenreSelected = true;
