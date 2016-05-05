@@ -1064,9 +1064,13 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
                 # code...
                 break;
             case SMS_USEFOR::RESTPWD:
-                if (is_null($_userModel))
+                if ( !is_object($_userModel) )
                 {
                     return HaoResult::init(ERROR_CODE::$SMS_PHONE_INVAILD);
+                }
+                else if ( $_userModel->getStatus() == STATUS_DISABLED )
+                {
+                    return HaoResult::init(ERROR_CODE::$USER_BEEN_DISABLED);
                 }
                 break;
 
@@ -1513,6 +1517,11 @@ $_controllerString .= '
         $pWhere[]                               = \'status <> \'.STATUS_DISABLED;
 
         $tmpModel = UserHandler::loadModelFirstInList($pWhere);
+
+        if (!is_object($tmpModel))
+        {
+            return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
+        }
 
         $tmpModel    ->         setPassword(W2HttpRequest::getRequestString(\'newpassword\'));//修改密码
 
