@@ -18,25 +18,29 @@ class AbstractHandler {
      * 对应的表的名称
      * @var string
      */
-	public static $tableName = null;
+
+    public static $tableName = null;
 
     /**
      * 对应的表的主键字段
      * @var string
      */
-	public static $tableIdName = null;
+
+    public static $tableIdName = null;
 
     /**
      * 对应表的常用字段数组
      * @var array
      */
-	public static $tableDataKeys = null;
+
+    public static $tableDataKeys = null;
 
     /**
      * 对应的模型的类名
      * @var string
      */
-	public static $modelName = null;
+
+    public static $modelName = null;
 
     /**
      * 进程级的查询用缓存，这是静态变量，所有的数组都放在这里。
@@ -48,9 +52,11 @@ class AbstractHandler {
      * 是否使用进程级缓存，默认为开启，如果需要的时候，可以关掉。
      * @var boolean
      */
-	public static $isUseCache    = True;
 
-	// ================== database ==================
+    public static $isUseCache    = True;
+
+
+    // ================== database ==================
 
     /**
      * 获得详细的数据表字段数据（如备注信息等）
@@ -120,11 +126,16 @@ class AbstractHandler {
     public static function getTabelIdName() {
         // if (static::$tableIdName == null)
         // {
-        // 	$_fieldList = static::getTableDataKeys();
-        // 	if (count($_fieldList)>0)
-        // 	{
-        // 		static::$tableIdName = $_fieldList[0];
-        // 	}
+
+        //  $_fieldList = static::getTableDataKeys();
+
+        //  if (count($_fieldList)>0)
+
+        //  {
+
+        //      static::$tableIdName = $_fieldList[0];
+
+        //  }
         // }
         return static::$tableIdName;
     }
@@ -146,7 +157,8 @@ class AbstractHandler {
     public static function getModelName() {
         if (static::$modelName == null)
         {
-    		static::$modelName = ucfirst(str_replace('Handler','Model',get_called_class()));//取得对应的model类名
+
+            static::$modelName = ucfirst(str_replace('Handler','Model',get_called_class()));//取得对应的model类名
         }
         return static::$modelName;
     }
@@ -156,15 +168,22 @@ class AbstractHandler {
      * 根据数据创建对应的模型
      * @return array 表格字段
      */
-	public static function createModel($pData=null){
-		$_cls = static::getModelName();
+
+    public static function createModel($pData=null){
+
+        $_cls = static::getModelName();
         $_model = $_cls::instance($pData);//创建model实例
-    	if (static::getTabelIdName()!=null && is_array($pData) && array_key_exists(static::getTabelIdName(),$pData))
-    	{
-    		$_model->setId($pData[static::getTabelIdName()]);
-    	}
+
+        if (static::getTabelIdName()!=null && is_array($pData) && array_key_exists(static::getTabelIdName(),$pData))
+
+        {
+
+            $_model->setId($pData[static::getTabelIdName()]);
+
+        }
         return $_model;
-	}
+
+    }
 
     //＝＝＝＝＝＝＝＝＝＝进程级缓存操作＝＝＝＝＝＝＝＝＝＝
 
@@ -249,7 +268,8 @@ class AbstractHandler {
     //     return $pIsEnable;
     // }
 
-	//====================常规方法=====================
+
+    //====================常规方法=====================
 
     /**
      * 根据主键值查询单条记录
@@ -341,15 +361,20 @@ class AbstractHandler {
             if (count($_idsTmp)>1)
             {
                 $_dbModel->where(sprintf('%s in (\'%s\')',static::getTabelIdName(),implode('\',\'',$_idsTmp)))
-                		->limit(sprintf('%d,%d'
-    		                                ,0
-    		                                ,count($_idsTmp)
-    		                                ));
+
+                        ->limit(sprintf('%d,%d'
+
+                                            ,0
+
+                                            ,count($_idsTmp)
+
+                                            ));
             }
             else
             {
                 $_dbModel->where(sprintf('%s = \'%s\'',static::getTabelIdName(),implode(',',$_idsTmp)))
-                			->limit(sprintf('%d,%d'
+
+                            ->limit(sprintf('%d,%d'
                                     ,0
                                     ,1
                                     ));
@@ -761,7 +786,8 @@ class AbstractHandler {
         $result = $_dbModel->delete($pWhere);
         if (array_key_exists(static::getTabelIdName(),$pWhere))
         {
-            static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
+
+            static::resetW2CacheByModelId($pWhere[static::getTabelIdName()],null,true);//更新缓存
         }
         return $result ;
     }
@@ -804,7 +830,8 @@ class AbstractHandler {
      * @param  int $_modelId [description]
      * @return [type]           [description]
      */
-    public static function resetW2CacheByModelId($_modelId,$_tableName = null)
+
+    public static function resetW2CacheByModelId($_modelId,$_tableName = null,$isDel = false)
     {
         if ($_modelId>0)
         {
@@ -813,7 +840,15 @@ class AbstractHandler {
                 $_tableName = static::getTabelName();
             }
             $w2CacheKey = sprintf('ax_%s_model_%s_id_%d',AXAPI_PROJECT_NAME,$_tableName,$_modelId);
-            W2Cache::resetCache($w2CacheKey);
+            if ($isDel)
+            {
+                W2Cache::delCache($w2CacheKey);
+            }
+            else
+            {
+
+                W2Cache::resetCache($w2CacheKey);
+            }
             AX_DEBUG('更新缓存：'.$w2CacheKey);
 
             static::cacheRemove($_modelId);//清理进程内缓存
@@ -864,22 +899,27 @@ class AbstractHandler {
         }
         if (count($_idsTmp)>0)
         {
+            $pWhere = array();
             if (count($_idsTmp)>1)
             {
-                $_dbModel->where(sprintf('%s in (%s)',static::getTabelIdName(),implode(',',$_idsTmp)))
-                          ->limit(count($_idsTmp));
+
+                $pWhere[] = sprintf('%s in (%s)',static::getTabelIdName(),implode(',',$_idsTmp));
+
             }
             else
             {
-                $_dbModel ->where(sprintf('%s = %s',static::getTabelIdName(),implode(',',$_idsTmp)))
-                           ->limit(1);
+
+                $pWhere[static::getTabelIdName()] = implode(',',$_idsTmp);
+
+
+
+
+
+
+
             }
-            $_data = $_dbModel->isUseCache(false)->delete();
-            if ($_data>0) {
-                foreach ($_idsTmp as $_index=>$_d) {
-                    static::resetW2CacheByModelId($_d);//更新缓存
-                }
-            }
+
+            return static::delete($pWhere);
         }
         return true;
     }

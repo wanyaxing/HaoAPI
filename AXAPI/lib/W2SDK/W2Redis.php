@@ -9,13 +9,13 @@
 
 class W2Redis {
 
-    public static $CACHE_HOST  = null; 	//服务器
-    public static $CACHE_PORT  = null; 	//端口
-    public static $CACHE_INDEX = null;	//数据库索引，一般是0-20
+    public static $CACHE_HOST  = null;  //服务器
+    public static $CACHE_PORT  = null;  //端口
+    public static $CACHE_INDEX = null;  //数据库索引，一般是0-20
 
     public static $CACHE_AUTH = null;   //密码，如果需要的话。
 
-    public static $_ax_connect = null;										  //缓存连接唯一实例
+    public static $_ax_connect = null;                                        //缓存连接唯一实例
 
     public static $clearCachedKeyList        = array();                           //设定本次请求结束后需要清理的缓存key列表数组，当本次请求结束后，就去清理列表里 的 key缓存。
     public static $clearCachedKeyPoolList    = array();                           //设定本次请求结束后需要清理的缓存池列表数组，当本次请求结束后，就去清理列表里 的 缓存池里 的 key缓存。
@@ -90,15 +90,15 @@ class W2Redis {
         $memcached = static::memFactory();
         if (isset($memcached, $p_key)) {
             static::cachedKeyGotListPush($p_key);//记录本次请求中取过的key
-        	if (static::isCacheCanBeUsed($p_key,$p_timeout))
-        	{
+            if (static::isCacheCanBeUsed($p_key,$p_timeout))
+            {
                 //有可用的缓存，取出缓存给ta就是。
                 $_data = $_time = $memcached->get($p_key.'_data');
                 if ($_data!==false)
                 {
                     return $_data;
                 }
-        	}
+            }
         }
         return null;
     }
@@ -107,7 +107,7 @@ class W2Redis {
      * 是否有可用的缓存
      * @param  [type]  $p_key                   缓存key
      * @param  integer $p_timeout               过期时间
-     * @return boolean            				是，否
+     * @return boolean                          是，否
      */
     public static function isCacheCanBeUsed($p_key,$p_timeout=300)
     {
@@ -121,10 +121,10 @@ class W2Redis {
 
                 //判断是否需要生成新缓存。锁状态过期 或 缓存过期且（锁状态不存在），需要生成新缓存.
                 if (
-                	(isset($_GET['reloadcache'])&& $_GET['reloadcache']=="true")	//强制reload缓存
-                	||    ($_timelock!==false && time() > $_timelock)               //有锁，且时间锁已过期（一般是时间锁被重置为1了）
-                	||    ($_timelock===false && $time_step > $p_timeout)          	//没有锁，且缓存超时
-                	)
+                    (isset($_GET['reloadcache'])&& $_GET['reloadcache']=="true")    //强制reload缓存
+                    ||    ($_timelock!==false && time() > $_timelock)               //有锁，且时间锁已过期（一般是时间锁被重置为1了）
+                    ||    ($_timelock===false && $time_step > $p_timeout)           //没有锁，且缓存超时
+                    )
                 {//不管
                         $memcached -> SETEX( $p_key.'_timelock',600, time()+120);//设定新的缓存锁，此位用户负责生成新的缓存，如果缓存失败，则两分钟后有人会重新触发。
                         AX_DEBUG('缓存失效：'.$p_key);
@@ -150,48 +150,48 @@ class W2Redis {
         if (isset($memcached, $p_key)) {
             $_time = $memcached->get($p_key.'_time');
             if ($_time!==false){
-		        // 判断缓存标识对应的缓存是否还在。
+                // 判断缓存标识对应的缓存是否还在。
 
-		        // 如果用户请求判断$HTTP_IF_NONE_MATCH，则提取$etag并比对，
-		        // 如果缓存没有变化，则重写变量为false(缓存没有改变)，
-		        // 如果缓存有变化，则重写变量为新缓存关键字。
-		        if (isset($HTTP_IF_NONE_MATCH))
-		        {
-		        	if ($HTTP_IF_NONE_MATCH===false)
-		        	{
-		        		throw new Exception("此处不允许传入参数HTTP_IF_NONE_MATCH为false");
+                // 如果用户请求判断$HTTP_IF_NONE_MATCH，则提取$etag并比对，
+                // 如果缓存没有变化，则重写变量为false(缓存没有改变)，
+                // 如果缓存有变化，则重写变量为新缓存关键字。
+                if (isset($HTTP_IF_NONE_MATCH))
+                {
+                    if ($HTTP_IF_NONE_MATCH===false)
+                    {
+                        throw new Exception("此处不允许传入参数HTTP_IF_NONE_MATCH为false");
 
-		        	}
-		            $etag = md5($_time);
-		            if ($HTTP_IF_NONE_MATCH == $etag)//这里用Last-Modified的header标识来进行客户端的缓存控制。
-		            {
-		                return false;//缓存没变化哦，可以考虑直接304的说。
-		            }
-		            else
-		            {
-		            	$HTTP_IF_NONE_MATCH = $etag;
-		            }
-		        }
-		        // 如果用户请求判断$HTTP_IF_MODIFIED_SINCE，则提取$eLastModified并比对最后修改时间，
-		        // 如果缓存没有变化，则重写变量为false(缓存没有改变)，
-		        // 如果缓存有变化，则重写变量为最新最后修改时间。
-		        if (isset($HTTP_IF_MODIFIED_SINCE))
-		        {
-		        	if ($HTTP_IF_MODIFIED_SINCE===false)
-		        	{
-		        		throw new Exception("此处不允许传入参数HTTP_IF_MODIFIED_SINCE为false");
+                    }
+                    $etag = md5($_time);
+                    if ($HTTP_IF_NONE_MATCH == $etag)//这里用Last-Modified的header标识来进行客户端的缓存控制。
+                    {
+                        return false;//缓存没变化哦，可以考虑直接304的说。
+                    }
+                    else
+                    {
+                        $HTTP_IF_NONE_MATCH = $etag;
+                    }
+                }
+                // 如果用户请求判断$HTTP_IF_MODIFIED_SINCE，则提取$eLastModified并比对最后修改时间，
+                // 如果缓存没有变化，则重写变量为false(缓存没有改变)，
+                // 如果缓存有变化，则重写变量为最新最后修改时间。
+                if (isset($HTTP_IF_MODIFIED_SINCE))
+                {
+                    if ($HTTP_IF_MODIFIED_SINCE===false)
+                    {
+                        throw new Exception("此处不允许传入参数HTTP_IF_MODIFIED_SINCE为false");
 
-		        	}
-		            $eLastModified = gmdate('D, d M Y H:i:s \G\M\T', $_time);
-		            if ($HTTP_IF_MODIFIED_SINCE == $eLastModified)//这里用Last-Modified的header标识来进行客户端的缓存控制。
-		            {
-		                return false;//缓存没变化哦，可以考虑直接304的说。
-		            }
-		            else
-		            {
-		                $HTTP_IF_MODIFIED_SINCE = $eLastModified;
-		            }
-		        }
+                    }
+                    $eLastModified = gmdate('D, d M Y H:i:s \G\M\T', $_time);
+                    if ($HTTP_IF_MODIFIED_SINCE == $eLastModified)//这里用Last-Modified的header标识来进行客户端的缓存控制。
+                    {
+                        return false;//缓存没变化哦，可以考虑直接304的说。
+                    }
+                    else
+                    {
+                        $HTTP_IF_MODIFIED_SINCE = $eLastModified;
+                    }
+                }
             }
         }
         return true;//服务器的缓存已经更新了，请重新读取。
@@ -209,6 +209,22 @@ class W2Redis {
             $_time = time();
             $memcached -> SETEX($p_key.'_data',3600,$buffer);
             $memcached -> SETEX($p_key.'_time',3600,$_time);
+            $memcached -> del($p_key.'_timelock');
+            static::isModified($_time,$HTTP_IF_MODIFIED_SINCE,$HTTP_IF_NONE_MATCH);//更新缓存标识，如果需要的话。
+        }
+    }
+
+    /**
+     * 删除缓存（慎用）
+     * @param  [type]  $p_key                   缓存key
+     * @return null
+     */
+    public static function delCache($p_key){
+        $memcached = static::memFactory();
+        if (isset($memcached, $p_key)) {
+            $_time = time();
+            $memcached -> del($p_key.'_data');
+            $memcached -> del($p_key.'_time');
             $memcached -> del($p_key.'_timelock');
             static::isModified($_time,$HTTP_IF_MODIFIED_SINCE,$HTTP_IF_NONE_MATCH);//更新缓存标识，如果需要的话。
         }
@@ -237,7 +253,7 @@ class W2Redis {
      * @return [type]        [description]
      */
     public static function setObj($p_key,$p_obj){
-    	static::setCache($p_key,serialize($p_obj));
+        static::setCache($p_key,serialize($p_obj));
     }
 
 
@@ -249,7 +265,7 @@ class W2Redis {
             $memcached -> lpush( $p_keyPool.'_keypool', $p_key );
             if ($p_expire>0)
             {
-	            $memcached -> EXPIRE( $p_keyPool.'_keypool', 3600 );
+                $memcached -> EXPIRE( $p_keyPool.'_keypool', 3600 );
             }
         }
     }
