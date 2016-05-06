@@ -361,7 +361,6 @@ class AbstractHandler {
             if (count($_idsTmp)>1)
             {
                 $_dbModel->where(sprintf('%s in (\'%s\')',static::getTabelIdName(),implode('\',\'',$_idsTmp)))
-
                         ->limit(sprintf('%d,%d'
 
                                             ,0
@@ -827,7 +826,9 @@ class AbstractHandler {
 
     /**
      * 更新缓存W2Cache
-     * @param  int $_modelId [description]
+     * @param  int    $_modelId       主键ID
+     * @param  string $_tableName  表名
+     * @param  bool   $isDel         是否删除
      * @return [type]           [description]
      */
 
@@ -846,7 +847,6 @@ class AbstractHandler {
             }
             else
             {
-
                 W2Cache::resetCache($w2CacheKey);
             }
             AX_DEBUG('更新缓存：'.$w2CacheKey);
@@ -864,7 +864,6 @@ class AbstractHandler {
         {
            throw new Exception('此处需要传入'.static::getModelName().'类型的对象');
         }
-
         return static::removeModelById($pModel->getId());
     }
 
@@ -889,7 +888,6 @@ class AbstractHandler {
         $pIds = (is_array($pIds)) ? $pIds : explode(',', $pIds);
 
         /** @var DBModel */
-        $_dbModel = static::newDBModel();
         $_idsTmp = array();
         foreach ($pIds as $_key => $pId) {
             if ($pId>0)
@@ -902,21 +900,11 @@ class AbstractHandler {
             $pWhere = array();
             if (count($_idsTmp)>1)
             {
-
                 $pWhere[] = sprintf('%s in (%s)',static::getTabelIdName(),implode(',',$_idsTmp));
-
             }
             else
             {
-
                 $pWhere[static::getTabelIdName()] = implode(',',$_idsTmp);
-
-
-
-
-
-
-
             }
 
             return static::delete($pWhere);
