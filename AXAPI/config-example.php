@@ -232,6 +232,7 @@ class ERROR_CODE
     public static $SMS_PHONE_INVAILD      = array(124, '该手机号并未注册过，无法找回密码哦。',       'SMS_PHONE_INVAILD');
     public static $SMS_PLS_USEFOR      = array(125, '发送验证码必须要有用途说明哦',       'SMS_PLS_USEFOR');
     public static $SMS_VERIFYCODE_WRONG      = array(126, '验证码错误',       'SMS_VERIFYCODE_WRONG');
+    public static $SMS_NO_PHONE_FOUND      = array(127, '该手机号并未注册过，无法用于登录哦。',       'SMS_NO_PHONE_FOUND');
 
 
 
