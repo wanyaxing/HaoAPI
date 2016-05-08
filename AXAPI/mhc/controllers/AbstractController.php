@@ -48,21 +48,21 @@ class AbstractController {
 
 
     //======================================
-    public static function getAuthIfUserCanDoIt($p_userID,$p_action,$p_targetModel=null)
+    public static function getAuthIfUserCanDoIt($pUserID,$pAction,$pTargetModel=null)
     {
         $auth = null;
-        switch ($p_action)
+        switch ($pAction)
         {
             case 'add':
                 break;
             case 'update':
-                if (!is_object($p_targetModel))
+                if (!is_object($pTargetModel))
                 {
                     $auth = 'empty';//空无效的
                 }
                 break;
             case 'detail':
-                if (!is_object($p_targetModel))
+                if (!is_object($pTargetModel))
                 {
                     $auth = 'empty';//空无效的
                 }
@@ -72,7 +72,7 @@ class AbstractController {
         }
         if (is_null($auth))
         {
-            $_user = Utility::getUserByID($p_userID);
+            $_user = Utility::getUserByID($pUserID);
             if (!is_object($_user))
             {
                 $auth = 'visitor';//游客
@@ -104,15 +104,15 @@ class AbstractController {
                 }
                 if ( $auth == 'normal' )
                 {
-                    if (is_object($p_targetModel) && method_exists($p_targetModel,'getUserID') && $p_targetModel->getUserID() == $p_userID)
+                    if (is_object($pTargetModel) && method_exists($pTargetModel,'getUserID') && $pTargetModel->getUserID() == $pUserID)
                     {
                         $auth = 'self';//作者
                     }
-                    else if (is_array($p_targetModel))
+                    else if (is_array($pTargetModel))
                     {
                         $_selfCount = 0 ;
-                        foreach ($p_targetModel as $_i => $_tmpModel) {
-                            if (method_exists($_tmpModel,'getUserID') && $_tmpModel->getUserID() == $p_userID)
+                        foreach ($pTargetModel as $_i => $_tmpModel) {
+                            if (method_exists($_tmpModel,'getUserID') && $_tmpModel->getUserID() == $pUserID)
                             {
                                 $_selfCount++;
                             }
@@ -121,7 +121,7 @@ class AbstractController {
                                 break;
                             }
                         }
-                        if ($_selfCount == count($p_targetModel))
+                        if ($_selfCount == count($pTargetModel))
                         {
                             $auth = 'self';//作者
                         }
@@ -140,69 +140,69 @@ class AbstractController {
         return $auth;
     }
 
-    protected static function loadList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,&$p_countThis=-1,$isDetail = false)
+    protected static function loadList($pWhere=null,$pOrder=null,$pPageIndex=null,$pPageSize=null,&$pCountThis=-1,$isDetail = false)
     {
 
         $_clsHandler = static::getHandlerName();
-        $resultList = $_clsHandler::loadModelList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis);
+        $resultList = $_clsHandler::loadModelList($pWhere,$pOrder,$pPageIndex,$pPageSize,$pCountThis);
 
         return $isDetail ? (count($resultList)>0?$resultList[0]:null) : $resultList;
     }
 
-    protected static function aList($p_where=null,$p_order=null,$p_pageIndex=null,$p_pageSize=null,$p_countThis=-1,$isDetail = false)
+    protected static function aList($pWhere=null,$pOrder=null,$pPageIndex=null,$pPageSize=null,$pCountThis=-1,$isDetail = false)
     {
         if ($_SERVER['REQUEST_METHOD'] != 'GET' )
         {
             return HaoResult::init(ERROR_CODE::$ONLY_GET_ALLOW);
         }
-        if ($p_where===null)
+        if ($pWhere===null)
         {
-            $p_where = array();
-            $p_where['id in (%s)'] = W2HttpRequest::getRequestArrayString('ids');
+            $pWhere = array();
+            $pWhere['id in (%s)'] = W2HttpRequest::getRequestArrayString('ids');
         }
 
-        if ($p_order===null)
+        if ($pOrder===null)
         {
-            $p_order = 'id';
+            $pOrder = 'id';
         }
 
         $_isReverse = W2HttpRequest::getRequestBool('isreverse',true);
-        if ($_isReverse && $p_order!=null && strpos($p_order,' ')===false)
+        if ($_isReverse && $pOrder!=null && strpos($pOrder,' ')===false)
         {
-            $p_order .=' desc';
+            $pOrder .=' desc';
         }
 
 
-        if ($p_pageIndex===null)
+        if ($pPageIndex===null)
         {
-            $p_pageIndex = W2HttpRequest::getRequestInt('page',null,false,true,1);
+            $pPageIndex = W2HttpRequest::getRequestInt('page',null,false,true,1);
         }
 
-        if ($p_pageSize===null)
+        if ($pPageSize===null)
         {
-            $p_pageSize = W2HttpRequest::getRequestInt('size',null,true,0,DEFAULT_PAGE_SIZE);
+            $pPageSize = W2HttpRequest::getRequestInt('size',null,true,0,DEFAULT_PAGE_SIZE);
         }
 
-        if ($p_pageIndex<0)
+        if ($pPageIndex<0)
         {
-            $p_countThis = 0;
+            $pCountThis = 0;
         }
-        else if ($p_countThis===-1)
+        else if ($pCountThis===-1)
         {
-            $p_countThis = W2HttpRequest::getRequestBool('iscountall')?1:-1;
+            $pCountThis = W2HttpRequest::getRequestBool('iscountall')?1:-1;
         }
 
 
-        $tmpResult = static::loadList($p_where,$p_order,$p_pageIndex,$p_pageSize,$p_countThis,$isDetail);
+        $tmpResult = static::loadList($pWhere,$pOrder,$pPageIndex,$pPageSize,$pCountThis,$isDetail);
         if (is_object($tmpResult) && get_class($tmpResult)=='HaoResult')
         {
             return $tmpResult;
         }
 
-        $pageMax = ($p_countThis>0 && $p_pageSize>0)?(intval(($p_countThis-1)/$p_pageSize)+1):-1;
-        $p_pageIndex = ($p_pageIndex<0 && $pageMax>0)?($pageMax + $p_pageIndex + 1):$p_pageIndex;
+        $pageMax = ($pCountThis>0 && $pPageSize>0)?(intval(($pCountThis-1)/$pPageSize)+1):-1;
+        $pPageIndex = ($pPageIndex<0 && $pageMax>0)?($pageMax + $pPageIndex + 1):$pPageIndex;
 
-        return HaoResult::init(ERROR_CODE::$OK,$tmpResult,$isDetail ? null : array('page'=>$p_pageIndex,'size'=>$p_pageSize,'pageMax'=>$pageMax,'countTotal'=>$p_countThis));
+        return HaoResult::init(ERROR_CODE::$OK,$tmpResult,$isDetail ? null : array('page'=>$pPageIndex,'size'=>$pPageSize,'pageMax'=>$pageMax,'countTotal'=>$pCountThis));
     }
 
     protected static function detail()
@@ -213,10 +213,10 @@ class AbstractController {
             return HaoResult::init(ERROR_CODE::$NO_TBALE_FOUND);
         }
         $tableIdName = $handlerlName::getTabelIdName();
-        $p_where = array();
-        $p_where[$tableIdName] = W2HttpRequest::getRequestInt('id',null,false,false);
+        $pWhere = array();
+        $pWhere[$tableIdName] = W2HttpRequest::getRequestInt('id',null,false,false);
 
-        return static::aList($p_where,$tableIdName,$p_pageIndex=1,$p_pageSize=1,$p_countThis=-1,$isDetail = true);
+        return static::aList($pWhere,$tableIdName,$pPageIndex=1,$pPageSize=1,$pCountThis=-1,$isDetail = true);
 
     }
 
