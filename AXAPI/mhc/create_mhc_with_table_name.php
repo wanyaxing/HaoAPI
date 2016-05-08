@@ -390,14 +390,15 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
      * 判断验证码是否正确
      * @param  string  $pTelephone  手机号
      * @param  string  $pVerifyCode 验证码
+     * @param  string  $_useFor 验证码
      * @return boolean               是/否
      */
-    public static function isSmsVerifyRight($pTelephone,$pVerifyCode)
+    public static function isSmsVerifyRight($pTelephone,$pVerifyCode,$_useFor = null)
     {
         if (isset($pTelephone,$pVerifyCode))
         {
-            $_smsVerifyModel = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$pTelephone),\'id desc\',1,1);
-            if (is_object($_smsVerifyModel) && $_smsVerifyModel->getVerifyCode()==$pVerifyCode)
+            $_smsVerifyModel = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$pTelephone,\'useFor\'=>$_useFor),\'id desc\',1,1);
+            if (is_object($_smsVerifyModel) && $_smsVerifyModel->getVerifyCode()==$pVerifyCode && $_smsVerifyModel->getVerifyTime()==null )
             {
                 $_smsVerifyModel->setVerifyTime(date(\'Y-m-d H:i:s\'));
                 static::saveModel($_smsVerifyModel);
@@ -943,7 +944,7 @@ apiList.push({
         ,\'action\':\'/user/delete\'
         ,\'method\':\'post\'
         ,\'request\':[
-          ,{ \'key\':\'ids\'                   ,\'type\':\'string\'     ,\'required\':false ,\'test-value\':\'\'                         ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }
+           { \'key\':\'ids\'                   ,\'type\':\'string\'     ,\'required\':false ,\'test-value\':\'\'                         ,\'title\':\'多个id用逗号隔开\' ,\'desc\':\'\' }
           ,{ \'key\':\'id\'                    ,\'type\':\'integer\'    ,\'required\':false ,\'test-value\':\'\'                         ,\'title\':\'\' ,\'desc\':\'\' }
           ,{ \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\':false ,\'test-value\':\'13112345678\'              ,\'title\':\'用户手机号\' ,\'desc\':\'\' }
         ]
@@ -959,7 +960,7 @@ if (IS_SPECIAL_TABLE=='smsVerify')
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'10000000000\'                         ,\'title\':\'\' ,\'desc\':\'\' }
-           ,{ \'key\':\'usefor\'             ,\'type\':\'int\'     ,\'required\': true,\'test-value\':\'2\'                         ,\'title\':\'验证码用途\' ,\'desc\':\'1：注册用 2：登陆用 3：找回密码用\' }
+           ,{ \'key\':\'usefor\'             ,\'type\':\'int\'     ,\'required\': true,\'test-value\':\'2\'                         ,\'title\':\'验证码用途\' ,\'desc\':\'1：注册用 2：登陆用 3：修改密码或修改手机号码用\' }
         ]
       });
 
@@ -1061,7 +1062,10 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
                 }
                 break;
             case SMS_USEFOR::LOGIN:
-                # code...
+                if (!is_object($_userModel))
+                {
+                    return HaoResult::init(ERROR_CODE::$SMS_NO_PHONE_FOUND);
+                }
                 break;
             case SMS_USEFOR::RESTPWD:
                 if ( !is_object($_userModel) )
@@ -1101,10 +1105,10 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
 
 
     /** 确认验证码是否正确 */
-    public static function actionCheckVerifyCode()
+    public static function actionCheckVerifyCode($_useFor = null)
     {
 
-        $isRight = SmsVerifyHandler::isSmsVerifyRight(W2HttpRequest::getRequestTelephone(\'telephone\',false),W2HttpRequest::getRequestString(\'verify_code\',false));
+        $isRight = SmsVerifyHandler::isSmsVerifyRight(W2HttpRequest::getRequestTelephone(\'telephone\',false),W2HttpRequest::getRequestString(\'verify_code\',false),$_useFor);
 
         if($isRight)
         {
@@ -1168,7 +1172,7 @@ else
                 if ($auth != \'admin\')
                 {
                     //检查校验码
-                    $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode();
+                    $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode(SMS_USEFOR::REGISTER);
                     if (!$_resultSmsCheck->isResultsOK())
                     {
                         return $_resultSmsCheck;
@@ -1481,7 +1485,7 @@ $_controllerString .= '
             if (!is_null($newTelephone))
             {
                 //检查校验码
-                $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode();
+                $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode(SMS_USEFOR::RESTPWD);
                 if (!$_resultSmsCheck->isResultsOK())
                 {
                     return $_resultSmsCheck;
@@ -1499,14 +1503,14 @@ $_controllerString .= '
     //用户:修改密码（不登录，通过验证短信修改密码）
     public static function actionUpdateWithVerifyCode()
     {
-        $unsetKey = W2HttpRequest::getUnsetRequest(\'telephone,verifycode,newpassword\', $pAllowBlank = false);
+        $unsetKey = W2HttpRequest::getUnsetRequest(\'telephone,verify_code,newpassword\', $pAllowBlank = false);
         if ( $unsetKey  !== null)
         {
             return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array(\'errorContent\'=>\'部分参数未提交数据: \'.$unsetKey));
         }
 
         //检查校验码
-        $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode();
+        $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode(SMS_USEFOR::RESTPWD);
         if (!$_resultSmsCheck->isResultsOK())
         {
             return $_resultSmsCheck;

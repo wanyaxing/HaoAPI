@@ -11,7 +11,7 @@ apiList.push({
 apiList.push({
     "title":"缓存:缓存服务器状态（限管理员）"
     ,"desc":""
-    ,"time":"2015-09-24 15:25:46"
+    ,"time":""
     ,"action":"/cache/info"
     ,"method":"get"
     ,"request":[
