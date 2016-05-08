@@ -26,7 +26,7 @@ class W2HttpRequest {
 
     /**
      * 判断目标key是否都存在，返回首个不存在的key
-     * @param  string|array $p_keys 多个key可用逗号隔开的字符串或组成数组
+     * @param  string|array $p_keys       多个key可用逗号隔开的字符串或组成数组
      * @param  bool         $p_allowBlank 是否允许空值
      * @return bool         true/false
      */
@@ -47,8 +47,9 @@ class W2HttpRequest {
     /**
      * 从http请求中获得匹配正则的字符串
      * @param string key
-     * @param string reg 如 '/^[\s\S]*$/
-     * @param bool 允许空白
+     * @param reg    p_match      如 '/^[\s\S]*$/
+     * @param bool   p_allowBlank 允许空白
+     * @param string p_default    默认值
      * @return null|string value
      */
     public static function getRequestMatch($p_key, $p_match='/^[\s\S]*$/', $p_allowBlank=true,$p_default=null)
@@ -65,6 +66,31 @@ class W2HttpRequest {
             {
                 throw new Exception('参数'.$p_key.'请输入正确的值。');
             }
+
+        }
+        if (defined('IS_AX_DEBUG')){var_export($p_key);print(" : ");var_export($_v);print("\n");}
+        return $_v;
+    }
+
+
+    /**
+     * 从http请求中获得匹配指定值集合内的字符串
+     * @param string key
+     * @param array p_array 指定值数组
+     * @param bool 允许空白
+     * @return null|string value
+     */
+    public static function getRequestInArray($p_key, $p_array=array(), $p_allowBlank=true,$p_default=null)
+    {
+        $_v = static::getRequestMatch($p_key,null,$p_allowBlank,$p_default);
+        if (isset($_v) && $_v!==$p_default)
+        {
+            $index = array_search($_v,$p_array);
+            if ($index === false)
+            {
+                throw new Exception('参数'.$p_key.'只能使用指定的值。');
+            }
+            $_v = $p_array[$index];
 
         }
         if (defined('IS_AX_DEBUG')){var_export($p_key);print(" : ");var_export($_v);print("\n");}
@@ -103,12 +129,13 @@ class W2HttpRequest {
     /**
      * 从http请求中获得float值
      * @param string key
-     * @param float 最大值
-     * @param bool 允许为0
-     * @param bool 允许为负数
+     * @param float   p_maxValue   最大值
+     * @param bool    p_allowZero  允许为0
+     * @param bool    p_allowMinus 允许为负数
+     * @param string  p_default    默认值
      * @return null|float value
      */
-    public static function getRequestFloat($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=false,$p_default=null){
+    public static function getRequestFloat($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=true,$p_default=null){
         $_v = static::getRequestMatch($p_key,null,false,$p_default);
 
         if (isset($_v) && $_v!==$p_default)
@@ -141,12 +168,13 @@ class W2HttpRequest {
     /**
      * 从http请求中获得int值
      * @param string key
-     * @param float 最大值
-     * @param bool 允许为0
-     * @param bool 允许为负数
+     * @param float   p_maxValue   最大值
+     * @param bool    p_allowZero  允许为0
+     * @param bool    p_allowMinus 允许为负数
+     * @param string  p_default    默认值
      * @return null|int value
      */
-    public static function getRequestInt($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=false,$p_default=null){
+    public static function getRequestInt($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=true,$p_default=null){
 
         $_v = static::getRequestFloat($p_key, $p_maxValue, $p_allowZero, $p_allowMinus,$p_default);
         if (isset($_v) && $_v!==$p_default)
@@ -164,6 +192,7 @@ class W2HttpRequest {
     /**
      * 从http请求中获得bool值
      * @param string key
+     * @param string  p_default    默认值
      * @return null|true|false
      */
     public static function getRequestBool($p_key,$p_default=null){
@@ -181,8 +210,9 @@ class W2HttpRequest {
     /**
      * 从http请求中获得数组
      * @param string key
-     * @param bool 内容唯一
-     * @param bool 仅允许整数
+     * @param bool    p_unique     内容唯一（过滤重复的值）
+     * @param bool    p_intOnly    仅允许整数
+     * @param string  p_default    默认值
      * @return null|array value
      */
     public static function getRequestArray($p_key, $p_unique=false, $p_intOnly=false,$p_default=null){
@@ -217,8 +247,9 @@ class W2HttpRequest {
     /**
      * 从http请求中获得数组并重组成字符串
      * @param string key
-     * @param bool 内容唯一
-     * @param bool 仅允许整数
+     * @param bool    p_unique     内容唯一（过滤重复的值）
+     * @param bool    p_intOnly    仅允许整数
+     * @param string  p_default    默认值
      * @return null|array value
      */
     public static function getRequestArrayString($p_key, $p_unique=false, $p_intOnly=false,$p_default=null){
@@ -237,6 +268,7 @@ class W2HttpRequest {
      * 从http请求中获得时间字符串
      * @param string key
      * @param string 时间格式
+     * @param string  p_default    默认值
      * @return null|string value
      */
     public static function getRequestDateTime($p_key, $p_format='Y-m-d H:i:s',$p_default=null){
@@ -255,6 +287,7 @@ class W2HttpRequest {
      * 从http请求中获得日期字符串
      * @param string key
      * @param string 时间格式
+     * @param string  p_default    默认值
      * @return null|string value
      */
     public static function getRequestDate($p_key, $p_format='Y-m-d',$p_default=null){
@@ -270,6 +303,7 @@ class W2HttpRequest {
      * 从http请求中获得Email格式字符串
      * @param string key
      * @param bool 允许空白
+     * @param string  p_default    默认值
      * @return null|string value
      */
     public static function getRequestEmail($p_key, $p_allowBlank=true,$p_default=null){
@@ -288,6 +322,7 @@ class W2HttpRequest {
      * 从http请求中获得TELEPHONE格式字符串
      * @param string key
      * @param bool 允许空白
+     * @param string  p_default    默认值
      * @return null|string value
      */
     public static function getRequestTelephone($p_key, $p_allowBlank=true,$p_default=null){
@@ -306,6 +341,7 @@ class W2HttpRequest {
      * 从http请求中获得IP格式字符串
      * @param string key
      * @param bool 允许空白
+     * @param string  p_default    默认值
      * @return null|string value
      */
     public static function getRequestIP($p_key, $p_allowBlank=true,$p_default=null){
@@ -325,6 +361,7 @@ class W2HttpRequest {
      * 从http请求中获得URL格式字符串
      * @param string key
      * @param bool 允许空白
+     * @param string  p_default    默认值
      * @return null|string value
      */
     public static function getRequestURL($p_key, $p_allowBlank=true,$p_default=null){
