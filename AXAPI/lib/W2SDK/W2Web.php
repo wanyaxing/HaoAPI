@@ -44,7 +44,7 @@ class W2Web {
                                 $_v = ($value===true)?'1':(($value===false)?'0':rawurlencode($value));
                                 array_push($_params, sprintf('%s=%s', $key, $_v));
                         }
-                        $_params .= implode('&',$_params);
+                        $_params = implode('&',$_params);
                     }
                     $p_url .= strpos($p_url,'?')===false?'?':'&';
                     $p_url .= $_params;
