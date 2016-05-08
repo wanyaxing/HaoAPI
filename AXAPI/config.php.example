@@ -105,6 +105,9 @@ define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目�
 // define('W2PAYWX_APICLIENT_KEY',       AXAPI_ROOT_PATH.'/lib/wxpay/cert/apiclient_key.pem');
 
 
+/** 高德地图基础Web基础服务 */
+define('W2AMAP_AMAP_ACCESSKEY',       '3b4c051d64bfwoii5sajiifw728e5a');//客户唯一标识 用户申请，由高德地图API后台自动分配
+define('W2AMAP_AMAP_SECRETKEY',       '4e84f9d2c607gj0oj39e34r0ebf5a6');//可选，选择数字签名认证的用户必填
 
 
 //================= 系统运行代码 =================
