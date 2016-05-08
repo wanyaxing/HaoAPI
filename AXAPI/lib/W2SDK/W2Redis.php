@@ -298,9 +298,12 @@ class W2Redis {
     {
         // W2Log::debug($p_keyPool);
         $memcached = static::memFactory();
-        // $memcached -> FLUSHALL();
-        $memcached -> FLUSHDB();//清空当前数据库
-        return null;
+        if (isset($memcached))
+        {
+            // $memcached -> FLUSHALL();
+            return $memcached -> FLUSHDB();//清空当前数据库
+        }
+        return false;
     }
 
     /** 进程级变量，追加临时存储需要清理的缓存池key，页面请求成功完成后统一清理，一般用于数据更新后清理对应的缓存池。（需要另写方法辅助） */

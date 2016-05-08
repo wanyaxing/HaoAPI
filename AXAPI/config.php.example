@@ -77,7 +77,7 @@ define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目�
 // define('W2CACHE_HOST'  ,'127.0.0.1');
 // define('W2CACHE_PORT'  ,'6379');
 // define('W2CACHE_INDEX' ,4);
-// define('W2CACHE_AUTH'  ,'thIsIsteStseRverForhAOxitech1305bywYxin151006');
+// define('W2CACHE_AUTH'  ,'thIsIsteSte6b5sihAOxitech1305bywYxin151006');
 
 
 
