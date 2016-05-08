@@ -181,7 +181,7 @@ class DBTool
 				}
 				else
 				{
-					$p_strFormat = '`'.trim($p_strFormat,'`').'`';
+					$p_strFormat = preg_replace('/(\S+?\.|^)([^\.]+)$/','$1`$2`',trim($p_strFormat,'`'));
 					if ( (in_array(strtolower($p_value),array('now()','null'))) )
 					{
 						$conditions[] =  sprintf('%s = NULL',$p_strFormat);
