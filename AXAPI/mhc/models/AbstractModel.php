@@ -183,10 +183,10 @@ class AbstractModel {
         return $values;
     }
 
-    /** 判断当前model是否新的model(即原快照都是空的值) */
+    /** 判断当前model是否新的model(即原快照都是空的值，或者原快照只有个modelType) */
     public function isNewModel()
     {
-        return $this->snapshot==null || count(array_filter($this->snapshot))==0;
+        return $this->snapshot==null || count(array_filter($this->snapshot))<=1;
     }
     // ======================== variable ========================
 
