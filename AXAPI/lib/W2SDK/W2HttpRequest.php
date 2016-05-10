@@ -151,10 +151,15 @@ class W2HttpRequest {
                 throw new Exception('参数'.$p_key.'的值不可以为0。');
             }
 
-            if (isset($p_allowMinus) && $_v<$p_allowMinus)
+            if (isset($p_allowMinus) && !$p_allowMinus && $_v<0 )
             {
-                throw new Exception('参数'.$p_key.'只接受大于等于'.$p_allowMinus.'的数字。');
+                throw new Exception('参数'.$p_key.'的值不可为负数。');
             }
+
+            // if (isset($p_allowMinus) && $_v<$p_allowMinus)
+            // {
+            //     throw new Exception('参数'.$p_key.'只接受大于等于'.$p_allowMinus.'的数字。');
+            // }
 
             if (isset($p_maxValue) && $_v > $p_maxValue)
             {
