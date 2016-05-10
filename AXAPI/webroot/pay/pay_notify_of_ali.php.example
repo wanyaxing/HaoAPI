@@ -58,7 +58,6 @@ if ($verify_result) { // 验证成功
 	// TRADE_FINISHED	交易成功且结束，即不可再做任何操作。
 	$trade_status = $_POST['trade_status'];
 
-	$isSuccess = false;
 	if ($isSuccess) {
 		// ///////////////////////////////////////////////////////////////////////
 		//todo 这里根据订单支付成功后，处理对应的数据库中的订单的状态。
