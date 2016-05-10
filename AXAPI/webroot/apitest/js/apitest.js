@@ -988,11 +988,17 @@ $(function() {
             }
             catch(e) {
                 // console.log('json 解析失败');
-                $('#div_json_view').html(data);
-                setTimeout(function() {
-                    $('#div_frames>ul>li').eq(1).find('a').trigger("click");
-                },
-                100);
+                if (data.match(/^<.*?>[\s\S]*<.*?>$/g))
+                {
+                    $('#div_json_view').html(data);
+                }
+                else
+                {
+                    setTimeout(function() {
+                        $('#div_frames>ul>li').eq(1).find('a').trigger("click");
+                    },
+                    100);
+                }
 
                 return;
 

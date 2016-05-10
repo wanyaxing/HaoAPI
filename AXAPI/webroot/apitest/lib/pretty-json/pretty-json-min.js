@@ -126,7 +126,7 @@ PrettyJSON.view.Node = Backbone.View.extend({
                 li.tooltip({'placement':'left','delay': { "show": 0, "hide": 0 }});
             }
             var colom = '&nbsp;:&nbsp;';
-            var left = $('<span />');
+            var left = $('<span' + ( typeof(val) == 'string' ? ' ondblclick="previewThisData(this,event);" el-string="'+encodeURIComponent(val)+'"':'')+ '/>');
             var right = $('<span />').append(child.el); (this.type == 'array') ? left.html('') : left.html(key + colom);
             left.append(right);
             li.append(left);
@@ -248,6 +248,22 @@ showPrettyImg = function(_this,e){//asinw add
 	}
 	return false;
 }
+
+previewThisData = function(_this,e){
+    var eTarget = (e.target)?e.target:e.srcElement;
+    if (eTarget == _this)
+    {
+        var s = decodeURIComponent(_this.getAttribute ('el-string'));
+        if (s.match(/^<.*?>[\s\S]*<.*?>$/g))
+        {
+            OpenWindow = window.open("", "newwin", "height=220,width=470,toolbar=no,scrollbars=" + scroll + ",menubar=no");;
+            OpenWindow.document.write(s) ;
+            OpenWindow.document.close() ;
+            self.name = "main";
+        }
+    }
+}
+
 PrettyJSON.view.Leaf = Backbone.View.extend({
     tagName: 'span',
     data: null,
@@ -295,7 +311,7 @@ PrettyJSON.view.Leaf = Backbone.View.extend({
         }
         else if (typeof(state.data) == "string" )//asinw add
         {
-	        state.data = state.data.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;');//转义使html代码无效
+	        state.data = state.data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');//转义使html代码无效
 	        state.data = state.data.replace(/(http[^ ,"']+)/g,function(link){
 	        	return '<a target=_blank '+(link.match(/(jpg|jpeg|png|gif)/g)?'onmouseover="showPrettyImg(this,event)" onmouseout="hidePrettyImg(this,event)" style="color:gray;"':'')+' href="'+link+'" >'+link+'</a>';
 	        });
