@@ -575,7 +575,7 @@ public class '.$modelName.'Connect extends HaoConnect {
         }
         $funcName = W2String::camelCaseWithUcFirst(preg_replace('/.*?\//','',$apiObj['action']));
 
-        $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
+        $isDoSomethingForResult = ($modelName=='User' && ($funcName=='Login' || $funcName=='UnionLogin'))
                                     || ($modelName=='User' && $funcName=='LogOut')
                                     ;
 
@@ -590,7 +590,7 @@ public class '.$modelName.'Connect extends HaoConnect {
     return [self request:@"'.$apiObj['action'].'" params:params httpMethod:'.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').' onCompletion:^(HaoResult *result) {';
         if ($isDoSomethingForResult)
         {
-            if ($modelName=='User' && $funcName=='Login')
+            if ($modelName=='User' && ($funcName=='Login' || $funcName=='UnionLogin'))
             {
                 $resultFileContent .= "\n".'        if ([result isResultsOK]) {
             id extraInfo = [result find:@"extraInfo>authInfo"];
