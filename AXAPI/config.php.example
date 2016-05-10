@@ -232,16 +232,19 @@ class ERROR_CODE
     public static $USER_BEEN_DISABLED   = array(116, '该账号已被禁用。',       'USER_BEEN_DISABLED');
     public static $USER_PLS_ACCOUNT     = array(117, '请输入登录账号',       'USER_PLS_ACCOUNT');
     public static $USER_PLS_PWD         = array(118, '请输入密码',       'USER_PLS_PWD');
-    public static $USER_USED_UNION      = array(119, '该联合登录已被绑定',       'USER_USED_UNION');
-    public static $USER_UNAME_NO_PHONE      = array(120, '不可以使用手机号作为用户名。',       'USER_UNAME_NO_PHONE');
-    public static $USER_UNAME_NO_EMAIL      = array(121, '不可以使用邮箱作为用户名。',       'USER_UNAME_NO_EMAIL');
-    public static $SMS_TOO_OFEN      = array(122, '验证码发送太频繁，请稍后再试。',       'SMS_TOO_OFEN');
-    public static $SMS_PHONE_EXISTS      = array(123, '该手机号已存在，不可用于注册。',       'SMS_PHONE_EXISTS');
-    public static $SMS_PHONE_INVAILD      = array(124, '该手机号并未注册过，无法找回密码哦。',       'SMS_PHONE_INVAILD');
-    public static $SMS_PLS_USEFOR      = array(125, '发送验证码必须要有用途说明哦',       'SMS_PLS_USEFOR');
+    public static $USER_USED_UNION           = array(119, '该联合登录已被绑定',       'USER_USED_UNION');
+    public static $USER_UNAME_NO_PHONE       = array(120, '不可以使用手机号作为用户名。',       'USER_UNAME_NO_PHONE');
+    public static $USER_UNAME_NO_EMAIL       = array(121, '不可以使用邮箱作为用户名。',       'USER_UNAME_NO_EMAIL');
+    public static $SMS_TOO_OFEN              = array(122, '验证码发送太频繁，请稍后再试。',       'SMS_TOO_OFEN');
+    public static $SMS_PHONE_EXISTS          = array(123, '该手机号已存在，不可用于注册。',       'SMS_PHONE_EXISTS');
+    public static $SMS_PHONE_INVAILD         = array(124, '该手机号并未注册过，无法找回密码哦。',       'SMS_PHONE_INVAILD');
+    public static $SMS_PLS_USEFOR            = array(125, '发送验证码必须要有用途说明哦',       'SMS_PLS_USEFOR');
     public static $SMS_VERIFYCODE_WRONG      = array(126, '验证码错误',       'SMS_VERIFYCODE_WRONG');
-    public static $SMS_NO_PHONE_FOUND      = array(127, '该手机号并未注册过，无法用于登录哦。',       'SMS_NO_PHONE_FOUND');
-
+    public static $SMS_NO_PHONE_FOUND        = array(127, '该手机号并未注册过，无法用于登录哦。',       'SMS_NO_PHONE_FOUND');
+    public static $DEVICE_PLS_TOKEN          = array(129, '请输入正确的设备号。',       'DEVICE_PLS_TOKEN');
+    public static $DEVICE_PLS_USER_OR_PHONE  = array(130, '请指定用户的ID或手机号',       'DEVICE_PLS_USER_OR_PHONE');
+    public static $DEVICE_PLS_TYPE           = array(131, '请使用指定的推送方式',       'DEVICE_PLS_TYPE');
+    public static $AMAP_UNKONW_LOCATION      = array(132, '无法根据地址找到您的坐标，或定位范围太过模糊，请完善您的地址信息再试。',       'AMAP_UNKONW_LOCATION');
 
 
 
