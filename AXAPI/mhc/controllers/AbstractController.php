@@ -151,7 +151,8 @@ class AbstractController {
 
     protected static function aList($pWhere=null,$pOrder=null,$pPageIndex=null,$pPageSize=null,$pCountThis=-1,$isDetail = false)
     {
-        if ($_SERVER['REQUEST_METHOD'] != 'GET' )
+        //默认list方法里会检测仅GET表单下执行，如果要忽略该检测，请指定对应的Controller::$IGNORE_METHOD_CHECK = true;
+        if ($_SERVER['REQUEST_METHOD'] != 'GET' && (!isset(static::$IGNORE_METHOD_CHECK) || !static::$IGNORE_METHOD_CHECK ) )
         {
             return HaoResult::init(ERROR_CODE::$ONLY_GET_ALLOW);
         }
@@ -228,7 +229,8 @@ class AbstractController {
      */
     protected static function save($tmpModel,$isAdd=false)
     {
-        if ($_SERVER['REQUEST_METHOD'] != 'POST' )
+        //默认save方法里会检测仅POST表单下执行，如果要忽略该检测，请指定对应的Controller::$IGNORE_METHOD_CHECK = true;
+        if ($_SERVER['REQUEST_METHOD'] != 'POST' && (!isset(static::$IGNORE_METHOD_CHECK) || !static::$IGNORE_METHOD_CHECK ) )
         {
             return HaoResult::init(ERROR_CODE::$ONLY_POST_ALLOW);
         }
