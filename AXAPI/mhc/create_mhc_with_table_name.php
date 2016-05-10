@@ -1009,7 +1009,7 @@ class '.$_controllerName.' extends AbstractController{
                                                 ,\'self\'    =>array('.$authViewDisabled.')
                                                 ,\'admin\'   =>array('.$authViewDisabled.')
                                                 );//查看相关字段权限
-    public static $IGNORE_METHOD_CHECK = false; //是否忽略表单提交方式的检测
+
     // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝接口方法都在下面定义 action开头的方法是对外接口＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     //权限
     public static function getAuthIfUserCanDoIt($pUserID,$pAction,$pTargetModel=null)
