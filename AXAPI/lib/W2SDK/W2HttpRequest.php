@@ -131,11 +131,11 @@ class W2HttpRequest {
      * @param string key
      * @param float   p_maxValue   最大值
      * @param bool    p_allowZero  允许为0
-     * @param bool    p_allowMinus 允许为负数
+     * @param bool    p_minValue   最小值（默认true为不限，false为不允许负数，其他数字为最小值）
      * @param string  p_default    默认值
      * @return null|float value
      */
-    public static function getRequestFloat($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=true,$p_default=null){
+    public static function getRequestFloat($p_key, $p_maxValue=null, $p_allowZero=true, $p_minValue=true,$p_default=null){
         $_v = static::getRequestMatch($p_key,null,false,$p_default);
 
         if (isset($_v) && $_v!==$p_default)
@@ -151,15 +151,27 @@ class W2HttpRequest {
                 throw new Exception('参数'.$p_key.'的值不可以为0。');
             }
 
-            if (isset($p_allowMinus) && !$p_allowMinus && $_v<0 )
+            if (isset($p_minValue))
             {
-                throw new Exception('参数'.$p_key.'的值不可为负数。');
-            }
+                if ($p_minValue === false)
+                {// 不允许负数
+                    if ( $_v<0 )
+                    {
+                        throw new Exception('参数'.$p_key.'的值不可为负数。');
+                    }
+                }
+                if ($p_minValue === true)
+                {//允许负数
 
-            // if (isset($p_allowMinus) && $_v<$p_allowMinus)
-            // {
-            //     throw new Exception('参数'.$p_key.'只接受大于等于'.$p_allowMinus.'的数字。');
-            // }
+                }
+                else
+                {
+                    if ( $_v<$p_minValue )
+                    {//比较最小值
+                        throw new Exception('参数'.$p_key.'只接受大于等于'.$p_minValue.'的数字。');
+                    }
+                }
+            }
 
             if (isset($p_maxValue) && $_v > $p_maxValue)
             {
@@ -175,13 +187,13 @@ class W2HttpRequest {
      * @param string key
      * @param float   p_maxValue   最大值
      * @param bool    p_allowZero  允许为0
-     * @param bool    p_allowMinus 允许为负数
+     * @param bool    p_minValue   最小值（默认true为不限，false为不允许负数，其他数字为最小值）
      * @param string  p_default    默认值
      * @return null|int value
      */
-    public static function getRequestInt($p_key, $p_maxValue=null, $p_allowZero=true, $p_allowMinus=true,$p_default=null){
+    public static function getRequestInt($p_key, $p_maxValue=null, $p_allowZero=true, $p_minValue=true,$p_default=null){
 
-        $_v = static::getRequestFloat($p_key, $p_maxValue, $p_allowZero, $p_allowMinus,$p_default);
+        $_v = static::getRequestFloat($p_key, $p_maxValue, $p_allowZero, $p_minValue,$p_default);
         if (isset($_v) && $_v!==$p_default)
         {
             if (strval(intval($_v)) != $_v)
