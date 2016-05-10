@@ -92,16 +92,16 @@ class W2PayAli {
     /**
      * 退款
      * @param  string $batch_no     每进行一次即时到账批量退款，都需要提供一个批次号，通过该批次号可以查询这一批次的退款交易记录，对于每一个合作伙伴，传递的每一个批次号都必须保证唯一性。格式为：退款日期（8位）+流水号（3～24位）。不可重复，且退款日期必须是当天日期。流水号可以接受数字或英文字符，建议使用数字，但不可接受“000”。
-     * @param  string $out_trade_no 原付款支付宝交易号
+     * @param  string $trade_no 原付款支付宝交易号
      * @param  string $refund_fee   退款金额
      * @param  string $desc         退款理由；
      * @return array               {'url':'http://xxx','formData':{...}}
      */
-    public static function refundSingle($batch_no,$out_trade_no,$refund_fee,$desc)
+    public static function refundSingle($batch_no,$trade_no,$refund_fee,$desc)
     {
         $refundList = array(
                 array(
-                         'out_trade_no'=>$out_trade_no
+                         'trade_no'=>$trade_no
                         ,'refund_fee'  =>$refund_fee
                         ,'desc'        =>$desc
                     )
@@ -111,14 +111,14 @@ class W2PayAli {
     /**
      * 退款
      * @param  string $batch_no     每进行一次即时到账批量退款，都需要提供一个批次号，通过该批次号可以查询这一批次的退款交易记录，对于每一个合作伙伴，传递的每一个批次号都必须保证唯一性。格式为：退款日期（8位）+流水号（3～24位）。不可重复，且退款日期必须是当天日期。流水号可以接受数字或英文字符，建议使用数字，但不可接受“000”。
-     * @param  array  $refundList  支付清单 [ {'out_trade_no':'xxx','refund_fee':'xxx','desc':'xxx'},{},... ]
+     * @param  array  $refundList  支付清单 [ {'trade_no':'xxx','refund_fee':'xxx','desc':'xxx'},{},... ]
      * @return array               {'url':'http://xxx','formData':{...}}
      */
     public static function refundMany($batch_no,$refundList=array())
     {
         $detail_data = array();
         foreach ($refundList as $refundData) {
-            $detail_data[] = $refundData['out_trade_no'] . '^' . $refundData['refund_fee'] . '^' . $refundData['desc'];
+            $detail_data[] = $refundData['trade_no'] . '^' . $refundData['refund_fee'] . '^' . $refundData['desc'];
         }
         $detail_data = implode('#',$detail_data);
         return static::refund($batch_no,$detail_data);
