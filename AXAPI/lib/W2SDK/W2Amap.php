@@ -84,6 +84,40 @@ class W2Amap extends W2Map{
 		return W2Web::loadJsonByUrl('http://restapi.amap.com/v3/geocode/regeo','get',$param);
 	}
 
+	/**
+	 * 输入提示是一类简单的HTTP接口，提供根据用户输入的关键词查询返回建议列表。
+	 * http://lbs.amap.com/api/webservice/reference/inputtips/
+	 * @param  array  $param [description]
+						参数名		含义	规则说明	是否必须	缺省值
+						key	        请求服务权限标识	用户在高德地图官网申请REST类型KEY	必填	无
+						keywords	查询关键词		必填	无
+						type	    POI分类	服务可支持传入多个分类，多个类型剑用“|”分隔	选填	无
+								    可选值：POI分类名称、分类代码
+						location	坐标	经度,纬度	选填	无
+								    建议使用location参数，可在此location附近优先返回搜索关键词信息
+						city	    搜索城市	可选值：城市中文、中文全拼、citycode、adcode	选填	无（默认在全国范围内搜索）
+								    如：北京/beijing/010/110000
+						citylimit	仅返回指定城市数据	可选值：true/false	可选	FALSE
+						datatype	返回的数据类型	多种数据类型用“|”分隔，可选值：all-返回所有数据类型、poi-返回POI数据类型、bus-返回公交站点数据类型、busline-返回公交线路数据类型	选填	all
+						sig	        数字签名	数字签名获取和使用方法	可选	无
+						output	    返回数据格式类型	可选值：JSON,XML	可选	JSON
+						callback	回调函数	callback值是用户定义的函数名称，此参数只在output=JSON时有效	可选	无
+	 * @return [type] [description]
+	 */
+	public static function inputtips($param=array())
+	{
+		$param['key'] = static::$amap_accessKey;
+		$param['extensions'] = 'pois';
+		$param['output'] = 'JSON';
+
+		if (static::$amap_secretKey != null)
+		{
+			$param['sig'] = static::getSign($param);
+		}
+
+		return W2Web::loadJsonByUrl('http://restapi.amap.com/v3/assistant/inputtips','get',$param);
+	}
+
     /**
      * 字典根据key值按字母排序后获得签名
      * http://lbs.amap.com/yuntu/guide/getsig/
