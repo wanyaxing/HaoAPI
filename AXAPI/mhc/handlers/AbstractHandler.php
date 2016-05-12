@@ -732,6 +732,7 @@ class AbstractHandler {
                 $_dbModel -> where($newWhere)
                           -> limit(1)
                           ->update($_updateData);
+                static::resetW2CacheByModelId($pModel->getId());//更新缓存
             }
             else
             {
