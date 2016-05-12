@@ -62,6 +62,7 @@ apiList.push({
   ,"action":"/axapi/update_codes_of_hao_connect"
   ,"method":"post"
   ,"request":[
+    { "key":"-clear"                 ,"type":"string"      ,"required":false ,"test-value":""                         ,"title":"是否先清理代码文件再重新生成" ,"desc":"yes / no" }
   ]
 });
 
