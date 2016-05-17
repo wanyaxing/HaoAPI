@@ -161,7 +161,7 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*public function find'.$funcName.'\(\)'.')/',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*public function find'.$funcName.'\(\)'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -209,7 +209,7 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*public Object find'.$funcName.'\(\)'.')/',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*public Object find'.$funcName.'\(\)'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -257,7 +257,7 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName."\n")!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*-\(id\)find'.$funcName.'\n'.')/',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*-\(id\)find'.$funcName.'\n'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -300,7 +300,7 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName.';')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*-\(id\)find'.$funcName.';'.')/',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*-\(id\)find'.$funcName.';'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -424,7 +424,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'request'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*public static function request'.$funcName.'\(\$params = null\)'.')/',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*public static function request'.$funcName.'\(\$params = null\)'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -461,62 +461,65 @@ function createConnectFromConfig($_jobFile)
 
         }
     }
-    if ($modelName=='Qiniu')
+    if (!file_exists($resultFilePath))
     {
-        $resultFileContent .= "\n".''
-                             ."\n".'    /** 传输指定路径文件到七牛 （使用接口） */'
-                             ."\n".'    public static function requestUploadFileToQiniu($filePath)'
-                             ."\n".'    {'
-                             ."\n".'        if (!file_exists($filePath))'
-                             ."\n".'        {'
-                             ."\n".'            throw new Exception(\'目标文件不存在：\'.$filePath);'
-                             ."\n".'        }'
-                             ."\n".'        $tokenParams = array(\'md5\'=>md5_file($filePath),\'filesize\'=>filesize($filePath),\'filetype\'=> pathinfo($filePath,PATHINFO_EXTENSION) );'
-                             ."\n".'        $tokenResult = static::requestGetUploadTokenForQiniu($tokenParams);'
-                             ."\n".'        if ($tokenResult->isResultsOK())'
-                             ."\n".'        {'
-                             ."\n".'            if ($tokenResult->find(\'isFileExistInQiniu\') == true)'
-                             ."\n".'            {'
-                             ."\n".'                return HaoResult::instanceModel($tokenResult->find(\'urlPreview\'),0,\'\',\'has exists in qiniu.\');'
-                             ."\n".'            }'
-                             ."\n".'            else'
-                             ."\n".'            {'
-                             ."\n".'                $params = array();'
-                             ."\n".'                $params[\'token\'] = $tokenResult->find(\'uploadToken\');'
-                             ."\n".'                if (function_exists(\'curl_file_create\'))'
-                             ."\n".'                {'
-                             ."\n".'                    $params[\'file\'] = curl_file_create($filePath);'
-                             ."\n".'                }'
-                             ."\n".'                else'
-                             ."\n".'                {'
-                             ."\n".'                    $params[\'file\'] = \'@\'.$filePath;'
-                             ."\n".'                }'
-                             ."\n".'                $qiniuContent = static::requestUploadQiniuCom($params);'
-                             ."\n".'                try {'
-                             ."\n".'                    $qiniuResult = json_decode($qiniuContent,true);'
-                             ."\n".'                    if (is_array($qiniuResult) && isset($qiniuResult[\'urlPreview\']))'
-                             ."\n".'                    {'
-                             ."\n".'                        return HaoResult::instanceModel($qiniuResult[\'urlPreview\'],0,\'\',\'upload to qiniu success.\');'
-                             ."\n".'                    }'
-                             ."\n".'                } catch (Exception $e) {'
-                             ."\n".'                }'
-                             ."\n".'                return HaoResult::instanceModel($qiniuContent,-1,\'上传文件到七牛失败，请联系管理员\',$params);'
-                             ."\n".'            }'
-                             ."\n".'        }'
-                             ."\n".'        return HaoResult::instanceModel($tokenResult,-1,\'获取Token失败，请联系管理员\',$tokenParams);'
-                             ."\n".'    }'
-                             ."\n".'    /** 上传base64编码的字符串文件到七牛 （使用接口）*/'
-                             ."\n".'    public static function requestUploadBase64ToQiniu($base64,$filetype=\'tmp\')'
-                             ."\n".'    {'
-                             ."\n".'        $tmpFilePath = \'/tmp/b64_\'.uniqid().\'.\'.$filetype;'
-                             ."\n".'        $fhandle = fopen($tmpFilePath, \'w+\');'
-                             ."\n".'        stream_filter_append($fhandle, \'convert.base64-decode\', STREAM_FILTER_WRITE);'
-                             ."\n".'        fwrite($fhandle, $base64);'
-                             ."\n".'        fclose($fhandle);'
-                             ."\n".'        return static::requestUploadFileToQiniu($tmpFilePath);'
-                             ."\n".'    }'
-                             ."\n".'';
+        if ($modelName=='Qiniu')
+        {
+            $resultFileContent .= "\n".''
+                                 ."\n".'    /** 传输指定路径文件到七牛 （使用接口） */'
+                                 ."\n".'    public static function requestUploadFileToQiniu($filePath)'
+                                 ."\n".'    {'
+                                 ."\n".'        if (!file_exists($filePath))'
+                                 ."\n".'        {'
+                                 ."\n".'            throw new Exception(\'目标文件不存在：\'.$filePath);'
+                                 ."\n".'        }'
+                                 ."\n".'        $tokenParams = array(\'md5\'=>md5_file($filePath),\'filesize\'=>filesize($filePath),\'filetype\'=> pathinfo($filePath,PATHINFO_EXTENSION) );'
+                                 ."\n".'        $tokenResult = static::requestGetUploadTokenForQiniu($tokenParams);'
+                                 ."\n".'        if ($tokenResult->isResultsOK())'
+                                 ."\n".'        {'
+                                 ."\n".'            if ($tokenResult->find(\'isFileExistInQiniu\') == true)'
+                                 ."\n".'            {'
+                                 ."\n".'                return HaoResult::instanceModel($tokenResult->find(\'urlPreview\'),0,\'\',\'has exists in qiniu.\');'
+                                 ."\n".'            }'
+                                 ."\n".'            else'
+                                 ."\n".'            {'
+                                 ."\n".'                $params = array();'
+                                 ."\n".'                $params[\'token\'] = $tokenResult->find(\'uploadToken\');'
+                                 ."\n".'                if (function_exists(\'curl_file_create\'))'
+                                 ."\n".'                {'
+                                 ."\n".'                    $params[\'file\'] = curl_file_create($filePath);'
+                                 ."\n".'                }'
+                                 ."\n".'                else'
+                                 ."\n".'                {'
+                                 ."\n".'                    $params[\'file\'] = \'@\'.$filePath;'
+                                 ."\n".'                }'
+                                 ."\n".'                $qiniuContent = static::requestUploadQiniuCom($params);'
+                                 ."\n".'                try {'
+                                 ."\n".'                    $qiniuResult = json_decode($qiniuContent,true);'
+                                 ."\n".'                    if (is_array($qiniuResult) && isset($qiniuResult[\'urlPreview\']))'
+                                 ."\n".'                    {'
+                                 ."\n".'                        return HaoResult::instanceModel($qiniuResult[\'urlPreview\'],0,\'\',\'upload to qiniu success.\');'
+                                 ."\n".'                    }'
+                                 ."\n".'                } catch (Exception $e) {'
+                                 ."\n".'                }'
+                                 ."\n".'                return HaoResult::instanceModel($qiniuContent,-1,\'上传文件到七牛失败，请联系管理员\',$params);'
+                                 ."\n".'            }'
+                                 ."\n".'        }'
+                                 ."\n".'        return HaoResult::instanceModel($tokenResult,-1,\'获取Token失败，请联系管理员\',$tokenParams);'
+                                 ."\n".'    }'
+                                 ."\n".'    /** 上传base64编码的字符串文件到七牛 （使用接口）*/'
+                                 ."\n".'    public static function requestUploadBase64ToQiniu($base64,$filetype=\'tmp\')'
+                                 ."\n".'    {'
+                                 ."\n".'        $tmpFilePath = \'/tmp/b64_\'.uniqid().\'.\'.$filetype;'
+                                 ."\n".'        $fhandle = fopen($tmpFilePath, \'w+\');'
+                                 ."\n".'        stream_filter_append($fhandle, \'convert.base64-decode\', STREAM_FILTER_WRITE);'
+                                 ."\n".'        fwrite($fhandle, $base64);'
+                                 ."\n".'        fclose($fhandle);'
+                                 ."\n".'        return static::requestUploadFileToQiniu($tmpFilePath);'
+                                 ."\n".'    }'
+                                 ."\n".'';
 
+        }
     }
     $resultFileContent .= "\n\n" . '}';
     file_put_contents($_resultFileDir.$modelName.'Connect.php',$resultFileContent);
@@ -586,7 +589,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'RequestHandle request'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*public static RequestHandle request'.$funcName.'\(Map'.')/',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*public static RequestHandle request'.$funcName.'\(Map'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -709,7 +712,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'request'.$funcName.':(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
@@ -800,7 +803,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'request'.$funcName.':(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
         }
         else
         {
