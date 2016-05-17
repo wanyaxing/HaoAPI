@@ -412,7 +412,7 @@ class W2String {
      * $pwd 密钥
      * $data 要加密的数据
      */
-    function rc4 ($pwd, $data)//$pwd密钥　$data需加密字符串
+    public static function rc4 ($pwd, $data)//$pwd密钥　$data需加密字符串
     {
         $key[] = "";
         $box[] = "";
@@ -448,5 +448,27 @@ class W2String {
         }
 
         return $cipher;
+    }
+
+    /** 从多个参数中，取出第一个有效值 */
+    public static function getValidValue()
+    {
+        $args = func_get_args();
+        foreach ($args as $value) {
+            if ($value != null)
+            {
+                return $value;
+            }
+        }
+    }
+
+    /** 根据提供的键值对，创建options字符串。 */
+    public static function getOptionsOfSelect($options,$value=null)
+    {
+        $oList = array();
+        foreach ($options as $oValue => $oName) {
+            $oList[] = '<option value="'.$oValue.'"'.($value==$oValue?' selected':'').'>'.$oName.'</option>';
+        }
+        return implode("\n",$oList);
     }
 }
