@@ -1299,7 +1299,8 @@ $_controllerString .='
                 return HaoResult::init(ERROR_CODE::$USER_DUP_EMAIL);
             }
         }
-        if ($tmpModel->isProperyModified(\'password\'))
+        //修改密码自动记录其修改时间，第一次创建密码时不记录。
+        if ($tmpModel->isProperyModified(\'password\') && $tmpModel->properyOriginal(\'password\')!=null)
         {
             $tmpModel->setLastPasswordTime(date(\'Y-m-d H:i:s\'));
         }
