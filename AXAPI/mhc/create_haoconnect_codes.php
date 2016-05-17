@@ -150,18 +150,18 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     else
     {
         $resultFileContent = '<?php'
-                       ."\n".'class '.$modelName.'Result extends HaoResult {'
-                       ."\n".'';
+                       ."\n".'class '.$modelName.'Result extends HaoResult {';
         $resultFileContent .= "\n\n" . '}';
     }
 
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = substr(trim($resultFileContent),0,strlen($resultFileContent)-3);
     foreach ($keyList as $keyStr => $description) {
         $funcName = W2String::camelCaseWithUcFirst($keyStr);
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*public function find'.$funcName.'\(\)'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(public function find'.$funcName.'\(\)'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'    $1',$resultFileContent);
         }
         else
         {
@@ -198,18 +198,18 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
                         ."\n".'import com.haoxitech.HaoConnect.HaoResult;'
                         ."\n".''
                         ."\n".'';
-        $resultFileContent .= 'public class '.$modelName.'Result extends HaoResult {'
-                        ."\n".'';
+        $resultFileContent .= 'public class '.$modelName.'Result extends HaoResult {';
         $resultFileContent .= "\n\n" . '}';
     }
 
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = substr(trim($resultFileContent),0,strlen($resultFileContent)-3);
     foreach ($keyList as $keyStr => $description) {
         $funcName = W2String::camelCaseWithUcFirst($keyStr);
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*public Object find'.$funcName.'\(\)'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(public Object find'.$funcName.'\(\)'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'    $1',$resultFileContent);
         }
         else
         {
@@ -247,17 +247,17 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     {
         $resultFileContent = '#import "'.$modelName.'Result.h"'
                        ."\n".''
-                       ."\n".'@implementation '.$modelName.'Result'
-                       ."\n".'';
+                       ."\n".'@implementation '.$modelName.'Result';
     }
 
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = rtrim(trim($resultFileContent),"\n\n".'@end ');
     foreach ($keyList as $keyStr => $description) {
         $funcName = W2String::camelCaseWithUcFirst($keyStr);
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName."\n")!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*-\(id\)find'.$funcName.'\n'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(\-\(id\)find'.$funcName.'\n'.')/u',"\n"."\n".'    '.str_replace('$','\$',$descLine).'$1',$resultFileContent);
         }
         else
         {
@@ -290,17 +290,17 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     {
         $resultFileContent = '#import "HaoResult.h"'
                        ."\n".''
-                       ."\n".'@interface '.$modelName.'Result : HaoResult'
-                       ."\n".'';
+                       ."\n".'@interface '.$modelName.'Result : HaoResult';
     }
 
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = rtrim(trim($resultFileContent),"\n\n".'@end ');
     foreach ($keyList as $keyStr => $description) {
         $funcName = W2String::camelCaseWithUcFirst($keyStr);
         $descLine = $description."\n";
         if (strpos($resultFileContent,'find'.$funcName.';')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)\n(\s*-\(id\)find'.$funcName.';'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(\-\(id\)find'.$funcName.';'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$1',$resultFileContent);
         }
         else
         {
@@ -391,11 +391,11 @@ function createConnectFromConfig($_jobFile)
     else
     {
             $resultFileContent = '<?php'
-                           ."\n".'class '.$modelName.'Connect extends HaoConnect {'
-                           ."\n".'';
+                           ."\n".'class '.$modelName.'Connect extends HaoConnect {';
         $resultFileContent .= "\n\n" . '}';
     }
 
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = substr(trim($resultFileContent),0,strlen($resultFileContent)-3);
     foreach ($apiList as $action => $apiObjs) {
         $apiObj = $apiObjs[0];
@@ -424,7 +424,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'request'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*public static function request'.$funcName.'\(\$params = null\)'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(public static function request'.$funcName.'\(\$params = null\)'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'    $1',$resultFileContent);
         }
         else
         {
@@ -554,11 +554,11 @@ function createConnectFromConfig($_jobFile)
         }
         $resultFileContent .= "\n".'import java.util.Map;'
                              ."\n".'import android.content.Context;'
-                             ."\n".'public class '.$modelName.'Connect extends HaoConnect {'
-                             ."\n".'';
+                             ."\n".'public class '.$modelName.'Connect extends HaoConnect {';
         $resultFileContent .= "\n\n" . '}';
     }
 
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = substr(trim($resultFileContent),0,strlen($resultFileContent)-3);
     foreach ($apiList as $action => $apiObjs)
     {
@@ -589,7 +589,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'RequestHandle request'.$funcName.'(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*public static RequestHandle request'.$funcName.'\(Map'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(public static RequestHandle request'.$funcName.'\(Map'.')/u',"\n"."\n".str_replace('$','\$',$descLine).'    $1',$resultFileContent);
         }
         else
         {
@@ -679,9 +679,9 @@ function createConnectFromConfig($_jobFile)
     {
         $resultFileContent = '#import "'.$modelName.'Connect.h"'
                         ."\n".''
-                        ."\n".'@implementation '.$modelName.'Connect'
-                        ."\n".'';
+                        ."\n".'@implementation '.$modelName.'Connect';
     }
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = rtrim(trim($resultFileContent),"\n\n".'@end');
 
     foreach ($apiList as $action => $apiObjs) {
@@ -712,7 +712,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'request'.$funcName.':(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(\+.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$1',$resultFileContent);
         }
         else
         {
@@ -781,9 +781,9 @@ function createConnectFromConfig($_jobFile)
     {
         $resultFileContent = '#import "HaoConnect.h"'
                        ."\n".''
-                       ."\n".'@interface '.$modelName.'Connect : HaoConnect'
-                       ."\n".'';
+                       ."\n".'@interface '.$modelName.'Connect : HaoConnect';
     }
+    $resultFileContent = preg_replace('/(\n *\/\*[\s\S]*?\*\/)+/u','',$resultFileContent);
     $resultFileContent = rtrim(trim($resultFileContent),"\n\n".'@end');
 
     foreach ($apiList as $action => $apiObjs) {
@@ -803,7 +803,7 @@ function createConnectFromConfig($_jobFile)
 
         if (strpos($resultFileContent,'request'.$funcName.':(')!==false)
         {
-            $resultFileContent = preg_replace('/((\n *\/\*.*|\n *\*.*|\n+)+)(\s*.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$3',$resultFileContent);
+            $resultFileContent = preg_replace('/\s*(\+.*?\(MKNetworkOperation.*?request'.$funcName.'\:\('.')/u',"\n"."\n".str_replace('$','\$',$descLine).'$1',$resultFileContent);
         }
         else
         {
