@@ -245,11 +245,14 @@ class ERROR_CODE
     public static $DEVICE_PLS_USER_OR_PHONE  = array(130, '请指定用户的ID或手机号',       'DEVICE_PLS_USER_OR_PHONE');
     public static $DEVICE_PLS_TYPE           = array(131, '请使用指定的推送方式',       'DEVICE_PLS_TYPE');
     public static $AMAP_UNKONW_LOCATION      = array(132, '无法根据地址找到您的坐标，或定位范围太过模糊，请完善您的地址信息再试。',       'AMAP_UNKONW_LOCATION');
+    public static $SMS_PHONE_IS_BIND         = array(133, '该手机号已存在，不可用于绑定。',       'SMS_PHONE_IS_BIND');
 
 
 
-    //如需更多错误码，请在以下延生，建议使用四位数以上数字作为您的错误码。
+    //如需更多错误码，请在以下延伸，建议使用四位数以上数字作为您的错误码。
     //...
+    // public static $UNKNOWN_USER_LEVEL                 = array(1001, '错误的用户类型设定',       'UNKNOWN_USER_LEVEL');
+
 }
 
 

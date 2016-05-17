@@ -1034,6 +1034,7 @@ $_controllerString .= '
                 case \'list\'   :    break;
             }
         }
+        '.$_modelName.'::$authViewDisabled = static::$authViewDisabledList[$auth];
         return $auth;
     }
 
@@ -1434,8 +1435,6 @@ $_controllerString .= '
                 break;
         }
 
-        '.$_modelName.'::$authViewDisabled = static::$authViewDisabledList[$auth];
-
         return $tmpResult;
     }
 ';
@@ -1457,7 +1456,7 @@ $_controllerString .= '
         if (is_null($oldpassword))
         {
             if ($tmpModel->getPassword()!==null)
-            {
+            {//除非当前密码为空（第三方登录），否则必须使用当前密码才能继续操作。
                 return HaoResult::init(ERROR_CODE::$USER_PLS_OLD_PWD);
             }
         }
@@ -1477,25 +1476,21 @@ $_controllerString .= '
         }
         $tmpModel    ->         setPassword($newPassword);
 
-        //如果传入当前密码，可以继续更改更多属性。
-        if (!is_null($oldpassword))
+        //修改手机需要检查新手机的校验码
+        $newTelephone = W2HttpRequest::getRequestTelephone(\'telephone\');
+        if (!is_null($newTelephone))
         {
-            //修改手机需要检查新手机的校验码
-            $newTelephone = W2HttpRequest::getRequestTelephone(\'telephone\');
-            if (!is_null($newTelephone))
+            //检查校验码
+            $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode(SMS_USEFOR::RESTTEL);
+            if (!$_resultSmsCheck->isResultsOK())
             {
-                //检查校验码
-                $_resultSmsCheck = SmsVerifyController::actionCheckVerifyCode(SMS_USEFOR::RESTPWD);
-                if (!$_resultSmsCheck->isResultsOK())
-                {
-                    return $_resultSmsCheck;
-                }
-                $tmpModel    ->        setTelephone($newTelephone);//用户手机号
+                return $_resultSmsCheck;
             }
-
-            //修改邮箱
-            $tmpModel    ->            setEmail(W2HttpRequest::getRequestEmail(\'email\'));//邮箱
+            $tmpModel    ->        setTelephone($newTelephone);//用户手机号
         }
+
+        //修改邮箱
+        $tmpModel    ->            setEmail(W2HttpRequest::getRequestEmail(\'email\'));//邮箱
 
         return static::save($tmpModel);
     }
@@ -1532,7 +1527,11 @@ $_controllerString .= '
         return static::save($tmpModel);
     }
 
-    /*通用方法根据指定条件读取用户信息若成功则返回登录信息*/
+    /**
+     * 通用方法根据指定条件读取用户信息若成功则返回登录信息
+     * @param  array  $pWhere
+     * @return HaoResult
+     */
     public static function loginWithWhere($pWhere=array())
     {
         if ($_SERVER[\'REQUEST_METHOD\'] != \'POST\' )
@@ -1623,13 +1622,26 @@ $_controllerString .= '
                 $unionLoginModel = UnionLoginHandler::loadModelByToken($unionToken,$unionType);
                 $unionLoginModel->setUserID($tmpResult->getResults()->getId());
                 UnionLoginHandler::saveModel($unionLoginModel);
-                return UserController::loginWithWhere($pWhere);
+                $results = UserController::loginWithWhere($pWhere);
             }
             else
             {
                 return $tmpResult;
             }
         }
+        // if ($results->isResultsOK())
+        // {
+
+        //     $userModel = $results->getResults();
+        //     $userModel  ->         setRealname(W2HttpRequest::getRequestString(\'realname\',true,null,0,20));         //姓名
+        //     $userModel  ->           setAvatar(W2HttpRequest::getRequestString(\'avatar\',true,null,0,200));          //头像
+        //     if (count($userModel->propertiesModified())>0)
+        //     {
+        //         $savedModel = UserHandler::saveModel($userModel);
+        //         $results->setResults($savedModel);
+        //     }
+        // }
+        UserModel::$authViewDisabled = static::$authViewDisabledList[\'self\'];
         return $results;
     }
 
@@ -1663,6 +1675,7 @@ $_controllerString .= '
             UnionLoginHandler::saveModel($unionLoginModel);
             return HaoResult::init(ERROR_CODE::$OK,$unionLoginModel);
         }
+        UserModel::$authViewDisabled = static::$authViewDisabledList[\'self\'];
         return HaoResult::init(ERROR_CODE::$NOT_USER);
     }
 
