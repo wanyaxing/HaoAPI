@@ -53,6 +53,10 @@ class Utility
     {
     	if (!is_null($p_password))
     	{
+    		if (strlen($p_password)!=32)
+    		{//如果没有经过md5加密，则此处需要先行md5加密一次
+    			$p_password = md5($p_password);
+    		}
 	    	return md5(md5($p_password).static::$passwordRandCode.substr(md5($p_password),3,8));
     	}
     	return null;
