@@ -1379,7 +1379,7 @@ $_controllerString .= '
         switch ( strtolower($_order) )
         {
 '.$_controllerStringAddOrder.'
-                $pOrder = $_order;
+                $pOrder = W2String::camelCase($_order);
                 break;
             case \'\':
             case \'default\':
@@ -1538,6 +1538,11 @@ $_controllerString .= '
         if ($_SERVER[\'REQUEST_METHOD\'] != \'POST\' )
         {
             return HaoResult::init(ERROR_CODE::$ONLY_POST_ALLOW);
+        }
+
+        if (Utility::getCurrentUserID()>0)
+        {
+            return HaoResult::init(ERROR_CODE::$ONLY_VISITOR_ALLOW);
         }
 
         $tmpModel = UserHandler::loadModelFirstInList($pWhere);
