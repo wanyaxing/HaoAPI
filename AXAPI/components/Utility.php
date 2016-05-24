@@ -31,7 +31,7 @@ class Utility
 	 * 静态变量，存储当前用户ID
 	 * @var array
 	 */
-	protected static $_CURRENTUSERID = null;
+	protected static $_CURRENTUSERID = false;
 
 	/**
 	 * 将用户和登陆时间组成加密字符
@@ -124,7 +124,7 @@ class Utility
 
 	public static function getCurrentUserID()
 	{
-		if (is_null(static::$_CURRENTUSERID))
+		if (static::$_CURRENTUSERID === false )
 		{
 			$p_userID = null;
 			$infoHeader = getallheaders();
@@ -144,7 +144,10 @@ class Utility
 						{
 							$tmpModel = null;
 							static::setCurrentUserID(false);
-							throw new Exception("您的登录信息已经失效，请重新登录。",RUNTIME_CODE_ERROR_NOT_USER);
+							if (method_exists('UserController','actionLogOut'))
+							{
+								UserController::actionLogOut();
+							}
 						}
 					}
 				}
@@ -180,9 +183,11 @@ class Utility
 				if (!is_object($tmpModel))
 				{
 					$p_userID = null;
+					static::setCurrentUserID($p_userID);
+					throw new Exception("您的登录信息已经失效，请重新登录。",RUNTIME_CODE_ERROR_NOT_USER);
 				}
-				static::setCurrentUserID($p_userID);
 			}
+			static::setCurrentUserID($p_userID);
 		}
 		return static::$_CURRENTUSERID ;
 	}
