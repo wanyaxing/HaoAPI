@@ -1,7 +1,7 @@
 <?php
 /*
  * 支付宝服务器异步通知页面
- * https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.1tBt5r&treeId=59&articleId=103666&docType=1
+ * https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.JKEEy2&treeId=66&articleId=103601&docType=1
  */
 	date_default_timezone_set ( 'PRC' );
 
@@ -18,52 +18,59 @@
 $verify_result = W2PayAli::getSignVeryfy();
 
 if ($verify_result) { // 验证成功
-	if ($_POST['trade_status'] == 'TRADE_FINISHED') {
-		$isSuccess = true;
-		// 判断该笔订单是否在商户网站中已经做过处理
-		// 如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
-		// 如果有做过处理，不执行商户的业务程序
 
-		// 注意：
-		// 该种交易状态只在两种情况下出现
-		// 1、开通了普通即时到账，买家付款成功后。
-		// 2、开通了高级即时到账，从该笔交易成功时间算起，过了签约时的可退款时限（如：三个月以内可退款、一年以内可退款等）后。
-
-		// 调试用，写文本函数记录程序运行情况是否正常
-		// logResult("这里写入想要调试的代码变量值，或其他运行的结果记录");
-	} else if ($_POST['trade_status'] == 'TRADE_SUCCESS') {
-		$isSuccess = true;
-		// 判断该笔订单是否在商户网站中已经做过处理
-		// 如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
-		// 如果有做过处理，不执行商户的业务程序
-		// 注意：
-		// 该种交易状态只在一种情况下出现——开通了高级即时到账，买家付款成功后。
-
-		// 调试用，写文本函数记录程序运行情况是否正常
-		// logResult("这里写入想要调试的代码变量值，或其他运行的结果记录");
-	}
-
+	$tmpLog ['verify_result'] = 'success';
 	// 获取支付宝的通知返回参数，可参考技术文档中服务器异步通知参数列表
 
 	//批次号
-	$batch_no = $_POST['batch_no'];
+	$batch_no = $_REQUEST['batch_no'];
 
 	//批量退款数据中转账成功的笔数
-	$success_num = $_POST['success_num'];
+	$success_num = $_REQUEST['success_num'];
 
 	//批量退款数据中的详细信息
-	$result_details = $_POST['result_details'];
+	/*
+退款结果明细：多个结果用'#'隔开
+退手续费结果返回格式：交易号^退款金额^处理结果$退费账号^退费账户ID^退费金额^处理结果；
+不退手续费结果返回格式：交易号^退款金额^处理结果。
+若退款申请提交成功，处理结果会返回“SUCCESS”。若提交失败，退款的处理结果中会有报错码，参见即时到账批量退款业务错误码。
+	 */
+	$result_details = $_REQUEST['result_details'];
 
-	$isSuccess = false;
-	if ($isSuccess) {
-		// ///////////////////////////////////////////////////////////////////////
-		//todo 这里根据订单支付成功后，处理对应的数据库中的订单的状态。
-		//
-		//
-		// ///////////////////////////////////////////////////////////////////////
+	foreach (explode('#',$result_details) as $detail) {
+		if (strpos($detail,'$')!==false)
+		{
+			list($detail,$accountInfo) = explode('$',$detail);
+		}
+		list($trade_no,$refund_fee,$refund_status) = explode('^',$detail);
+		// if (isset($accountInfo))
+		// {
+		// 	list($account_name,$account_uid,$account_fee,$account_status) = explode('^',$accountInfo);
+		// }
+		if ($refund_status == 'SUCCESS')
+		{
+			$out_trade_no = PayOrderAliLogHandler::selectField('out_trade_no',array('trade_no'=>$trade_no));
+			$AXAPI_PROJECT_NAME  = substr($out_trade_no,0,strlen(AXAPI_PROJECT_NAME));
+			$AXAPI_DEPLOY_STATUS = substr($out_trade_no,strlen(AXAPI_PROJECT_NAME),strlen(AXAPI_DEPLOY_STATUS));
+			$serveOrderID        = substr($out_trade_no,strlen(AXAPI_PROJECT_NAME)+strlen(AXAPI_DEPLOY_STATUS));
+			$tmpLog ['verify_result']                     = 'debug1';
+			if ($AXAPI_PROJECT_NAME == AXAPI_PROJECT_NAME && $AXAPI_DEPLOY_STATUS==AXAPI_DEPLOY_STATUS)
+			{
+				// ///////////////////////////////////////////////////////////////////////
+				//         todo          此处实现退款成功后的业务逻辑
+				// $serveOrderModel = ServeOrderHandler::loadModelById($serveOrderID);
+				// $serveOrderModel->setOrderStatus(ORDER_STATUS::REFUND_COMPLETE);
+				// $serveOrderModel->setPayStatus(PAY_STATUS::REFUND_COMPLETE);
+				// ServeOrderController::$IGNORE_METHOD_CHECK    = true;
+				// ServeOrderLogController::$IGNORE_METHOD_CHECK = true;
+				// ServeOrderController::save($serveOrderModel);
+				// $tmpLog ['verify_result']                     = 'update';
+				// ///////////////////////////////////////////////////////////////////////
+			}
+		}
 	}
+
 	echo "success"; // 请不要修改或删除
-	$tmpLog ['verify_result'] = 'success';
 } else {
 	// 验证失败
 	echo "fail";
@@ -75,9 +82,9 @@ $tmpLog ['ip']         = $_SERVER ['REMOTE_ADDR'];
 $tmpLog ['user_agent'] = $_SERVER ['HTTP_USER_AGENT'];
 $logKeyArray = array('notify_type','notify_id','sign_type','sign','batch_no','success_num','result_details','notify_time');
 foreach ($logKeyArray as $logKey) {
-	if (array_key_exists($logKey,$_POST))
+	if (array_key_exists($logKey,$_REQUEST))
 	{
-		$tmpLog[$logKey] = $_POST[$logKey];
+		$tmpLog[$logKey] = $_REQUEST[$logKey];
 	}
 }
 $tmpLog['create_time'] = date('Y-m-d H:i:s') ;
