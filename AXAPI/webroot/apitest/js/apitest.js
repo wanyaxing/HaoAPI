@@ -266,11 +266,11 @@ function getValues()
     var _getValues = [];
     $('form').find('[form-type=field]').each(function() {
         var _key = $(this).val();
-        if (_key != '' && _key.indexOf('[]') < 0)
+        var _input = $(this).parent().siblings().find("input");
+        if (_key != '' && _input.attr('type')!='file')
         {
             var _val = $(this).parent().siblings().find("input").val();
             _getValues.push(_key + '=' + encodeURIComponent(_val));
-
         }
 
     });
@@ -282,13 +282,12 @@ function getPosts()
     var _data = {};
     $('form').find('[form-type=field]').each(function() {
         var _key = $(this).val();
-        if (_key != '' && _key.indexOf('[]') < 0)
+        var _input = $(this).parent().siblings().find("input");
+        if (_key != '' && _input.attr('type')!='file')
         {
             var _val = $(this).parent().siblings().find("input").val();
             _data[_key] = _val;
-
         }
-
     });
     return _data;
 
@@ -450,7 +449,8 @@ function updatePlan()
     var _posts = [];
     $('form').find('[form-type=field]').each(function() {
         var _key = $(this).val();
-        if (_key != '' && _key.indexOf('[]') < 0)
+        var _input = $(this).parent().siblings().find("input");
+        if (_key != '' && _input.attr('type')!='file')
         {
             var _val = $(this).parent().siblings().find("input").val();
             _posts.push({

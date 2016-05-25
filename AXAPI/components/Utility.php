@@ -281,6 +281,43 @@ class Utility
     }
 
     /**
+     * 将数组（或字典）的key和value组成%s=%s字符串
+     * 如果是字典则组成 people[height]=180;（注意：没有引号）
+     * 如果是数组则组成 people[] = 180;
+     * html前端注意，不要混用people[height]和people[]，会导致后者被转成字典哦。
+     * 尽量字典和数组使用不同变量。
+     * @param  array $array array
+     * @param  string $key   前缀
+     * @return array        [height=180,people[sex]=1]
+     */
+    protected static function getTmpArr($array,$key='')
+    {
+    	$tmpArr = array();
+    	if (is_array($array))
+    	{
+    		$isList = W2Array::isList($array);
+    		foreach ($array as $_key => $_value) {
+    			$_tmp =  static::getTmpArr(
+			    						$_value
+			    						,$key!=''
+					    					?$key
+					    						.($isList
+					    						 	?'['.$_key.']'
+					    						 	:'[]'
+					    						 )
+					    					:$_key
+			    					);
+    			$tmpArr = array_merge($tmpArr,$_tmp);
+    		}
+    	}
+    	else
+    	{
+    		$tmpArr[] = sprintf('%s=%s', $key, $array);
+    	}
+    	return $tmpArr;
+    }
+
+    /**
      * 对请求进行校验
      * @return HaoResult
      */
@@ -336,11 +373,7 @@ class Utility
 		    }
 
 			//同样的，将所有表单数据也组成字符串后，放入数组。（注：file类型不包含）
-			foreach ($_REQUEST as $_key => $_value) {
-				array_push($tmpArr, sprintf('%s=%s', $_key, $_value));
-			}
-
-			// array_push($tmpArr, sprintf('%s=%s', $_SERVER['HTTP_HOST'], preg_replace ("/(\/*[\?#].*$|[\?#].*$|\/*$)/", '', $_SERVER['REQUEST_URI'])));
+			$tmpArr = array_merge($tmpArr , static::getTmpArr($_REQUEST) );
 
 			//最后，将一串约定好的密钥字符串也放入数组。（不同的项目甚至不同的版本中，可以使用不同的密钥）
 			switch ($_HEADERS['Devicetype']) {

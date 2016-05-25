@@ -80,7 +80,7 @@ class W2HttpRequest {
      * @param bool 允许空白
      * @return null|string value
      */
-    public static function getRequestInArray($p_key, $p_array=array(), $p_allowBlank=true,$p_default=null)
+    public static function getRequestInArray($p_key, $p_array=array(), $p_allowBlank=false,$p_default=null)
     {
         $_v = static::getRequestMatch($p_key,null,$p_allowBlank,$p_default);
         if (isset($_v) && $_v!==$p_default)
@@ -239,7 +239,7 @@ class W2HttpRequest {
         if (isset($_v) && $_v!==$p_default)
         {
             $_r = array();
-            $_a = explode(',', $_v);
+            $_a = (is_array($_v)?$_v : explode(',', $_v));
             foreach ($_a as $_v) {
                 if ($_v!='')
                 {
