@@ -49,24 +49,24 @@ if ($verify_result) { // 验证成功
 		// }
 		if ($refund_status == 'SUCCESS')
 		{
-			$out_trade_no = PayOrderAliLogHandler::selectField('out_trade_no',array('trade_no'=>$trade_no));
-			$AXAPI_PROJECT_NAME  = substr($out_trade_no,0,strlen(AXAPI_PROJECT_NAME));
-			$AXAPI_DEPLOY_STATUS = substr($out_trade_no,strlen(AXAPI_PROJECT_NAME),strlen(AXAPI_DEPLOY_STATUS));
-			$serveOrderID        = substr($out_trade_no,strlen(AXAPI_PROJECT_NAME)+strlen(AXAPI_DEPLOY_STATUS));
-			$tmpLog ['verify_result']                     = 'debug1';
-			if ($AXAPI_PROJECT_NAME == AXAPI_PROJECT_NAME && $AXAPI_DEPLOY_STATUS==AXAPI_DEPLOY_STATUS)
-			{
-				// ///////////////////////////////////////////////////////////////////////
-				//         todo          此处实现退款成功后的业务逻辑
-				// $serveOrderModel = ServeOrderHandler::loadModelById($serveOrderID);
-				// $serveOrderModel->setOrderStatus(ORDER_STATUS::REFUND_COMPLETE);
-				// $serveOrderModel->setPayStatus(PAY_STATUS::REFUND_COMPLETE);
-				// ServeOrderController::$IGNORE_METHOD_CHECK    = true;
-				// ServeOrderLogController::$IGNORE_METHOD_CHECK = true;
-				// ServeOrderController::save($serveOrderModel);
-				// $tmpLog ['verify_result']                     = 'update';
-				// ///////////////////////////////////////////////////////////////////////
-			}
+			// ///////////////////////////////////////////////////////////////////////
+			//         todo          此处实现退款成功后的业务逻辑
+			// $out_trade_no = PayOrderAliLogHandler::selectField('out_trade_no',array('trade_no'=>$trade_no));
+			// $AXAPI_PROJECT_NAME  = substr($out_trade_no,0,strlen(AXAPI_PROJECT_NAME));
+			// $AXAPI_DEPLOY_STATUS = substr($out_trade_no,strlen(AXAPI_PROJECT_NAME),strlen(AXAPI_DEPLOY_STATUS));
+			// $serveOrderID        = substr($out_trade_no,strlen(AXAPI_PROJECT_NAME)+strlen(AXAPI_DEPLOY_STATUS));
+			// $tmpLog ['verify_result']                     = 'debug1';
+			// if ($AXAPI_PROJECT_NAME == AXAPI_PROJECT_NAME && $AXAPI_DEPLOY_STATUS==AXAPI_DEPLOY_STATUS)
+			// {
+			// 	$serveOrderModel = ServeOrderHandler::loadModelById($serveOrderID);
+			// 	$serveOrderModel->setOrderStatus(ORDER_STATUS::REFUND_COMPLETE);
+			// 	$serveOrderModel->setPayStatus(PAY_STATUS::REFUND_COMPLETE);
+			// 	ServeOrderController::$IGNORE_METHOD_CHECK    = true;
+			// 	ServeOrderLogController::$IGNORE_METHOD_CHECK = true;
+			// 	ServeOrderController::save($serveOrderModel);
+			// 	$tmpLog ['verify_result']                     = 'update';
+			// }
+			// ///////////////////////////////////////////////////////////////////////
 		}
 	}
 
