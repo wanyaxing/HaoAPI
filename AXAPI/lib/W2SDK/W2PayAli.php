@@ -8,9 +8,16 @@
  */
 
 class W2PayAli {
+/**
+使用以下命令可以生成密钥和公钥
+cd alipay/key
+openssl
+genrsa -out rsa_private_key.pem 1024
+rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
+*/
     public static $PARTNER                      = null;  //PID 在 https://b.alipay.com/order/pidAndKey.htm
     public static $SELLER_ID                    = null;
-    public static $MD5_KEY                    = null;
+    public static $MD5_KEY                      = null;
     public static $ACCOUNT_NAME                 = null;
     public static $PRIVATE_KEY_PATH             = null;
     public static $ALI_PUBLIC_KEY_PATH          = null;

@@ -24,6 +24,8 @@ class W2PUSH {
 
 	/**
 	 * 获得推送对象
+	 * @param  int $device_type  3安卓  4iOS
+	 * @return XingeApp
 	 */
 	public static function getPush($device_type)
 	{
@@ -50,10 +52,10 @@ class W2PUSH {
 		{
 			AX_DEBUG($push);
 		}
-		if ($push == null)
-		{
-			throw new Exception('推送对象获取失败，无法创建推送任务。');
-		}
+		// if ($push == null)
+		// {
+		// 	throw new Exception('推送对象获取失败，无法创建推送任务。');
+		// }
 		return $push;
 	}
 
@@ -63,6 +65,7 @@ class W2PUSH {
 	public static function QueryInfoOfToken($p_deviceToken,$device_type)
 	{
 		$push = static::getPush($device_type);
+		if (!isset($push)){return false;}
 		return $push->QueryInfoOfToken($p_deviceToken);
 	}
 
@@ -72,6 +75,7 @@ class W2PUSH {
 	public static function queryTokenTags($p_deviceToken,$device_type)
 	{
 		$push = static::getPush($device_type);
+		if (!isset($push)){return false;}
 		// var_export($device_type);
 		$ret = $push->QueryTokenTags($p_deviceToken);
 		if (is_array($ret) && array_key_exists('result', $ret)&& array_key_exists('tags', $ret['result']))
@@ -85,7 +89,7 @@ class W2PUSH {
 	 * 以keyvalue的组合方式来重设tag，（先删除已有的keyvalue)
      * @param  string  $p_deviceTokens 用户推送ID，百度里是buserid，支持数组或逗号隔开的字符串
      * @param  int   $device_type 设备类型 1：浏览器设备 2：pc设备 3：Android设备 4：ios设备 5：windows phone设备
-	 * @param string $tag_key        key
+	 * @param string $tag_key        key (指定前缀，如设定sex_1,sex_2，则此处key为sex，values为1,2)
 	 * @param string $tag_values     value值，若为空，则删除所有key数据
 	 */
 	public static function BatchSetTagValue($p_deviceTokens,$device_type,$tag_key,$tag_values)
@@ -127,6 +131,7 @@ class W2PUSH {
 	public static function BatchAddTag($p_deviceTokens,$device_type,$tag_names)
 	{
 		$push = static::getPush($device_type);
+		if (!isset($push)){return false;}
 		$pairs = array();
 		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
 		$tag_names      = is_array($tag_names)?$tag_names:explode(',',$tag_names);
@@ -160,6 +165,7 @@ class W2PUSH {
 	public static function BatchDelTag($p_deviceTokens,$device_type,$tag_names)
 	{
 		$push = static::getPush($device_type);
+		if (!isset($push)){return false;}
 		$pairs = array();
 		$p_deviceTokens = is_array($p_deviceTokens)?$p_deviceTokens:explode(',',$p_deviceTokens);
 		$tag_names      = is_array($tag_names)?$tag_names:explode(',',$tag_names);
@@ -179,7 +185,7 @@ class W2PUSH {
 		for ($i=0; $i < count($pairs) ; $i+= $maxCount)
 		{
 			$ret[] = array(
-						'action'=>'BatchDelTag(add)'
+						'action'=>'BatchDelTag(del)'
 						,'ret'=>$push->BatchDelTag(array_slice($p_deviceTokens,$i, $maxCount))
 						);
 		}
@@ -206,6 +212,7 @@ class W2PUSH {
 
 		/** @var XingeApp */
 		$push = static::getPush($device_type);
+		if (!isset($push)){return false;}
 		if ($device_type==4) //IOS 推送
 		{
 			$mess = new MessageIOS();

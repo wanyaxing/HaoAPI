@@ -10,10 +10,10 @@
 class W2PayWx {
     public static $APPID           = null; //公众号ID
     public static $MCH_ID          = null; //商户号
-    public static $SIGN_KEY        = null; //API密钥 （微信支付-API安全-设置API密钥）
+    public static $SIGN_KEY        = null; //API密钥 （微信支付平台-API安全-设置API密钥） https://pay.weixin.qq.com/index.php/account/api_cert
     public static $NOTIFY_URL      = null; //支付成功，回调地址，建议使用本服务器上外界可访问的公开网址。
-    public static $APICLIENT_CERT  = null; //退款用密钥文件
-    public static $APICLIENT_KEY   = null; //退款用密钥文件
+    public static $APICLIENT_CERT  = null; //退款用密钥文件  商户平台-API安全-下载证书
+    public static $APICLIENT_KEY   = null; //退款用密钥文件  商户平台-API安全-下载证书
 
     /**
      * 统一下单
