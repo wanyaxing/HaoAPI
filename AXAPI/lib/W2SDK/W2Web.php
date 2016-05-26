@@ -258,4 +258,18 @@ class W2Web {
         );
         return sprintf('HTTP/1.0 %d %s',$code,$messages[$code]);
     }
+
+    //php获取当前访问的完整url地址
+    public static function getCurrentUrl(){
+        $url='http://';
+        if(isset($_SERVER['HTTPS'])&&$_SERVER['HTTPS']=='on'){
+            $url='https://';
+        }
+        if($_SERVER['SERVER_PORT']!='80'){
+            $url.=$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].$_SERVER['REQUEST_URI'];
+        }else{
+            $url.=$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+        }
+        return $url;
+    }
 }
