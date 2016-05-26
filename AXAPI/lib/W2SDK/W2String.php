@@ -398,6 +398,7 @@ class W2String {
         $str = ucwords($str);
         //小写字符串的首字母，然后删除空格
         $str = str_replace(' ','',lcfirst($str));
+        $str = str_replace('Id','ID',$str);
         return $str;
     }
 
@@ -467,7 +468,7 @@ class W2String {
     {
         $oList = array();
         foreach ($options as $oValue => $oName) {
-            $oList[] = '<option value="'.$oValue.'"'.($value==$oValue?' selected':'').'>'.$oName.'</option>';
+            $oList[] = '<option value="'.$oValue.'"'.($value===$oValue?' selected':'').'>'.$oName.'</option>';
         }
         return implode("\n",$oList);
     }
