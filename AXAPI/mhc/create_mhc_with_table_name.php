@@ -1328,7 +1328,7 @@ $_controllerString .= '
         $pWhere = array();
         '.($_tableIdName!=''?str_pad('$pWhere[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
 ':'').$_controllerStringList.'
-'.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestString(\'keyword\',false);
+'.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestString(\'keyword\');
         if ($keyWord!=null)
         {
             $keyWhere = array();
@@ -1524,6 +1524,7 @@ $_controllerString .= '
         }
 
         $tmpModel    ->         setPassword(W2HttpRequest::getRequestString(\'newpassword\'));//修改密码
+        $tmpModel    ->         setLastPasswordTime(date(\'Y-m-d H:i:s\'));//修改密码的同时，更新密码修改时间。
 
         return static::save($tmpModel);
     }
@@ -1705,7 +1706,7 @@ $_controllerString .= '
     /**注销登录*/
     public static function actionLogOut()
     {
-        if (Utility::getHeaderValue(\'Devicetoken\')!=null && class_exists(\'DeviceController\'))
+        if (Utility::getHeaderValue(\'Devicetoken\')!=null && method_exists(\'DeviceController\',\'setDeviceWithUser\'))
         {//注销设备对应的用户信息
             DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),null);
         }
