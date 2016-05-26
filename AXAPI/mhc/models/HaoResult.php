@@ -56,7 +56,7 @@ class HaoResult extends AbstractModel{
     }
 
     /** 增加额外数据 */
-    public function addExtraInfo($key=null,$value)
+    public function addExtraInfo($key=null,$value=null)
     {
         $extraInfo = $this->getExtraInfo();
 
@@ -65,13 +65,20 @@ class HaoResult extends AbstractModel{
             $extraInfo =  array($extraInfo);
         }
 
-        if (is_string($key))
+        if (isset($key,$value))
         {
             $extraInfo[$key] = $value;
         }
         else
         {
-            $extraInfo[] = $value;
+            if (isset($key))
+            {
+                $extraInfo[] = $key;
+            }
+            if (isset($value))
+            {
+                $extraInfo[] = $value;
+            }
         }
 
         return $this->setExtraInfo($extraInfo);
