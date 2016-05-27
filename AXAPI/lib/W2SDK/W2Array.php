@@ -195,27 +195,4 @@ class W2Array {
 	    }
      	return $array;
 	}
-
-	/**
-	 * 根据键值合并多个数组（保留键值，数组也当字典处理）
-	 * @return array
-	 */
-	public static function merge()
-	{
-		$varArray = func_get_args();
-		$result = array();
-		foreach ($varArray as $var) {
-			if (is_array($var))
-			{
-				foreach ($var as $key => $value) {
-					$result[$key] = $value;
-				}
-			}
-			else
-			{
-				$result[] = $var;
-			}
-		}
-		return $result;
-	}
 }
