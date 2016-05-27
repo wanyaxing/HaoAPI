@@ -221,7 +221,7 @@ class W2PUSH {
 			$mess->setAlert($content);
 			//$mess->setAlert(array('key1'=>'value1'));
 			$mess->setBadge(0);
-			$mess->setSound('');
+			$mess->setSound($isSound?'default':'');
 			if (isset($customtype,$customvalue))
 			{
 				$custom = array('t'=>intval($customtype), 'v'=>$customvalue);
@@ -299,6 +299,7 @@ class W2PUSH {
 	    								,'token'=>$token
 	    								,'device_type'=>$device_type
 	    								,'ret'=>$push->PushSingleDevice($token, $mess,$deploy_status==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
+										,'deploy_status'=>$deploy_status
 	    								);
 	    				}
 						else if ($device_type==3) //安卓推送
@@ -323,6 +324,7 @@ class W2PUSH {
 								,'token'=>'0'
 								,'device_type'=>$device_type
 								,'ret'=>$push->PushAllDevices(0, $mess,$deploy_status==2? XingeApp::IOSENV_PROD : XingeApp::IOSENV_DEV)
+								,'deploy_status'=>$deploy_status
 							);
 				}
 				else if ($device_type==3) //安卓推送
