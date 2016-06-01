@@ -41,7 +41,7 @@ class W2Redis {
             if (static::$CACHE_HOST!=null)
             {
                 static::$_ax_connect = new Redis();
-                $_status = static::$_ax_connect->connect(static::$CACHE_HOST,static::$CACHE_PORT);
+                $_status = static::$_ax_connect->connect(static::$CACHE_HOST,static::$CACHE_PORT,1);
                 if ($_status)
                 {
                     if (!is_null(static::$CACHE_AUTH))
