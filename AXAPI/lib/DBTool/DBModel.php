@@ -837,7 +837,7 @@ class DBModel{
 			if (isset($p_where)){
 				$this->where($p_where);
 			}
-			else if ($this->whereToStr() == null)
+			if ($this->whereToStr() == null && $p_where!==true)
 			{
 				throw new Exception("DBModel.php: NO update data without where, if you want to do this, pls use updateAll.");
 				return null;
@@ -891,7 +891,7 @@ class DBModel{
 		 */
 		public function updateAll($data)
 		{
-			return $this->update($data,'');
+			return $this->update($data,true);
 		}
 
 		//删除符合条件的数据。必须指定where才能执行。
@@ -900,7 +900,7 @@ class DBModel{
 			if (isset($p_where)){
 				$this->where($p_where);
 			}
-			else if ($this->whereToStr() == null)
+			if ($this->whereToStr() == null && $p_where!==true)
 			{
 				throw new Exception('DBModel.php: NO update data without where, if you want to do this, pls use deleteAll.', 1);
 			}
@@ -915,32 +915,7 @@ class DBModel{
 		//删除全表，慎用。
 		public function deleteAll()
 		{
-			return $this->delete('');
+			return $this->delete(true);
 		}
 
-
-		/* if (!empty(@$_GET['test']))
-		{
-			// 测试
-
-			// $conn = DbSingleton::get();
-			// $modelObj= new Model('1anxin.tbl_source',$conn);
-			// $modelObj= new Model('tbl_positionSource',$conn);
-			// $datas =  $modelObj->getdata();
-			// $datas =  $modelObj->select();
-			// $datass=array('sourceName'=>'ppp','sourceCount'=>9999999);
-			// $data['positionSourceName']
-			// $data['positionSourceCount']
-			// $datas =  $modelObj->insert($datass);
-			// $datass=array('sourceCount'=>99999699);
-			// $p_where = array('sourceID'=>47,'sourceName'=>'wwwww');
-			// $datas =  $modelObj->update($datass,$p_where);
-			// $datas =  $modelObj->count();
-			// $datas =  $modelObj->sum(sourceID);
-			// echo '<pre>';
-
-			// print_r($datas);
-			// var_dump($datas);
-			// exit;
-		} */
 }
