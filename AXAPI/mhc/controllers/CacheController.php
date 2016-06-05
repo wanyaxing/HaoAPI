@@ -19,9 +19,8 @@ class CacheController extends AbstractController{
                 break;
         }
 
-        W2Cache::emptyCache();
 
-        return HaoResult::init(ERROR_CODE::$OK,null);
+        return HaoResult::init(ERROR_CODE::$OK,W2Cache::emptyCache());
     }
 
 	public static function actionInfo()
