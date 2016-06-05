@@ -20,7 +20,7 @@ class W2HttpRequest {
      * @param  bool         $p_allowBlank 是否允许空值
      * @return bool         true/false
      */
-    public static function issetRequest($p_keys,$p_allowBlank=true){
+    public static function issetRequest($p_keys,$p_allowBlank=false){
         return is_null(static::getUnsetRequest($p_keys,$p_allowBlank),$p_default);
     }
 
@@ -30,7 +30,7 @@ class W2HttpRequest {
      * @param  bool         $p_allowBlank 是否允许空值
      * @return bool         true/false
      */
-    public static function getUnsetRequest($p_keys,$p_allowBlank=true){
+    public static function getUnsetRequest($p_keys,$p_allowBlank=false){
         $p_keys = explode(',', $p_keys);
         $unsetKey = null;
         foreach ($p_keys as $p_key) {
@@ -52,14 +52,16 @@ class W2HttpRequest {
      * @param string p_default    默认值
      * @return null|string value
      */
-    public static function getRequestMatch($p_key, $p_match='/^[\s\S]*$/', $p_allowBlank=true,$p_default=null)
+    public static function getRequestMatch($p_key, $p_match='/^[\s\S]*$/', $p_allowBlank=false,$p_default=null)
     {
         $_v = array_key_exists($p_key, $_REQUEST) ? $_REQUEST[$p_key] : $p_default;
         if (isset($_v) && $_v!==$p_default)
         {
             if ($_v==='' && !$p_allowBlank)
             {
-                throw new Exception('参数'.$p_key.'不接受空字符。');
+                // throw new Exception('参数'.$p_key.'不接受空字符。');
+                $_v = $p_default;
+                return $_v;
             }
 
             if ($p_match!=null && !preg_match($p_match,$_v))
@@ -77,7 +79,7 @@ class W2HttpRequest {
      * 从http请求中获得匹配指定值集合内的字符串
      * @param string key
      * @param array p_array 指定值数组
-     * @param bool 允许空白
+     * @param bool 允许空白，如不允许，则当该参数传入空值时，等同于未传参数，使用默认值。
      * @return null|string value
      */
     public static function getRequestInArray($p_key, $p_array=array(), $p_allowBlank=false,$p_default=null)
@@ -103,10 +105,10 @@ class W2HttpRequest {
     /**
      * 从http请求中获得字符串
      * @param string key
-     * @param bool 允许空白
+     * @param bool 允许空白，如不允许，则当该参数传入空值时，等同于未传参数，使用默认值。
      * @return null|string value
      */
-    public static function getRequestString($p_key, $p_allowBlank=true,$p_default=null,$p_lenMin=null,$p_lenMax=null){
+    public static function getRequestString($p_key, $p_allowBlank=false,$p_default=null,$p_lenMin=null,$p_lenMax=null){
 
         $_v = static::getRequestMatch($p_key,null,$p_allowBlank,$p_default);
         if (isset($_v) && $_v!==$p_default)
@@ -218,7 +220,7 @@ class W2HttpRequest {
 
         if (isset($_v) && $_v!==$p_default)
         {
-            $_v = $_v === 1;
+            $_v = $_v === 1?1:0;
         }
 
         return $_v;
@@ -257,6 +259,10 @@ class W2HttpRequest {
                 $_r = array_unique($_r);
             }
             $_v = $_r;
+        }
+        if (!is_null($_v) && !is_array($_v))
+        {
+            $_v = array($_v);
         }
         return $_v;
     }
@@ -319,13 +325,13 @@ class W2HttpRequest {
     /**
      * 从http请求中获得Email格式字符串
      * @param string key
-     * @param bool 允许空白
+     * @param bool 允许空白，如不允许，则当该参数传入空值时，等同于未传参数，使用默认值。
      * @param string  p_default    默认值
      * @return null|string value
      */
-    public static function getRequestEmail($p_key, $p_allowBlank=true,$p_default=null){
+    public static function getRequestEmail($p_key, $p_allowBlank=false,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
-        if (isset($_v) && $_v!==$p_default)
+        if (isset($_v) && $_v!==$p_default && $_v!=='' )
         {
             if (!W2String::isEmail($_v))
             {
@@ -338,11 +344,11 @@ class W2HttpRequest {
     /**
      * 从http请求中获得TELEPHONE格式字符串
      * @param string key
-     * @param bool 允许空白
+     * @param bool 允许空白，如不允许，则当该参数传入空值时，等同于未传参数，使用默认值。
      * @param string  p_default    默认值
      * @return null|string value
      */
-    public static function getRequestTelephone($p_key, $p_allowBlank=true,$p_default=null){
+    public static function getRequestTelephone($p_key, $p_allowBlank=false,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
         if (isset($_v) && $_v!==$p_default)
         {
@@ -357,11 +363,11 @@ class W2HttpRequest {
     /**
      * 从http请求中获得IP格式字符串
      * @param string key
-     * @param bool 允许空白
+     * @param bool 允许空白，如不允许，则当该参数传入空值时，等同于未传参数，使用默认值。
      * @param string  p_default    默认值
      * @return null|string value
      */
-    public static function getRequestIP($p_key, $p_allowBlank=true,$p_default=null){
+    public static function getRequestIP($p_key, $p_allowBlank=false,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
         if (isset($_v) && $_v!==$p_default)
         {
@@ -377,11 +383,11 @@ class W2HttpRequest {
     /**
      * 从http请求中获得URL格式字符串
      * @param string key
-     * @param bool 允许空白
+     * @param bool 允许空白，如不允许，则当该参数传入空值时，等同于未传参数，使用默认值。
      * @param string  p_default    默认值
      * @return null|string value
      */
-    public static function getRequestURL($p_key, $p_allowBlank=true,$p_default=null){
+    public static function getRequestURL($p_key, $p_allowBlank=false,$p_default=null){
         $_v = static::getRequestString($p_key, $p_allowBlank,$p_default);
         if (isset($_v) && $_v!==$p_default)
         {
