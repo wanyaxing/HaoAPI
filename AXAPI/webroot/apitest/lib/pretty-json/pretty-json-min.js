@@ -231,7 +231,7 @@ hidePrettyImg = function(_this,e){//asinw add
 }
 showPrettyImg = function(_this,e){//asinw add
 	var link = _this.innerHTML;
-	if (link.match(/(jpg|jpeg|png|gif)/g))
+	if (link.match(/(image|jpg|jpeg|png|gif)/g))
 	{
 		var imgDiv = document.getElementById('pretty_img_div');
 		if (!imgDiv)
@@ -312,8 +312,8 @@ PrettyJSON.view.Leaf = Backbone.View.extend({
         else if (typeof(state.data) == "string" )//asinw add
         {
 	        state.data = state.data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');//转义使html代码无效
-	        state.data = state.data.replace(/(http[^ ,"']+)/g,function(link){
-	        	return '<a target=_blank '+(link.match(/(jpg|jpeg|png|gif)/g)?'onmouseover="showPrettyImg(this,event)" onmouseout="hidePrettyImg(this,event)" style="color:gray;"':'')+' href="'+link+'" >'+link+'</a>';
+	        state.data = state.data.replace(/((http[^ ,"']+|data:image[^ "']+))/g,function(link){
+	        	return '<a target=_blank '+(link.match(/(image|jpg|jpeg|png|gif)/g)?'onmouseover="showPrettyImg(this,event)" onmouseout="hidePrettyImg(this,event)" style="color:gray;"':'')+' href="'+link+'" >'+link+'</a>';
 	        });
         }
         this.tpl = _.template(PrettyJSON.tpl.Leaf, state);

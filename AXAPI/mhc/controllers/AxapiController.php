@@ -162,6 +162,77 @@ class AxapiController extends AbstractController{
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
 
+    /**
+     * 根据验证码生成密钥，（或判断密钥是否正确）
+     * @param  string $captchaCode 验证码
+     * @param  string $checkKey    密钥（待验证）
+     * @return [type]              [description]
+     */
+    public static function getCaptchaKeyOfCode($captchaCode,$checkKey=null)
+    {
+        if (!isset($captchaCode,$checkKey))
+        {
+            return false;
+        }
+        if (!is_null($checkKey))
+        {
+            $captchaTime = substr($checkKey,33);
+            if (W2Time::getTimeBetweenDateTime(null,$captchaTime)>60)
+            {//每个验证码生成后只有60秒可用。
+                return false;
+            }
+            if (W2Cache::incr($checkKey)>3)
+            {//当缓存接口可用时，会进行次数验证，每个验证码有三次机会。
+                return false;
+            }
+        }
+        else
+        {
+            $captchaTime = time();
+        }
+
+        $captchaCode= strtolower($captchaCode);
+        $captchaKey  = md5(md5($captchaCode).md5($captchaTime).md5($captchaCode.$captchaTime.CAPTCHA_RANDCODE)).'_'.$captchaTime;
+        if (!is_null($checkKey))
+        {
+            $isRight = ($checkKey===$captchaKey);
+            if ($isRight)
+            {
+                W2Cache::incr($checkKey,3);//如果验证正确，验证次数+3
+            }
+            return $isRight;
+        }
+        return $captchaKey;
+    }
+
+    /** 获取一个验证码图像 */
+    public static function actionGetCaptcha()
+    {
+        $captchaCode  = W2String::buildRandCharacters(4);
+        $image        = W2Image::captchaImage($captchaCode,100,40);
+        $content      = W2Image::toString($image);
+        $result       = array();
+        $result['base64'] = 'data:image/jpeg;base64,'.base64_encode($content);
+        $result['captcha_key'] = static::getCaptchaKeyOfCode($captchaCode);
+        return HaoResult::init(ERROR_CODE::$OK,$result);
+    }
+
+    /** 获取一个验证码图像 */
+    public static function actionCheckCaptcha()
+    {
+        $captchaCode  = W2HttpRequest::getRequestString('captcha_code',false,null,1);
+        $captchaKey   = W2HttpRequest::getRequestString('captcha_key',false,null,1);
+        $isRight       = static::getCaptchaKeyOfCode($captchaCode,$captchaKey);
+        if ($isRight)
+        {
+            return HaoResult::init(ERROR_CODE::$OK,true);
+        }
+        else
+        {
+            return HaoResult::init(ERROR_CODE::$CAPTCHA_CODE_WRONG);
+        }
+    }
+
 
 
 }

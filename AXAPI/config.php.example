@@ -34,6 +34,7 @@ require_once(AXAPI_ROOT_PATH.'/mhc/models/HaoResult.php');
 /** 混淆方案- 头信息混淆方案   */  define("SECRET_HAX_WINDOWS"    , 'secret=apites2921889iaf94');
 /** 混淆方案- 用户信息加密混淆 */  define("USER_COOKIE_RANDCODE"  , 'f9823r2ioeoiwaeefadsafeww');
 /** 混淆方案- 密码加密存储混淆 */  define("PASSWORD_RANDCODE"     , 'f983r2ewioeoiwaeefadsafew');
+/** 混淆方案- 图像校验加密混淆 */  define("CAPTCHA_RANDCODE"      , '123456789012345678901234567890');
 
 // 数据库配置
 if (!defined('DB_HOST'))

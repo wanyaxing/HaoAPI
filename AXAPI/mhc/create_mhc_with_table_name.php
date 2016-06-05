@@ -640,7 +640,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_isAdmin = in_array($_fieldRow['Field'],array('status','userID','level','createTime','modifyTime'));
         $_controllerStringTmp = "\n".'                $tmpModel  ->'
                                     .str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT)
-                                    .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
+                                    .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow,false),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
                                     .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestAddTmp = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':'.(in_array(W2String::under_score($_fieldRow['Field']),$_tableKeysImportantForAdd)?' true':'false').' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if ($_isAdmin )
@@ -692,7 +692,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
         $_isAdmin = in_array($_fieldRow['Field'],array('userID','level','createTime','modifyTime'));
         $_controllerStringUpdateTmp = "\n".'                $tmpModel    ->'
                                           .str_pad('set'.W2String::camelCaseWithUcFirst($_fieldRow['Field']),20,' ',STR_PAD_LEFT)
-                                          .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
+                                          .str_pad('('. sprintf(CMysql2PHP::getMethodString($_fieldRow,true),W2String::under_score($_fieldRow['Field'])) .');',70,' ',STR_PAD_RIGHT)
                                           .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
         $_apitestConfigRequestUpdateTmp = '          ,'.'{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\''.($_isAdmin?'*限管理员可用':'').'\' }';
         if (in_array($_fieldRow['Field'],array('createTime','modifyTime','lastLoginTime','lastPasswordTime')))
@@ -1267,7 +1267,8 @@ $_controllerString .='
 
     if (IS_SPECIAL_TABLE == 'user')
     {
-        $_controllerString .= "\n".'        if ($tmpModel->isProperyModified(\'username\') )
+        $_controllerString .= "\n"
+.'        if ($tmpModel->isProperyModified(\'username\') && $tmpModel->properyValue(\'username\')!==\'\' )
         {
             if (W2String::isTelephone($tmpModel->properyValue(\'username\')))
             {
@@ -1283,7 +1284,7 @@ $_controllerString .='
                 return HaoResult::init(ERROR_CODE::$USER_DUP_USERNAME);
             }
         }
-        if ($tmpModel->isProperyModified(\'telephone\') )
+        if ($tmpModel->isProperyModified(\'telephone\') && $tmpModel->properyValue(\'telephone\')!==\'\' )
         {
             $existsTargetModel = UserHandler::loadModelFirstInList( array(\'telephone\'=>$tmpModel->properyValue(\'telephone\') ) );
             if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
@@ -1291,7 +1292,7 @@ $_controllerString .='
                 return HaoResult::init(ERROR_CODE::$USER_DUP_TELEPHONE);
             }
         }
-        if ($tmpModel->isProperyModified(\'email\') )
+        if ($tmpModel->isProperyModified(\'email\') && $tmpModel->properyValue(\'email\')!==\'\' )
         {
             $existsTargetModel = UserHandler::loadModelFirstInList( array(\'email\'=>$tmpModel->properyValue(\'email\') ) );
             if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
@@ -1545,6 +1546,13 @@ $_controllerString .= '
         {
             return HaoResult::init(ERROR_CODE::$ONLY_VISITOR_ALLOW);
         }
+
+        //检查图像校验码
+        // $_resultCaptchaCheck = AxapiController::actionCheckCaptcha();
+        // if (!$_resultCaptchaCheck->isResultsOK())
+        // {
+        //     return $_resultCaptchaCheck;
+        // }
 
         $tmpModel = UserHandler::loadModelFirstInList($pWhere);
 

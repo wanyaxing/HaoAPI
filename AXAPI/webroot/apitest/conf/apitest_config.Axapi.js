@@ -76,3 +76,25 @@ apiList.push({
     { "key":"model_name"             ,"type":"string"      ,"required":true ,"test-value":"user"                         ,"title":"model名" ,"desc":"" }
   ]
 });
+
+apiList.push({
+  "title":"接口工具:获得一个验证码图像"
+  ,"desc":""
+  ,"time":""
+  ,"action":"/axapi/get_captcha"
+  ,"method":"get"
+  ,"request":[
+  ]
+});
+
+apiList.push({
+  "title":"接口工具:确认图像验证码是否正确"
+  ,"desc":""
+  ,"time":""
+  ,"action":"/axapi/check_captcha"
+  ,"method":"post"
+  ,"request":[
+     { "key":"captcha_key"              ,"type":"string"      ,"required":true ,"test-value":"170b1d79c01c2f7b8c6eec46d804e6e9_1465116169"                         ,"title":"验证码对应的key" ,"desc":"" }
+    ,{ "key":"captcha_code"             ,"type":"string"      ,"required":true ,"test-value":"1234"                         ,"title":"验证码" ,"desc":"" }
+  ]
+});

@@ -81,7 +81,7 @@ class W2Redis {
 
     /**
      * 最强方法，根据key值获得缓存内容
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @param  integer $p_timeout               过期时间
      * @return string                           缓存内容或null或304 Not Modified
      */
@@ -105,7 +105,7 @@ class W2Redis {
 
     /**
      * 是否有可用的缓存
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @param  integer $p_timeout               过期时间
      * @return boolean                          是，否
      */
@@ -139,7 +139,7 @@ class W2Redis {
 
     /**
      * 判断缓存标识对应的缓存是否还在。判断指定key是否有变化，若有变化，则更新新的标识
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @param  [type]  &$HTTP_IF_MODIFIED_SINCE HTTP_IF_MODIFIED_SINCE
      * @param  [type]  &$HTTP_IF_NONE_MATCH     HTTP_IF_NONE_MATCH
      * @return boolean                          是，否
@@ -199,7 +199,7 @@ class W2Redis {
 
     /**
      * 最强搭档，更新缓存到指定Key，如果有必要，还会修改 HTTP_IF_MODIFIED_SINCE HTTP_IF_NONE_MATCH
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @param  [type] $buffer                  [description]
      * @return null
      */
@@ -216,7 +216,7 @@ class W2Redis {
 
     /**
      * 删除缓存（慎用）
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @return null
      */
     public static function delCache($p_key){
@@ -232,7 +232,7 @@ class W2Redis {
 
     /**
      * 读取缓存的变身，可以读取实例呢
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @param  integer $p_timeout               过期时间
      * @return [type]             [description]
      */
@@ -248,12 +248,29 @@ class W2Redis {
 
     /**
      * 存储缓存的变身，可以存储实例呢
-     * @param  [type]  $p_key                   缓存key
+     * @param  string  $p_key                   缓存key
      * @param  object $p_obj               目标实例
      * @return [type]        [description]
      */
     public static function setObj($p_key,$p_obj){
         static::setCache($p_key,serialize($p_obj));
+    }
+
+    /**
+     * 将key中储存的数字值增一。
+     * 如果key不存在，以0为key的初始值，然后执行INCR操作。
+     * 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+     * @param  string $p_key
+     * @param  int   $increment  增值，默认1
+     * @return int         执行INCR命令之后key的值。
+     */
+    public static function incr($p_key,$increment=1)
+    {
+        $memcached = static::memFactory();
+        if (isset($memcached, $p_key)) {
+            return $memcached -> incrby($p_key.'_incr',$increment);
+        }
+        return false;
     }
 
 
