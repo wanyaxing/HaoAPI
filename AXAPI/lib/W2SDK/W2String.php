@@ -180,6 +180,22 @@ class W2String {
     }
 
     /**
+     * 创建一个随机字符
+     * @param integer 字符长度
+     * @param string 字符集
+     * @return string 加密字符串
+     */
+    public static function buildRandCharacters($p_length=6,$chars='23456789bcdfghjkmnpqrstvwxyzBCDFGHJKMNPQRSTVWXYZ')
+    {
+        $verifyCode = '';//首位排除0
+        for ( $i = 0; $i < $p_length; $i++ )
+        {
+          $verifyCode .= $chars[ mt_rand(0, strlen($chars) - 1) ];
+        }
+        return $verifyCode;
+    }
+
+    /**
      * 比较加密字符串
      * @param string 原字符串
      * @param string 加密字符串
