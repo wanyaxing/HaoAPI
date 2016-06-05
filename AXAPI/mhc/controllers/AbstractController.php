@@ -213,6 +213,11 @@ class AbstractController {
         {
             return HaoResult::init(ERROR_CODE::$NO_TBALE_FOUND);
         }
+        $unsetKey = W2HttpRequest::getUnsetRequest('id', $pAllowBlank = false);
+        if ( $unsetKey  !== null)
+        {
+            return HaoResult::init(ERROR_CODE::$PARAM_ERROR,array('errorContent'=>'部分参数未提交数据: '.$unsetKey));
+        }
         $tableIdName = $handlerlName::getTabelIdName();
         $pWhere = array();
         $pWhere[$tableIdName] = W2HttpRequest::getRequestInt('id',null,false,false);
@@ -241,7 +246,7 @@ class AbstractController {
             return HaoResult::init(ERROR_CODE::$NO_CHANGE_FOUND);
         }
 
-        if (method_exists($tmpModel,'setCreateTime') &&  $tmpModel->getCreateTime()==null )
+        if (method_exists($tmpModel,'setCreateTime') &&  $tmpModel->properyValue('createTime')==null )
         {
             $tmpModel ->setCreateTime( date('Y-m-d H:i:s'));
         }
