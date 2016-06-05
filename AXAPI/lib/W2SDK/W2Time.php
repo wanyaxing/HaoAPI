@@ -99,7 +99,7 @@ class W2Time {
      * 时间增减
      * @param  [type] $p_time [description]
      * @param  int|string $p_add      时间戳或 字符串  -1 day  next Thursday
-     * @return [type]             [description]
+     * @return [int]         时间戳
      */
     public static function getTimeAdded($p_time=null,$p_add=0)
     {
