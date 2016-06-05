@@ -326,9 +326,8 @@ function reFormGroup(_formType, _formRequest)
     }
     else if (_formRequest['type'] == 'md5')
     {
-        _inputs.eq(1).val(hex_md5(_formRequest['test-value'])).change(function() {
+        _inputs.eq(1).val(hex_md5(_formRequest['test-value'])).unbind().change(function() {
             $(this).val(hex_md5($(this).val()));
-
         });
 
     }
