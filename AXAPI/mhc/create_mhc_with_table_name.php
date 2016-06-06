@@ -773,7 +773,7 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
     else if ($_fieldRow['Field']=='status')
     {
         $_controllerStringList .= "\n".'        '
-                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT)
+                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].' in (%s)\']',40,' ',STR_PAD_RIGHT)
                                       .str_pad(' = STATUS_NORMAL;',70,' ',STR_PAD_RIGHT)
                                       .'//默认列表页只筛选STATUS_NORMAL状态的数据';
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
@@ -1355,7 +1355,7 @@ $_controllerString .= '
         {
             case \'admin\'   : //有管理权限
 '
-                .(array_key_exists('status',$_tableDataKeys)?'                $pWhere[\'status\']                       = W2HttpRequest::getRequestInt(\'status\',null,true,false,STATUS_NORMAL);//管理员可以筛选数据状态':'')
+                .(array_key_exists('status',$_tableDataKeys)?'                $pWhere[\'status in (%s)\']           = W2HttpRequest::getRequestArrayString(\'status\',true,true,array(STATUS_NORMAL));//管理员可以筛选数据状态':'')
                 .'
             case \'self\'    : //作者
             case \'normal\'  : //正常用户
