@@ -170,7 +170,7 @@ class AxapiController extends AbstractController{
      */
     public static function getCaptchaKeyOfCode($captchaCode,$checkKey=null)
     {
-        if (!isset($captchaCode,$checkKey))
+        if (!isset($captchaCode))
         {
             return false;
         }
@@ -209,19 +209,19 @@ class AxapiController extends AbstractController{
     public static function actionGetCaptcha()
     {
         $captchaCode  = W2String::buildRandCharacters(4);
-        $image        = W2Image::captchaImage($captchaCode,100,40);
+        $image        = W2Image::captchaImage($captchaCode,200,80);
         $content      = W2Image::toString($image);
         $result       = array();
         $result['base64'] = 'data:image/jpeg;base64,'.base64_encode($content);
-        $result['captcha_key'] = static::getCaptchaKeyOfCode($captchaCode);
+        $result['captchaKey'] = static::getCaptchaKeyOfCode($captchaCode);
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
 
     /** 获取一个验证码图像 */
     public static function actionCheckCaptcha()
     {
-        $captchaCode  = W2HttpRequest::getRequestString('captcha_code',false,null,1);
-        $captchaKey   = W2HttpRequest::getRequestString('captcha_key',false,null,1);
+        $captchaCode  = W2HttpRequest::getRequestString('captcha_code',false,'',1);
+        $captchaKey   = W2HttpRequest::getRequestString('captcha_key',false,'',1);
         $isRight       = static::getCaptchaKeyOfCode($captchaCode,$captchaKey);
         if ($isRight)
         {
