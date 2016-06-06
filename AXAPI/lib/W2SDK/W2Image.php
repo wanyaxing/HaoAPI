@@ -319,7 +319,29 @@ class W2Image {
         imagefilledpolygon($image, $points, 4, $color);
         return imagepolygon($image, $points, 4, $color);
     }
+    /**
+     * 计算文本画布的真实坐标（因为默认的imagettfbbox方法在旋转角度后，产生的是文本四个角的坐标，而不是画布坐标）
+     * @param  int    $fontSize     字体大小
+     * @param  int    $fontAngle    角度 0，90，180，360
+     * @param  string $fontFile     字体文件
+     * @param  string $text         文本
+     * @return array                坐标系
+     */
+    public static function calculateTextBox($fontSize,$fontAngle,$fontFile,$text) {
+        $rect = imagettfbbox($fontSize,$fontAngle,$fontFile,$text);
+        $minX = min(array($rect[0],$rect[2],$rect[4],$rect[6]));
+        $maxX = max(array($rect[0],$rect[2],$rect[4],$rect[6]));
+        $minY = min(array($rect[1],$rect[3],$rect[5],$rect[7]));
+        $maxY = max(array($rect[1],$rect[3],$rect[5],$rect[7]));
 
+        return array(
+         "left"   => $minX,
+         "top"    => $minY,
+         "width"  => $maxX - $minX,
+         "height" => $maxY - $minY,
+         "box"    => $rect
+        );
+    }
 
     /**
      * 根据随机码生成图片对象
@@ -339,7 +361,7 @@ class W2Image {
         $image = @imagecreate($image_width, $image_height);
 
         /* 设置背景色 */
-        $background_color = imagecolorallocate($image, 253, 130, 1);
+        $background_color = imagecolorallocate($image, 255, 255, 255);
 
         /** 文本色 */
         $text_color = imagecolorallocate($image, 0, 160, 233);
@@ -358,10 +380,22 @@ class W2Image {
         }
 
         /* 生成一个文本框，然后在里面写字符 */
-        $textbox = imagettfbbox($font_size, 0, $font, $code);
-        $x       = ($image_width - $textbox[4])/2;
-        $y       = ($image_height - $textbox[5])/2;
-        imagettftext($image, $font_size, 0, $x, $y, $text_color, $font , $code);
+        $textWidth  = 0;
+        $angles     = array();
+        $textboxs   = array();
+        foreach (str_split($code) as $index=>$s) {
+            $angles[$index] = -45 + rand(0,90);
+            $textbox        = W2Image::calculateTextBox($font_size, $angles[$index], $font, $s);
+            $textWidth     += $textbox['width'];
+            $textboxs[]     = $textbox;
+        }
+        $x = $image_width > $textWidth?($image_width - $textWidth)/2:10;
+        $step = ($image_width<$textWidth?($image_width-$textWidth-20)/(count($textboxs)-1):0);
+        foreach (str_split($code) as $index=>$s) {
+            $y       = ($image_height - $textboxs[$index]['height'])/2;
+            imagettftext($image, $font_size,$angles[$index] , $x - $textboxs[$index]['left'] , $y - $textboxs[$index]['top'], $text_color, $font , $s);
+            $x       += $textboxs[$index]['width']+$step;
+        }
 
         return $image;
     }
