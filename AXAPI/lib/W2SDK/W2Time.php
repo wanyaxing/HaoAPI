@@ -62,7 +62,12 @@ class W2Time {
         if (is_null($p_microtime)){$p_microtime = microtime(true);}
         $defaultTimeZone = date_default_timezone_get();
         $timeZone = new DateTimeZone(is_null($defaultTimeZone)?'Asia/Shanghai':$defaultTimeZone);
-        return DateTime::createFromFormat('U.u', $p_microtime)->setTimeZone($timeZone)->format($p_format);
+        $date = null;
+        while(!( $date instanceof DateTime ))
+        {
+            $date = DateTime::createFromFormat('U.u', $p_microtime);
+        }
+        return $date->setTimeZone($timeZone)->format($p_format);
     }
 
     /**
