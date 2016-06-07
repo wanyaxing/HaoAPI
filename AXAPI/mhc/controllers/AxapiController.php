@@ -212,7 +212,7 @@ class AxapiController extends AbstractController{
         $image        = W2Image::captchaImage($captchaCode,200,80);
         $content      = W2Image::toString($image);
         $result       = array();
-        $result['base64'] = 'data:image/jpeg;base64,'.base64_encode($content);
+        $result['url'] = 'data:image/jpeg;base64,'.base64_encode($content);
         $result['captchaKey'] = static::getCaptchaKeyOfCode($captchaCode);
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
