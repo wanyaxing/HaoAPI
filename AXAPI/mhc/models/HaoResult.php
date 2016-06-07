@@ -9,6 +9,8 @@
 class HaoResult extends AbstractModel{
 
     public static $authViewDisabled    = array('id');//展示数据时，禁止列表。
+    public static $findPaths           = array();//指定可展示的数据的路径（默认不指定，若指定后，则只有符合该路径的字段才会被输出）
+    public static $searchPaths         = array();//指定可展示的数据的模糊路径（默认不指定，若指定后，则只有符合该路径的字段才会被输出）
 
     /**
      * 初始化方法，如果需要，各模型必须重写此处
@@ -23,6 +25,16 @@ class HaoResult extends AbstractModel{
         return $_o;
     }
 
+    /** 指定路径是否被允许打印 */
+    public static function isPathAllowed($paths,$isObject=true)
+    {
+        // if (defined('IS_AX_DEBUG')){print("\n");print(W2Time::microtimetostr());print("\n");var_export(static::$searchPaths);print("\n");}
+        if (count($paths)==1)
+        {
+            return true;
+        }
+        return parent::isPathAllowed($paths,$isObject);
+    }
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝定制的HaoResult方法＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
     public static function init($errorCode = null,$result = null,$extraInfo = null) {

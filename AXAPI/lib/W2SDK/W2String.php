@@ -488,4 +488,22 @@ class W2String {
         }
         return implode("\n",$oList);
     }
+
+    /**
+     * 通过遍历匹配的开头局部，来判断指定的字符串是否匹配这个局部。
+     * 如果局部匹配成功，意味着这个字符串可能是这个匹配的开头部分，后面加上些字符就能完整匹配了。
+     * @param  string $pattern 正则
+     * @param  string $subject 目标字符串
+     * @return bool
+     */
+    public static function pregPartMatch($pattern,$subject)
+    {
+        for ($i=1; $i <= strlen($pattern) ; $i++) {
+            if (preg_match('/^'.substr($pattern,0,$i).'$/',$subject))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

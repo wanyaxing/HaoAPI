@@ -8,6 +8,7 @@
 
 class AbstractModel {
     public static $authViewDisabled    = array();//展示数据时，禁止列表。
+
     /**
      * 此处用来在第一次初始化完成后，存储对象属性，便于以后确认新增的属性修改
      * @var array
@@ -49,13 +50,87 @@ class AbstractModel {
         return $_o;
     }
 
+    /** 指定路径是否被允许打印 */
+    public static function isPathAllowed($paths,$isObject=true)
+    {
+        $isAllow = true;
+        $pathsString = implode('>',$paths);
+        if (isset(static::$findPaths) && count(static::$findPaths)>0)
+        {
+            $isAllow = false;
+            $findIndexString = implode("\n",static::$findPaths);
+            if (preg_match('/(^|\s)('.$pathsString.($isObject?'.*':'').')($|\s+)/',$findIndexString))
+            {
+                return true;
+            }
+        }
+        if (isset(static::$searchPaths) && count(static::$searchPaths)>0)
+        {
+            $isAllow = false;
+            foreach (static::$searchPaths as $searchPath) {
+                if ($isObject)
+                {
+                    if (W2String::pregPartMatch($searchPath,$pathsString))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (preg_match('/^'.$searchPath.'$/',$pathsString))
+                    {
+                        return true;
+                    }
+                    if (defined('IS_AX_DEBUG'))
+                    {
+                        var_export('match:');
+                        var_export($pathsString);
+                        var_export($searchPath);
+                        var_export($matches);
+                    }
+                }
+            }
+        }
+        return $isAllow;
+    }
 
+    /**
+     * 递归方法，对结果的值进行处理
+     * @param  array &$_ps                  结果值
+     * @param  string $_n                   键
+     * @param  object|array|string $result              值
+     * @param  array  $p_foundDeepModelList Model列表，用于防止死循环
+     * @param  array  $p_path               路径列表，用于路径筛选
+     * @param  AbstractModel $rootModel            根对象，用于确定输出的最终对象的根目录
+     * @return
+     */
+    protected static function propertyDeep(&$_ps,$_n,$result,$p_foundDeepModelList=array(),$p_path=array(),$rootModel=null)
+    {
+
+        $_pathTmp = array_merge($p_path,array($_n));
+        if (is_null($rootModel) || $rootModel::isPathAllowed($_pathTmp,(is_object($result) || is_array($result))))
+        {
+            $data = $result;
+            if (is_object($result) && is_subclass_of($result,'AbstractModel'))
+            {
+                $data = $result->properties($p_foundDeepModelList,null,$_pathTmp,$rootModel);
+            }
+            else if (is_array($result))//&& array_key_exists(0, $result)
+            {
+                $data = array();
+                foreach ($result as $_key => $_value) {
+                    $rootModel::propertyDeep($data,$_key,$_value,$p_foundDeepModelList,$_pathTmp,$rootModel);
+                }
+            }
+           $_ps[$_n]=$data;
+        }
+    }
     /**
      * 获取模型实例的所有属性转化成数组  实例-》数组
      * @param string|array $p_exclude 排除字段
      * @return array 类的所用属性
      */
-    public function properties($p_foundDeepModelList=array(),$p_exclude=null) {
+    public function properties($p_foundDeepModelList=array(),$p_exclude=null,$p_path=array(),$rootModel=null) {
         $_classid = get_class($this).'.'.$this->getId();
         if (in_array($_classid,$p_foundDeepModelList))
         {
@@ -70,6 +145,10 @@ class AbstractModel {
         {
             $p_exclude = explode(',', $p_exclude);
         }
+        if (is_null($rootModel))
+        {
+            $rootModel = get_class($this);
+        }
         $_ms = get_class_methods(get_class($this));
         foreach ($_ms as $_name) {
             $_nameGet = null;
@@ -82,26 +161,7 @@ class AbstractModel {
                 if (($p_exclude===null || (is_array($p_exclude) && !in_array($_n, $p_exclude) )) && (!in_array($_n, static::$authViewDisabled) && !in_array('*', static::$authViewDisabled))  )
                 {
                     $result = call_user_func(array($this, $_nameGet));
-                    $data = $result;
-                    if (is_object($result) && is_subclass_of($result,'AbstractModel'))
-                    {
-                        $data = $result->properties($p_foundDeepModelList);
-                    }
-                    else if (is_array($result))//&& array_key_exists(0, $result)
-                    {
-                        $data = array();
-                        foreach ($result as $_key => $_value) {
-                            if (is_object($_value) && is_subclass_of($_value,'AbstractModel'))
-                            {
-                                $data[$_key] = $_value->properties(array_merge($p_foundDeepModelList,array($_classid)));
-                            }
-                            else
-                            {
-                                $data[$_key] = $_value;
-                            }
-                        }
-                    }
-                    $_ps[$_n] = $data;
+                    static::propertyDeep($_ps,$_n,$result,$p_foundDeepModelList,$p_path,$rootModel);
                 }
             }
         }

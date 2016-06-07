@@ -130,6 +130,8 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         {
             header('Content-Type:application/json; charset=utf-8');
         }
+        HaoResult::$findPaths   = W2HttpRequest::getRequestArray('find_paths');
+        HaoResult::$searchPaths = W2HttpRequest::getRequestArray('search_paths');
         echo Utility::json_encode_unicode($results->properties());
     }
     else if (is_string($results))
