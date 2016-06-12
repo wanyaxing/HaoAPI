@@ -218,4 +218,34 @@ class W2Array {
 		}
 		return $result;
 	}
+
+	/**
+	 * 清理参数数组的空值（包括多维字典空值）
+	 * @param  [type] $arr      [description]
+	 * @param  [type] $callback [description]
+	 * @return 参数数组是否为空
+	 */
+	public static function unsetEmptyArray(&$arr){
+		if (!is_array($arr))
+		{
+			return false;
+		}
+	    foreach($arr as $k => &$item){
+	        if(is_array($item))
+	        {
+	        	if (count($item)==0)
+	        	{
+	        		unset($arr[$k]);
+	        	}
+	        	else
+	        	{
+		            if (static::unsetEmptyArray($item))
+		            {
+		            	unset($arr[$k]);
+		            }
+	        	}
+	        }
+	    }
+	    return (count($arr)==0);
+	}
 }

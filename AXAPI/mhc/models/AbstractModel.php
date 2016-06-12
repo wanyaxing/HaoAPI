@@ -81,13 +81,6 @@ class AbstractModel {
                     {
                         return true;
                     }
-                    if (defined('IS_AX_DEBUG'))
-                    {
-                        var_export('match:');
-                        var_export($pathsString);
-                        var_export($searchPath);
-                        var_export($matches);
-                    }
                 }
             }
         }
@@ -106,7 +99,6 @@ class AbstractModel {
      */
     protected static function propertyDeep(&$_ps,$_n,$result,$p_foundDeepModelList=array(),$p_path=array(),$rootModel=null)
     {
-
         $_pathTmp = array_merge($p_path,array($_n));
         if (is_null($rootModel) || $rootModel::isPathAllowed($_pathTmp,(is_object($result) || is_array($result))))
         {
@@ -145,6 +137,7 @@ class AbstractModel {
         {
             $p_exclude = explode(',', $p_exclude);
         }
+        $isRootModel = is_null($rootModel);
         if (is_null($rootModel))
         {
             $rootModel = get_class($this);
@@ -164,6 +157,11 @@ class AbstractModel {
                     static::propertyDeep($_ps,$_n,$result,$p_foundDeepModelList,$p_path,$rootModel);
                 }
             }
+        }
+
+        if ($isRootModel && isset($rootModel::$searchPaths) && count($rootModel::$searchPaths)>0 )
+        {
+            W2Array::unsetEmptyArray($_ps['results']);
         }
 
         return $_ps;

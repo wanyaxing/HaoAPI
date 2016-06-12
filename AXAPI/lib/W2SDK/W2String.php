@@ -499,7 +499,12 @@ class W2String {
     public static function pregPartMatch($pattern,$subject)
     {
         for ($i=1; $i <= strlen($pattern) ; $i++) {
-            if (preg_match('/^'.substr($pattern,0,$i).'$/',$subject))
+            $part = substr($pattern,0,$i);
+            if (preg_match('/[\[\(][^\]\)]*$/',$part))
+            {
+                continue;
+            }
+            if (preg_match('/^'.$part.'$/',$subject))
             {
                 return true;
             }
