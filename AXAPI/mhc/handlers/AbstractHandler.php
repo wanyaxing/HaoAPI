@@ -504,80 +504,7 @@ class AbstractHandler {
                     W2Cache::setObj($w2CacheKey_countThis,$pCountThis);
                 }
 
-                //追加到缓存池
-                foreach ($pWhere as $_key => $_value) {
-                    if ($_value===null)
-                    {
-                        continue;
-                    }
-                    if (is_string($_key) && in_array($_key,static::getTableDataKeys()))
-                    {
-                        if ((is_int($_value) || (is_string($_value) && strlen($_value)<10 ) ))
-                        {
-                            $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
-                                                ,AXAPI_PROJECT_NAME
-                                                ,static::getTabelName()
-                                                ,$_key
-                                                ,$_value
-                                                );
-                            W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_fieldValues);
-                            AX_DEBUG('追加到缓存池：'.$w2CacheKeyPool);
-                        }
-                    }
-                    else
-                    {
-                        if ($_key == 'joinList' && is_array($_value))
-                        {
-                            foreach ($_value as $_join) {
-                                $_tblParams = explode(' ',trim($_join[0]));
-                                if (count($_tblParams)==2)
-                                {
-                                    $_tbl = $_tblParams[0];
-                                    $_tblT2 = $_tblParams[1];
-                                }
-                                foreach ($_join[1] as $_tblWhereKey => $_tblWhereValue) {
-                                    if ((strpos($_tblWhereKey,$_tblT2)!==false) && (is_int($_tblWhereValue) || (is_string($_tblWhereValue) && strlen($_tblWhereValue)<10 ) ) )
-                                    {
-                                        $_tblWhereKey = preg_replace('/^.*?'.$_tblT2.'\.([^\s]+).*/','$1',$_tblWhereKey);
-                                        $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
-                                                            ,AXAPI_PROJECT_NAME
-                                                            ,$_tbl
-                                                            ,$_tblWhereKey
-                                                            ,$_tblWhereValue
-                                                            );
-                                        W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_fieldValues);
-                                        AX_DEBUG('追加到额外缓存池：'.$w2CacheKeyPool);
-                                    }
-                                }
-                            }
-                        }
-                        else if ( is_int($_key) && strpos($_value,'exists')!==false)
-                        {
-                            $_tbl = preg_replace('/^[\s\S]*? from\s+?(\S+)\s+(\S+)\s[\s\S]+$/','$1',$_value);
-                            $_tblT2 = preg_replace('/^[\s\S]*? from\s+?(\S+)\s+(\S+)\s[\s\S]+$/','$2',$_value);
-                            AX_DEBUG('/'.$_tblT2.'\.(\S+)\s*=\s*([^\s\)]+)/');
-                            preg_match_all('/'.$_tblT2.'\.(\S+)\s*=\s*([^\s\)]+)/',$_value,$matches,PREG_SET_ORDER);
-                            foreach ($matches as $match) {
-                                $_tblWhereKey = $match[1];
-                                $_tblWhereValue = trim($match[2],'\'');
-                                if (!preg_match('/[^\s\.]\.[^\s\.]/',$_tblWhereValue))
-                                {
-                                    if (is_int($_tblWhereValue) || (is_string($_tblWhereValue) && strlen($_tblWhereValue)<10 ) )
-                                    {
-                                        $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
-                                                            ,AXAPI_PROJECT_NAME
-                                                            ,$_tbl
-                                                            ,$_tblWhereKey
-                                                            ,$_tblWhereValue
-                                                            );
-                                        W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey_fieldValues);
-                                        AX_DEBUG('追加到额外缓存池：'.$w2CacheKeyPool);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                static::updateCacheKeyPoolOfSql($_dbModel->sqlOfselect(),$w2CacheKey_fieldValues);//追加到缓存池
             }
         }
         else
@@ -691,7 +618,7 @@ class AbstractHandler {
                 $_valueOriginal = $pModel->properyOriginal($_key);
                 if ((is_int($_valueOriginal) || (is_string($_valueOriginal) && strlen($_valueOriginal)<10 ) ))
                 {
-                    if ($_valueOriginal!=null)
+                    if ($_valueOriginal!==null)
                     {
                         $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
                                             ,AXAPI_PROJECT_NAME
@@ -756,6 +683,8 @@ class AbstractHandler {
     {
         $_dbModel = static::newDBModel();
         $_dbModel->insert($pValues);
+
+        static::updateCacheKeyPoolOfSql($_dbModel->sqlOfInsert($pValues));//更新缓存池
     }
 
     /**
@@ -772,6 +701,7 @@ class AbstractHandler {
         {
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
         }
+        static::updateCacheKeyPoolOfSql($_dbModel->sqlOfUpdate($pValues,$pWhere));//更新缓存池
         return $result ;
     }
 
@@ -789,6 +719,7 @@ class AbstractHandler {
 
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()],null,true);//更新缓存
         }
+        static::updateCacheKeyPoolOfSql($_dbModel->sqlOfDelete($pWhere));//更新缓存池
         return $result ;
     }
 
@@ -815,15 +746,48 @@ class AbstractHandler {
         AX_DEBUG('更新缓存：'.$w2CacheKey);
         W2Cache::setObj($w2CacheKey,$data);
 
+        static::updateCacheKeyPoolOfSql($sql,$w2CacheKey);//追加到缓存池
+
         return $data;
     }
 
     /** 执行sql语句     */
     public static function executeSql($sql)
     {
-        return DBTool::queryData($sql);
+        return DBTool::executeSql($sql);
     }
 
+    /**
+     * 分析sql,将缓存key存入对应的池子
+     * @param [type] $sql        [description]
+     * @param [type] $w2CacheKey [description]
+     */
+    public static function updateCacheKeyPoolOfSql($sql,$w2CacheKey=null)
+    {
+        $sqlInfo = DBTool::getKeyInfoOfSql($sql);
+        foreach ($sqlInfo as $info) {
+            if (is_string($info['value']) && strlen($info['value'])>10 )
+            {
+                continue;
+            }
+            $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
+                ,AXAPI_PROJECT_NAME
+                ,$info['table']
+                ,$info['key']
+                ,$info['value']
+                );
+            if (!is_null($w2CacheKey))
+            {
+                W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey);
+                AX_DEBUG('追加到缓存池：'.$w2CacheKeyPool);
+            }
+            else
+            {
+                W2Cache::resetCacheKeyPool($w2CacheKeyPool);
+                AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
+            }
+        }
+    }
 
     /**
      * 更新缓存W2Cache
