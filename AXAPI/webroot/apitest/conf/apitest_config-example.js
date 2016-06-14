@@ -127,9 +127,9 @@ var headerList =[
       var isVersion1 = false;
       $('form').find('[form-type=field]').each(function(){
         var _key = $(this).val();
-        if (_key!='' && $(this).parent().siblings().find("input[type=text]").length>0)
+        if (_key!='' && $(this).parent().siblings().find("input[type=text],textarea").length>0)
         {
-          var _val = $(this).parent().siblings().find("input").val();
+          var _val = $(this).parent().siblings().find("input,textarea").val();
           tmpArr.push(_key+'='+_val);
           if (_key=='r')
           {

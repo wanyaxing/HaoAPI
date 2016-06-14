@@ -253,8 +253,7 @@ function getHeaders()
             if (_headers == null) {
                 _headers = {};
             }
-            _headers[_key] = $(this).parent().siblings().find("input").val();
-
+            _headers[_key] = $(this).parent().siblings().find("input,textarea").val();
         }
 
     });
@@ -266,10 +265,10 @@ function getValues()
     var _getValues = [];
     $('form').find('[form-type=field]').each(function() {
         var _key = $(this).val();
-        var _input = $(this).parent().siblings().find("input");
+        var _input = $(this).parent().siblings().find("input,textarea");
         if (_key != '' && _input.attr('type')!='file')
         {
-            var _val = $(this).parent().siblings().find("input").val();
+            var _val = $(this).parent().siblings().find("input,textarea").val();
             _getValues.push(_key + '=' + encodeURIComponent(_val));
         }
 
@@ -282,10 +281,10 @@ function getPosts()
     var _data = {};
     $('form').find('[form-type=field]').each(function() {
         var _key = $(this).val();
-        var _input = $(this).parent().siblings().find("input");
+        var _input = $(this).parent().siblings().find("input,textarea");
         if (_key != '' && _input.attr('type')!='file')
         {
-            var _val = $(this).parent().siblings().find("input").val();
+            var _val = $(this).parent().siblings().find("input,textarea").val();
             _data[_key] = _val;
         }
     });
@@ -313,7 +312,7 @@ function reFormGroup(_formType, _formRequest)
     }
 
     _formGroup.attr('is-required', _formRequest['required'] ? 'true': 'false').trigger('mouseenter').trigger('mouseleave').attr('title', _formRequest['title'] + "<br/>" + _formRequest['desc']).attr('data-html', "true").tooltip().show();
-    var _inputs = _formGroup.find('input');
+    var _inputs = _formGroup.find('input,textarea');
     _inputs.eq(0).val(_formRequest['key'])
     .attr('field-type', _formRequest['type'])
     .attr('field-required', _formRequest['required'])
@@ -323,6 +322,10 @@ function reFormGroup(_formType, _formRequest)
     {
         _inputs.eq(1).replaceWith('<input type="file"' + (_formType == 'field' ? ' name="' + _formRequest['key'] + '"': '') + (_formRequest['key'].indexOf('[]') > 0 ? ' multiple="multiple"': '') + '/>')
 
+    }
+    else if (_formRequest['type'] == 'text')
+    {
+        _inputs.eq(1).replaceWith('<textarea ' + (_formType == 'field' ? ' name="' + _formRequest['key'] + '"': '') + (_formRequest['key'].indexOf('[]') > 0 ? ' multiple="multiple"': '') + '/>')
     }
     else if (_formRequest['type'] == 'md5')
     {
@@ -448,10 +451,10 @@ function updatePlan()
     var _posts = [];
     $('form').find('[form-type=field]').each(function() {
         var _key = $(this).val();
-        var _input = $(this).parent().siblings().find("input");
+        var _input = $(this).parent().siblings().find("input,textarea");
         if (_key != '' && _input.attr('type')!='file')
         {
-            var _val = $(this).parent().siblings().find("input").val();
+            var _val = $(this).parent().siblings().find("input,textarea").val();
             _posts.push({
                 'key': _key,
                 'type': $(this).attr('field-type'),
@@ -469,7 +472,7 @@ function updatePlan()
         var _key = $(this).val();
         if (_key != '')
         {
-            var _val = $(this).parent().siblings().find("input").val();
+            var _val = $(this).parent().siblings().find("input,textarea").val();
             _headers.push({
                 'key': _key,
                 'type': $(this).attr('field-type'),
@@ -967,7 +970,7 @@ $(function() {
     });
     $('form').find('[form-type=field]').bind({
         change: function() {
-            $(this).parent().siblings().find('input').attr('name', $(this).val());
+            $(this).parent().siblings().find('input,textarea').attr('name', $(this).val());
 
         }
     });
