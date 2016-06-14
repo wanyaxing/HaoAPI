@@ -768,10 +768,13 @@ class DBModel{
 			}
 		}
 
-		//插入
-		public function insert($data)
+		/**
+		 * 返回插入用的sql
+		 * @param  [type] $data [description]
+		 * @return [type]       [description]
+		 */
+		public function sqlOfInsert($data)
 		{
-
 			//拼接SQL语句
 			$fieldList=array();
 			$valueList=array();
@@ -807,11 +810,7 @@ class DBModel{
 				}
 			}
 
-			if (count($fieldList)==0)
-			{
-				return false;
-			}
-			else
+			if (count($fieldList)>0)
 			{
 	            $quotedKeys = array();
 	            foreach ($fieldList as $key => $value) {
@@ -819,22 +818,32 @@ class DBModel{
 	            }
 				//准备执行的SQL语句
 			 	$sql= sprintf('INSERT INTO %s (%s) VALUES (%s)',$this->tableName,implode(',',$quotedKeys),implode(',', $valueList));;
-
-				return	DBTool::executeSql($sql);
-
+				return	$sql;
 			}
-
+			return null;
 		}
 
+		//插入
+		public function insert($data)
+		{
+			$sql = $this->sqlOfInsert($data);
+			if (!is_null($sql))
+			{
+				return	DBTool::executeSql($sql);
+			}
+			return false;
+		}
 
 		/**
-		 * 执行修改，必须指定where才能执行。
-		 * @param $data array 需要更新的数据
-		 * @param $p_where array 条件，关联数组
+		 * 返回update用的sql
+		 * @param  [type] $data    [description]
+		 * @param  [type] $p_where [description]
+		 * @return [type]          [description]
 		 */
-		public function update($data,$p_where=null)
+		public function sqlOfUpdate($data,$p_where=null)
 		{
-			if (isset($p_where)){
+			if (isset($p_where))
+			{
 				$this->where($p_where);
 			}
 			if ($this->whereToStr() == null && $p_where!==true)
@@ -870,18 +879,30 @@ class DBModel{
 			if (count($arr)>0)
 			{
 				$str= join(' , ', $arr);
-				$sql='update '
+				$sql= 'update '
 					         .$this->tableName
 					         . ' ' .$this->t1
 					         .' set ' . $str
 					         . $this->whereToStr()
 					         . $this->limit;
+				return $sql;
+			}
+			return null;
+		}
+
+		/**
+		 * 执行修改，必须指定where才能执行。
+		 * @param $data array 需要更新的数据
+		 * @param $p_where array 条件，关联数组
+		 */
+		public function update($data,$p_where=null)
+		{
+			$sql = $this->sqlOfUpdate($data,$p_where);
+			if (!is_null($sql))
+			{
 				return	DBTool::executeSql($sql);
 			}
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 
 		/**
@@ -894,8 +915,12 @@ class DBModel{
 			return $this->update($data,true);
 		}
 
-		//删除符合条件的数据。必须指定where才能执行。
-		public function delete($p_where=null)
+		/**
+		 * 返回删除用的sql
+		 * @param  [type] $p_where [description]
+		 * @return [type]          [description]
+		 */
+		public function sqlOfDelete($p_where)
 		{
 			if (isset($p_where)){
 				$this->where($p_where);
@@ -909,6 +934,13 @@ class DBModel{
 				         . $this->tableName
 				         . $this->whereToStr(false)//mysql里，delete 不支持 别名
 				         . $this->limit;
+			return $sql;
+		}
+
+		//删除符合条件的数据。必须指定where才能执行。
+		public function delete($p_where=null)
+		{
+			$sql = $this->sqlOfDelete($p_where);
 			return	DBTool::executeSql($sql);
 		}
 
