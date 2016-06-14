@@ -302,7 +302,7 @@ class DBTool
      */
 	public static function getKeyInfoOfSql($sql)
     {
-        $info = array();
+        $conditions = array();
         // AX_DEBUG('SQL：'.json_encode($sql));
         $_tList = array();
         preg_match('/(select.*?from\s+(\S+)|delete.*?from\s+(\S+)|update\s+(\S+)|insert\s+into\s+(\S+))/i',$sql,$tMatch);
@@ -322,7 +322,7 @@ class DBTool
                 break;
 
             default:
-                return $info;
+                return $conditions;
                 break;
         }
         $_tList[''] = count($tMatch)>0?trim(implode('',array_slice($tMatch,2)),'\'`'):'';
@@ -347,7 +347,7 @@ class DBTool
                         if (count($keys) == count($values))
                         {
                             for ($i=0; $i < count($values) ; $i++) {
-                                $info[] = array(
+                                $conditions[] = array(
                                             'table'  => $_tList['']
                                             ,'action'=> $action
                                             ,'key'   => $keys[$i]
@@ -403,7 +403,7 @@ class DBTool
                 }
                 foreach ($_value as $_val) {
                     $_val = trim($_val,'\'` ');
-                    $info[] = array(
+                    $conditions[] = array(
                                 'table' =>$_tableName
                                 ,'action'=> $action
                                 ,'key'  =>$_key
@@ -414,7 +414,10 @@ class DBTool
             }
         }
 
-        return $info;
+        return array(
+                 'tables'=>$_tList
+                ,'conditions'=>$conditions
+            );
     }
 
 }

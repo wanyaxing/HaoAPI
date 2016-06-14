@@ -603,17 +603,17 @@ class AbstractHandler {
                     $_updateData[$_key] = $_value;
                 // }
 
-                if ((is_int($_value) || (is_string($_value) && strlen($_value)<10 ) ))
-                {
-                    $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
-                                        ,AXAPI_PROJECT_NAME
-                                        ,static::getTabelName()
-                                        ,$_key
-                                        ,$_value
-                                        );
-                    W2Cache::resetCacheKeyPool($w2CacheKeyPool);
-                    AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
-                }
+                // if ((is_int($_value) || (is_string($_value) && strlen($_value)<10 ) ))
+                // {
+                //     $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
+                //                         ,AXAPI_PROJECT_NAME
+                //                         ,static::getTabelName()
+                //                         ,$_key
+                //                         ,$_value
+                //                         );
+                //     W2Cache::resetCacheKeyPool($w2CacheKeyPool);
+                //     AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
+                // }
 
                 $_valueOriginal = $pModel->properyOriginal($_key);
                 if ((is_int($_valueOriginal) || (is_string($_valueOriginal) && strlen($_valueOriginal)<10 ) ))
@@ -639,6 +639,7 @@ class AbstractHandler {
         if ($pModel->isNewModel())
         {/** 新数据 */
             $_dbModel -> insert($_updateData);
+            static::updateCacheKeyPoolOfSql($_dbModel->sqlOfInsert($_updateData));//更新缓存池
             if (static::getTabelIdName()!=null)
             {
                 $newWhere = $_dbModel->init()
@@ -668,6 +669,7 @@ class AbstractHandler {
                           ->update($_updateData);
                 $newWhere = static::filterTableDataKeysInArray($pModel->properiesValue(),true);
             }
+            static::updateCacheKeyPoolOfSql($_dbModel->sqlOfUpdate($_updateData));//更新缓存池
         }
 
         return static::loadModelFirstInList($newWhere);
@@ -765,7 +767,22 @@ class AbstractHandler {
     public static function updateCacheKeyPoolOfSql($sql,$w2CacheKey=null)
     {
         $sqlInfo = DBTool::getKeyInfoOfSql($sql);
-        foreach ($sqlInfo as $info) {
+        AX_DEBUG($sqlInfo);
+        if (is_null($w2CacheKey) || count($sqlInfo['conditions'])==0 )
+        {//当重置缓存池时，重置无筛选的池子 或 当更新缓存池时，如果没有任何筛选，则添加一个默认方案（无筛选池子））
+            foreach ($sqlInfo['tables'] as $_t => $tableName)
+            {
+                $sqlInfo['conditions'][] = array(
+                                    'table' =>$tableName
+                                    ,'action'=> ''
+                                    ,'key'  =>''
+                                    ,'eq'   =>''
+                                    ,'value'=>''
+                                );
+            }
+        }
+        foreach ($sqlInfo['conditions'] as $info)
+        {
             if (is_string($info['value']) && strlen($info['value'])>10 )
             {
                 continue;
