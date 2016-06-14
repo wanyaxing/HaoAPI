@@ -292,4 +292,129 @@ class DBTool
 	    return array();
 	}
 
+	/**
+     * 分析sql，取得其中涉及到的字段及值
+     * select和delete语句，取所有筛选字段
+     * update语句，只取更新字段（不取筛选字段）
+     * insert语句，取更新字段。
+     * @param  string $sql
+     * @return array
+     */
+	public static function getKeyInfoOfSql($sql)
+    {
+        $info = array();
+        // AX_DEBUG('SQL：'.json_encode($sql));
+        $_tList = array();
+        preg_match('/(select.*?from\s+(\S+)|delete.*?from\s+(\S+)|update\s+(\S+)|insert\s+into\s+(\S+))/i',$sql,$tMatch);
+
+        switch (count($tMatch)) {
+            case 3:
+                $action = 'select';
+                break;
+            case 4:
+                $action = 'delete';
+                break;
+            case 5:
+                $action = 'update';
+                break;
+            case 6:
+                $action = 'insert';
+                break;
+
+            default:
+                return $info;
+                break;
+        }
+        $_tList[''] = count($tMatch)>0?trim(implode('',array_slice($tMatch,2)),'\'`'):'';
+
+        if ( $action == 'insert')
+        {// insert 语句需要特殊处理
+            preg_match_all('/\(.*?\)/', $sql , $groups ,PREG_SET_ORDER);
+            if (count($groups)>=2)
+            {
+                $keys = explode(',',$groups[0][0]);
+                foreach ($groups as $index=>$group) {
+                    $values = explode(',',$group[0]);
+                    foreach ($values as &$value) {
+                        $value = trim($value,'()\'` .');
+                    }
+                    if ($index==0)
+                    {
+                        $keys = $values;
+                    }
+                    else
+                    {
+                        if (count($keys) == count($values))
+                        {
+                            for ($i=0; $i < count($values) ; $i++) {
+                                $info[] = array(
+                                            'table'  => $_tList['']
+                                            ,'action'=> $action
+                                            ,'key'   => $keys[$i]
+                                            ,'eq'    => '='
+                                            ,'value' => $values[$i]
+                                        );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if ( $action == 'update')
+            {//update 语句，忽略查询字段。
+                $sql = preg_replace('/\swhere\s.*/i','',$sql);
+            }
+            /*
+            (?:(?<!\\\)\')(?:.(?!(?<!\\\)\'))*.?\'
+            ?: 表示本括号不参与捕获（即不保存结果）
+            (?<!\\\)\' 非左匹配（?<!本身不占字符），即匹配左侧不是反斜杠的单引号
+            .(?!(?<!\\\)\') 非右匹配，即匹配任意字符（但该字符右侧不是(左侧不是反斜杠的单引号)）
+            /is  i是忽略大小写  s是.匹配换行
+             */
+            preg_match_all('/(\S*\.|)(\S+)\s*([=\>\<]| is | not | in | like | between )+\s*([^\'`\s]\S*|(?:(?<!\\\)\')(?:.(?!(?<!\\\)\'))*.?\'|(?:(?<!\\\)`)(?:.(?!(?<!\\\)`))*.?`)/is', $sql , $matches ,PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                $_t     = trim($match[1],'()\'` .');
+                $_key   = trim($match[2],'()\'` ');
+                $_eq    = trim($match[3]);
+                $_value = trim($match[4],'() ;');
+                if (!is_null($_t))
+                {
+                    if (strpos($_value,'.')!==false && strpos($_value,'\'')!==0)
+                    {//此处忽略了 t2.id = t1.userID这样的情况。
+                        continue;
+                    }
+                    if (!isset($_tList[$_t]))
+                    {
+                        preg_match('/(\S+)\s+'.$_t.'\s+/',$sql,$tMatch);
+                        $_tList[$_t] = trim($tMatch[1],'\'`');
+                    }
+                }
+                $_tableName = $_tList[$_t];
+
+                if (strtolower($_eq) == 'in')
+                {
+                    $_value = explode(',',$_value);
+                }
+                else
+                {
+                    $_value = array($_value);
+                }
+                foreach ($_value as $_val) {
+                    $_val = trim($_val,'\'` ');
+                    $info[] = array(
+                                'table' =>$_tableName
+                                ,'action'=> $action
+                                ,'key'  =>$_key
+                                ,'eq'   =>$_eq
+                                ,'value'=>$_val
+                            );
+                }
+            }
+        }
+
+        return $info;
+    }
+
 }
