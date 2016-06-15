@@ -272,7 +272,7 @@ class ERROR_CODE
     public static $DEVICE_PLS_TYPE           = array(131, '请使用指定的推送方式',       'DEVICE_PLS_TYPE');
     public static $AMAP_UNKONW_LOCATION      = array(132, '无法根据地址找到您的坐标，或定位范围太过模糊，请完善您的地址信息再试。',       'AMAP_UNKONW_LOCATION');
     public static $SMS_PHONE_IS_BIND         = array(133, '该手机号已存在，不可用于绑定。',       'SMS_PHONE_IS_BIND');
-
+    public static $CAPTCHA_CODE_WRONG        = array(134, '验证码错误或已失效',       'CAPTCHA_CODE_WRONG');
 
 
     //如需更多错误码，请在以下延伸，建议使用四位数以上数字作为您的错误码。
