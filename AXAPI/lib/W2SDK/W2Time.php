@@ -242,9 +242,13 @@ class W2Time {
      * @return [string]           对应关系，如5分钟前
      */
     public static function getTimeToStringBetweenDateTimeWithToday($p_time=null){
+        $_r = '未知';
+        if ($p_time===null)
+        {
+            return $_r;
+        }
         $p_time = W2Time::getTimestamp($p_time);
         $_interval = W2Time::getTimeBetweenDateTime($p_time,time());
-        $_r = '未知';
         if($_interval<-60*60*24*30*12){
             $_r = sprintf('%s年前 %s',0 - intval($_interval/60/60/24/30/12),W2Time::timetostr($p_time,'m-d H:i'));
         } else if($_interval<-60*60*24*30){
@@ -256,27 +260,27 @@ class W2Time {
         } else if($_interval <- 60*60*24*2){
             $_r = sprintf('%s天前 %s',0-intval($_interval/60/60/24),W2Time::timetostr($p_time,'m-d H:i'));
         } else if (W2Time::getTimeBetweenDateTime($p_time,date("Y-m-d 00:00:00",strtotime("-1 day"))) < 0){
-            $_r = sprintf('前天 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('前天 %s',W2Time::timetostr($p_time,'H:i'));
         } else if (W2Time::getTimeBetweenDateTime($p_time,date("Y-m-d 00:00:00",time())) < 0){
-            $_r = sprintf('昨天 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('昨天 %s',W2Time::timetostr($p_time,'H:i'));
         } else if($_interval<-60*60*2){
-            $_r = sprintf('今天 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('今天 %s',W2Time::timetostr($p_time,'H:i'));
         } else if($_interval<-60*60){
-            $_r = sprintf('一小时前 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('一小时前 %s',W2Time::timetostr($p_time,'H:i'));
         } else if($_interval<-60){
-            $_r = sprintf('%s分钟%s %s',0-intval($_interval/60),$_isBeforeOrAfter?'前':'内',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('%s分钟%s %s',0-intval($_interval/60),'前',W2Time::timetostr($p_time,'H:i'));
         }else if($_interval<0){
-            $_r = sprintf('刚才 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('刚才 %s',W2Time::timetostr($p_time,'H:i'));
         }else if($_interval<60){
-            $_r = sprintf('马上 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('马上 %s',W2Time::timetostr($p_time,'H:i'));
         } else if($_interval<60*60){
-            $_r = sprintf('%s分钟内 %s',intval($_interval/60),W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('%s分钟内 %s',intval($_interval/60),W2Time::timetostr($p_time,'H:i'));
         } else if($_interval<60*60*2){
-            $_r = sprintf('一小时后 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('一小时后 %s',W2Time::timetostr($p_time,'H:i'));
         } else if (W2Time::getTimeBetweenDateTime($p_time,date("Y-m-d 00:00:00",strtotime("+1 day"))) < 0){
-            $_r = sprintf('今天 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('今天 %s',W2Time::timetostr($p_time,'H:i'));
         } else if (W2Time::getTimeBetweenDateTime($p_time,date("Y-m-d 00:00:00",strtotime("+2 day"))) < 0){
-            $_r = sprintf('明天 %s',W2Time::timetostr($p_time,'H:i:s'));
+            $_r = sprintf('明天 %s',W2Time::timetostr($p_time,'H:i'));
         } else if($_interval<60*60*24*7) {
             $_r = sprintf('%s天后 %s',intval($_interval/60/60/24),W2Time::timetostr($p_time,'m-d H:i'));
         } else if($_interval<60*60*24*30){
