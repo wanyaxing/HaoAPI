@@ -416,6 +416,7 @@ class DBTool
 
         return array(
                  'tables'=>$_tList
+                ,'action'=>$action
                 ,'conditions'=>$conditions
             );
     }

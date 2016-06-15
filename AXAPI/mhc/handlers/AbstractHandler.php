@@ -768,8 +768,8 @@ class AbstractHandler {
     {
         $sqlInfo = DBTool::getKeyInfoOfSql($sql);
         AX_DEBUG($sqlInfo);
-        if (is_null($w2CacheKey) || count($sqlInfo['conditions'])==0 )
-        {//当重置缓存池时，重置无筛选的池子 或 当更新缓存池时，如果没有任何筛选，则添加一个默认方案（无筛选池子））
+        if ( (!is_null($w2CacheKey) && count($sqlInfo['conditions'])==0) || (is_null($w2CacheKey) && ($sqlInfo['action']=='insert' || $sqlInfo['action']=='delete')))
+        {//当重置缓存池时,如果是insert或delete操作，则同时重置无筛选的池子 ； 当更新缓存池时，如果没有任何筛选（这种情况不常见，一般是没有status字段的表的接口才会碰到），则添加一个默认方案（无筛选池子））
             foreach ($sqlInfo['tables'] as $_t => $tableName)
             {
                 $sqlInfo['conditions'][] = array(
