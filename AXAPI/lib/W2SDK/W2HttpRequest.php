@@ -277,14 +277,11 @@ class W2HttpRequest {
      */
     public static function getRequestArrayString($p_key, $p_unique=false, $p_intOnly=false,$p_default=null){
         $_r = static::getRequestArray($p_key, $p_unique, $p_intOnly,$p_default);
-        if (!is_null($_r))
+        if (!is_null($_r) && is_array($_r))
         {
             return implode(',',$_r );
         }
-        else
-        {
-            return null;
-        }
+        return $_r;
     }
 
     /**
