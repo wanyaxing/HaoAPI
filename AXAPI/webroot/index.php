@@ -113,11 +113,18 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         //调用对应接口方法
         try {
 
-            $method = new ReflectionMethod(W2String::camelCase($apiController.'Controller'), W2String::camelCase('action'.$apiAction));
-            $results = $method->invoke(null,0);
-            // $apiController .= 'Controller';
-            // $apiAction = 'action'.$apiAction;
-            // $apiController::$apiAction();
+            // $method = new ReflectionMethod(W2String::camelCase($apiController.'Controller'), W2String::camelCase('action'.$apiAction));
+            // $results = $method->invoke(null,0);
+            $apiController = W2String::camelCase($apiController.'Controller');
+            $apiAction = W2String::camelCase('action'.$apiAction);
+            if (method_exists($apiController,$apiAction))
+            {
+                $results = $apiController::$apiAction();
+            }
+            else
+            {
+                $results = HaoResult::init(ERROR_CODE::$UNKNOWN_API_ACTION);
+            }
         } catch (Exception $e) {
             $results = HaoResult::init(array($e->getCode()==0?RUNTIME_CODE_ERROR_UNKNOWN:$e->getCode(),$e->getMessage(),$e->getMessage()),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$e->getLine().' in '.$e->getFile().': '.$e->getMessage().''):null);
         }
