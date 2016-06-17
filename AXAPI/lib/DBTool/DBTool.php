@@ -322,7 +322,7 @@ class DBTool
                 break;
 
             default:
-                return $conditions;
+                $action = 'unknown';
                 break;
         }
         $_tList[''] = count($tMatch)>0?trim(implode('',array_slice($tMatch,2)),'\'`'):'';
