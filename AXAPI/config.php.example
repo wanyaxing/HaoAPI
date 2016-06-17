@@ -67,6 +67,9 @@ define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目�
 // define('W2SMS_USER'  , 'USERNAME');
 // define('W2SMS_PASSWD', '123456');
 
+define('SMS_VERIFYCODE_SEND_INTERVAL', 60);//短信验证码发送间隔（单位：秒）
+define('SMS_VERIFYCODE_TIME_USEABLE', 60*5);//短信验证码有效期（单位：秒）
+
 /** 云之讯相关密钥 */
 // defin('UCPASS_ACCOUNTSID', '');
 // defin('UCPASS_TOKEN'     , '');
@@ -243,6 +246,8 @@ class ERROR_CODE
     public static $NO_TBALE_FOUND       = array(17, '没有对应的表存在',       'NO_TBALE_FOUND');
     public static $ONLY_ADMIN_ALLOW     = array(18, '仅限管理员使用此功能。',       'ONLY_ADMIN_ALLOW');
     public static $ONLY_VISITOR_ALLOW   = array(19, '您已登录，不可重复登录。',       'ONLY_VISITOR_ALLOW');
+    public static $UNKNOWN_API_ACTION   = array(20, '错误的请求地址，不可使用。',       'UNKNOWN_API_ACTION');
+
 
     //实际开发过程中，可以继续自定义更多的错误类型
     public static $LOGLIST_TYPE_WRONG   = array(101, '错误的日志类型',       'LOGLIST_TYPE_WRONG');
@@ -273,6 +278,7 @@ class ERROR_CODE
     public static $AMAP_UNKONW_LOCATION      = array(132, '无法根据地址找到您的坐标，或定位范围太过模糊，请完善您的地址信息再试。',       'AMAP_UNKONW_LOCATION');
     public static $SMS_PHONE_IS_BIND         = array(133, '该手机号已存在，不可用于绑定。',       'SMS_PHONE_IS_BIND');
     public static $CAPTCHA_CODE_WRONG        = array(134, '验证码错误或已失效',       'CAPTCHA_CODE_WRONG');
+    public static $SMS_VERIFYCODE_TIMEOUT    = array(135, '验证码已失效，请重新获取',       'SMS_VERIFYCODE_TIMEOUT');
 
 
     //如需更多错误码，请在以下延伸，建议使用四位数以上数字作为您的错误码。

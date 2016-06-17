@@ -384,31 +384,7 @@ class '.$_handlerName.' extends AbstractHandler {
         return parent::saveModel($pModel);
     }
 ';
-if (IS_SPECIAL_TABLE == 'smsVerify')
-{
-    $_handlerSrting .=  '    /**
-     * 判断验证码是否正确
-     * @param  string  $pTelephone  手机号
-     * @param  string  $pVerifyCode 验证码
-     * @param  string  $_useFor 验证码
-     * @return boolean               是/否
-     */
-    public static function isSmsVerifyRight($pTelephone,$pVerifyCode,$_useFor = null)
-    {
-        if (isset($pTelephone,$pVerifyCode))
-        {
-            $_smsVerifyModel = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$pTelephone,\'useFor\'=>$_useFor),\'id desc\',1,1);
-            if (is_object($_smsVerifyModel) && $_smsVerifyModel->getVerifyCode()==$pVerifyCode && $_smsVerifyModel->getVerifyTime()==null )
-            {
-                $_smsVerifyModel->setVerifyTime(date(\'Y-m-d H:i:s\'));
-                static::saveModel($_smsVerifyModel);
-                return true;
-            }
-        }
-        return false;
-    }';
-}
-else if (IS_SPECIAL_TABLE == 'unionLogin')
+if (IS_SPECIAL_TABLE == 'unionLogin')
 {
     $_handlerSrting .=  '    /**
      * 根据$unionToken,$unionType获得对应设置实例
@@ -1047,10 +1023,10 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
     {
         $telephone = W2HttpRequest::getRequestTelephone(\'telephone\',false);
         $_smsVerifyModelFound = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$telephone),\'id desc\');
-        // if (isset($_smsVerifyModelFound) && time() - strtotime($_smsVerifyModelFound->getCreateTime()) < 600)
-        // {//此处对发送频率作限制
-        //     return HaoResult::init(ERROR_CODE::$SMS_TOO_OFEN);
-        // }
+        if (isset($_smsVerifyModelFound) && defined(\'SMS_VERIFYCODE_SEND_INTERVAL\') && W2Time::getTimeBetweenDateTime(null,$_smsVerifyModelFound->getCreateTime()) < SMS_VERIFYCODE_SEND_INTERVAL )
+        {//此处对发送频率作限制
+            return HaoResult::init(ERROR_CODE::$SMS_TOO_OFEN);
+        }
 
         $_useFor = W2HttpRequest::getRequestInt(\'usefor\');
 
@@ -1109,16 +1085,24 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
     public static function actionCheckVerifyCode($_useFor = null)
     {
 
-        $isRight = SmsVerifyHandler::isSmsVerifyRight(W2HttpRequest::getRequestTelephone(\'telephone\',false),W2HttpRequest::getRequestString(\'verify_code\',false),$_useFor);
+        $pTelephone      = W2HttpRequest::getRequestTelephone(\'telephone\',false);
+        $pVerifyCode     =    W2HttpRequest::getRequestString(\'verify_code\',false);
 
-        if($isRight)
+        $_smsVerifyModel = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$pTelephone,\'useFor\'=>$_useFor),\'id desc\',1,1);
+
+        if (!is_object($_smsVerifyModel) || $_smsVerifyModel->getVerifyCode()!=$pVerifyCode || $_smsVerifyModel->getVerifyTime()!=null)
         {
-            return HaoResult::init(ERROR_CODE::$OK,\'正确\');
+            return HaoResult::init(ERROR_CODE::$SMS_VERIFYCODE_WRONG,false);
         }
-        else
+
+        if (defined(\'SMS_VERIFYCODE_TIME_USEABLE\') && W2Time::getTimeBetweenDateTime(null,$_smsVerifyModel->getCreateTime())>SMS_VERIFYCODE_TIME_USEABLE)
         {
-            return HaoResult::init(ERROR_CODE::$SMS_VERIFYCODE_WRONG);
+            return HaoResult::init(ERROR_CODE::$SMS_VERIFYCODE_TIMEOUT,false);
         }
+
+        $_smsVerifyModel->setVerifyTime(date(\'Y-m-d H:i:s\'));
+        static::save($_smsVerifyModel);
+        return HaoResult::init(ERROR_CODE::$OK,true);
 
     }
 
