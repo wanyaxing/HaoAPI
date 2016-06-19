@@ -187,6 +187,10 @@ class Utility
 					throw new Exception("您的登录信息已经失效，请重新登录。",RUNTIME_CODE_ERROR_NOT_USER);
 				}
 			}
+            else
+            {
+                $p_userID = null;
+            }
 			static::setCurrentUserID($p_userID);
 		}
 		return static::$_CURRENTUSERID ;
