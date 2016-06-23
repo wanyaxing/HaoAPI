@@ -110,7 +110,8 @@ class DBModel{
 
 	    /**
 	     * 初始化方法
-	     * @param $tableName string  数据库表名
+	     * @param  string $tableName 表名
+	     * @return DBModel
 	     */
 	    public static function instance($tableName='') {
 	    	$p_cls = __class__ ;
@@ -623,6 +624,7 @@ class DBModel{
 			}
 		}
 
+		/** 直接查询指定字段到值 */
 		public function selectField($field=null)
 		{
 			return $this->selectValue($field);
