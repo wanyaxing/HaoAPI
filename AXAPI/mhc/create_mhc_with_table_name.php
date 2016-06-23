@@ -1555,7 +1555,7 @@ $_controllerString .= '
         $savedModel = UserHandler::saveModel($tmpModel);
         if (Utility::getHeaderValue(\'Devicetoken\')!=\'\' && class_exists(\'DeviceController\'))
         {//登录后，绑定对应设备
-            DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),$savedModel);
+            DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),$savedModel,Utility::getHeaderValue(\'Clientinfo\'));
         }
         UserModel::$authViewDisabled = static::$authViewDisabledList[\'self\'];
         return HaoResult::init(ERROR_CODE::$OK,$savedModel,array(\'authInfo\'=>Utility::getHeaderAuthInfoForUserID($savedModel->getId())));
@@ -1700,7 +1700,7 @@ $_controllerString .= '
     {
         if (Utility::getHeaderValue(\'Devicetoken\')!=null && method_exists(\'DeviceController\',\'setDeviceWithUser\'))
         {//注销设备对应的用户信息
-            DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),null);
+            DeviceController::setDeviceWithUser(Utility::getHeaderValue(\'Devicetoken\'),null,Utility::getHeaderValue(\'Clientinfo\'));
         }
         return HaoResult::init(ERROR_CODE::$OK);
     }
