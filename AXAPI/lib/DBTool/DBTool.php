@@ -332,28 +332,32 @@ class DBTool
             preg_match_all('/\(.*?\)/', $sql , $groups ,PREG_SET_ORDER);
             if (count($groups)>=2)
             {
-                $keys = explode(',',$groups[0][0]);
                 foreach ($groups as $index=>$group) {
-                    $values = explode(',',$group[0]);
-                    foreach ($values as &$value) {
-                        $value = trim($value,'()\'` .');
-                    }
-                    if ($index==0)
+                    preg_match_all('/(?:(?<!\\\)\')(?:.(?!(?<!\\\)\'))*.?\'|(?:(?<!\\\)`)(?:.(?!(?<!\\\)`))*.?`/is',$group[0],$matches,PREG_PATTERN_ORDER);
+                    if (isset($matches[0]))
                     {
-                        $keys = $values;
-                    }
-                    else
-                    {
-                        if (count($keys) == count($values))
+                        $values = $matches[0];
+                        foreach ($values as &$value) {
+                            $value = trim($value,'()\'` .');
+                        }
+                        // AX_DEBUG($values);
+                        if ($index==0)
                         {
-                            for ($i=0; $i < count($values) ; $i++) {
-                                $conditions[] = array(
-                                            'table'  => $_tList['']
-                                            ,'action'=> $action
-                                            ,'key'   => $keys[$i]
-                                            ,'eq'    => '='
-                                            ,'value' => $values[$i]
-                                        );
+                            $keys = $values;
+                        }
+                        else
+                        {
+                            if (count($keys) == count($values))
+                            {
+                                for ($i=0; $i < count($values) ; $i++) {
+                                    $conditions[] = array(
+                                                'table'  => $_tList['']
+                                                ,'action'=> $action
+                                                ,'key'   => $keys[$i]
+                                                ,'eq'    => '='
+                                                ,'value' => $values[$i]
+                                            );
+                                }
                             }
                         }
                     }
