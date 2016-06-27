@@ -335,10 +335,10 @@ class AbstractHandler {
                 if (static::isUseCache())
                 {
                     //使用W2Cache全局内存型缓存（全局有效）
-                    $w2CacheKey = sprintf('ax_%s_model_%s_id_%d',AXAPI_PROJECT_NAME,static::getTabelName(),$pId);
+                    $w2CacheKey = sprintf('hao_%s_content_%s_id_%d',AXAPI_PROJECT_NAME,static::getTabelName(),$pId);
                     if (W2Cache::isCacheCanBeUsed($w2CacheKey))
                     {
-                        $w2CacheObj = W2Cache::getObj($w2CacheKey);
+                        $w2CacheObj = static::createModel(W2Cache::getObj($w2CacheKey));
                     }
                 }
                 if (isset($w2CacheObj))
@@ -381,14 +381,16 @@ class AbstractHandler {
             $_data = $_dbModel->field(static::getTableDataKeys(true))->select();
             if (count($_data)>0) {
                 foreach ($_data as $_index=>$_d) {
+
                     $_obj = static::createModel($_d);
                     $_objList[$_obj->getId()] = $_obj;
                     //存储到单次请求进程内缓存（其实就是变量）
                     static::cacheSave( $_obj->getId() , $_obj);
+
                     //存储到全局缓存（用redis等方法存起来）
-                    $w2CacheKey = sprintf('ax_%s_model_%s_id_%d',AXAPI_PROJECT_NAME,static::getTabelName(),$_obj->getId());
+                    $w2CacheKey = sprintf('hao_%s_content_%s_id_%d',AXAPI_PROJECT_NAME,static::getTabelName(),$_obj->getId());
                     AX_DEBUG('更新缓存：'.$w2CacheKey);
-                    W2Cache::setObj($w2CacheKey,$_obj);
+                    W2Cache::setObj($w2CacheKey,$_d);
                 }
             }
         }
@@ -430,7 +432,8 @@ class AbstractHandler {
 
         if ( static::isUseCache() )
         {
-            $w2CacheKey = sprintf('ax_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
+            $w2CacheKey = sprintf('hao_%s_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
+                                        ,AXAPI_PROJECT_NAME
                                         ,static::getTabelName()
                                         ,is_array($pField)?implode(',',$pField):$pField
                                         ,W2Array::sortAndBuildQuery($pWhere)
@@ -605,7 +608,7 @@ class AbstractHandler {
 
                 // if ((is_int($_value) || (is_string($_value) && strlen($_value)<10 ) ))
                 // {
-                //     $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
+                //     $w2CacheKeyPool = sprintf('hao_%s_pool_list_%s_key_%s_value_%s'
                 //                         ,AXAPI_PROJECT_NAME
                 //                         ,static::getTabelName()
                 //                         ,$_key
@@ -620,7 +623,7 @@ class AbstractHandler {
                 {
                     if ($_valueOriginal!==null)
                     {
-                        $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
+                        $w2CacheKeyPool = sprintf('hao_%s_pool_list_%s_key_%s_value_%s'
                                             ,AXAPI_PROJECT_NAME
                                             ,static::getTabelName()
                                             ,$_key
@@ -729,7 +732,7 @@ class AbstractHandler {
     public static function queryData($sql)
     {
         //使用W2Cache全局内存型缓存（全局有效）
-        $w2CacheKey = sprintf('ax_%s_query_%s_sql_%s',AXAPI_PROJECT_NAME,static::getTabelName(),$sql);
+        $w2CacheKey = sprintf('hao_%s_query_%s_sql_%s',AXAPI_PROJECT_NAME,static::getTabelName(),$sql);
         if (W2Cache::isCacheCanBeUsed($w2CacheKey))
         {
             if ($_SERVER['REQUEST_METHOD'] == 'GET')
@@ -787,7 +790,7 @@ class AbstractHandler {
             {
                 continue;
             }
-            $w2CacheKeyPool = sprintf('ax_%s_pool_list_%s_key_%s_value_%s'
+            $w2CacheKeyPool = sprintf('hao_%s_pool_list_%s_key_%s_value_%s'
                 ,AXAPI_PROJECT_NAME
                 ,$info['table']
                 ,$info['key']
@@ -822,7 +825,7 @@ class AbstractHandler {
             {
                 $_tableName = static::getTabelName();
             }
-            $w2CacheKey = sprintf('ax_%s_model_%s_id_%d',AXAPI_PROJECT_NAME,$_tableName,$_modelId);
+            $w2CacheKey = sprintf('hao_%s_content_%s_id_%d',AXAPI_PROJECT_NAME,$_tableName,$_modelId);
             if ($isDel)
             {
                 W2Cache::delCache($w2CacheKey);
