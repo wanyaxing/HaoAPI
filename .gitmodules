@@ -1,0 +1,3 @@
+[submodule "AXAPI/lib/W2SDK"]
+	path = AXAPI/lib/W2SDK
+	url = git@github.com:wanyaxing/W2SDK
