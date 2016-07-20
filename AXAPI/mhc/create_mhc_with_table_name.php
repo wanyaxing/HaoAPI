@@ -1060,6 +1060,29 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
                 break;
         }
 
+        //当缓存接口可用时，会进行单手机号短信次数验证，每个手机号有5次短信机会。
+        $w2CacheKeySmsTelCount = sprintf(\'hao_%s_sms_count_tel_%s\'
+                                    ,AXAPI_PROJECT_NAME
+                                    ,$telephone
+                                    );
+        if (W2Cache::incr($w2CacheKeySmsTelCount,1)>5)
+        {
+            W2Cache::incr($w2CacheKeySmsTelCount,1);
+            return HaoResult::init(ERROR_CODE::$USER_SMS_TEL_TOO_MORE);
+        }
+
+        //当缓存接口可用时，会进行单ip短信次数验证，每个IP有10次短信机会。
+        $w2CacheKeySmsIpCount = sprintf(\'hao_%s_sms_count_ip_%s\'
+                                    ,AXAPI_PROJECT_NAME
+                                    ,Utility::getCurrentIP()
+                                    );
+        if (W2Cache::incr($w2CacheKeySmsIpCount,1)>10)
+        {
+            W2Cache::incr($w2CacheKeySmsIpCount,1);
+            return HaoResult::init(ERROR_CODE::$USER_SMS_IP_TOO_MORE);
+        }
+
+
         $tmpModel =  new SmsVerifyModel();
         $_verifyCode = W2String::buildRandNumbers(6);
 
@@ -1538,12 +1561,38 @@ $_controllerString .= '
         //     return $_resultCaptchaCheck;
         // }
 
+        //当缓存接口可用时，会进行单ip出错次数验证，每个IP有5次错误机会。
+        $w2CacheKeyFailIp = sprintf(\'hao_%s_login_fail_ip_%s\'
+                                    ,AXAPI_PROJECT_NAME
+                                    ,Utility::getCurrentIP()
+                                    );
+        if (W2Cache::incr($w2CacheKeyFailIp,0)>5)
+        {
+            W2Cache::incr($w2CacheKeyFailIp,1);
+            return HaoResult::init(ERROR_CODE::$USER_LOGIN_IP_TOO_MORE);
+        }
+
+        //当缓存接口可用时，会进行用户登录错误次数验证，每个IP有5次错误机会。
+        $w2CacheKeyFailUser = sprintf(\'hao_%s_login_where_%s\'
+                                    ,AXAPI_PROJECT_NAME
+                                    ,md5(http_build_query(array_merge($pWhere,array(\'password\'=>\'\'))))
+                                    );
+        if (W2Cache::incr($w2CacheKeyFailUser,0)>20)
+        {
+            W2Cache::incr($w2CacheKeyFailUser,1);
+            return HaoResult::init(ERROR_CODE::$USER_LOGIN_USER_TOO_MORE);
+        }
+
         $tmpModel = UserHandler::loadModelFirstInList($pWhere);
 
         if (!is_object($tmpModel))
         {
+            //如果登录错误，记录登录错误次数。
+            W2Cache::incr($w2CacheKeyFailIp,1);
+            W2Cache::incr($w2CacheKeyFailUser,1);
             return HaoResult::init(ERROR_CODE::$USER_LOGIN_FAIL);
         }
+
         switch($tmpModel->getStatus())
         {
             case STATUS_DISABLED:

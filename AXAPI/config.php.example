@@ -279,6 +279,10 @@ class ERROR_CODE
     public static $SMS_PHONE_IS_BIND         = array(133, '该手机号已存在，不可用于绑定。',       'SMS_PHONE_IS_BIND');
     public static $CAPTCHA_CODE_WRONG        = array(134, '验证码错误或已失效',       'CAPTCHA_CODE_WRONG');
     public static $SMS_VERIFYCODE_TIMEOUT    = array(135, '验证码已失效，请重新获取',       'SMS_VERIFYCODE_TIMEOUT');
+    public static $USER_LOGIN_IP_TOO_MORE    = array(136, '因为安全原因，您此次登录失败，请休息一段时间再登录吧。',       'USER_LOGIN_IP_TOO_MORE');
+    public static $USER_LOGIN_USER_TOO_MORE  = array(137, '因为安全原因，您此次登录失败，请休息一段时间再登录吧。',       'USER_LOGIN_USER_TOO_MORE');
+    public static $USER_SMS_IP_TOO_MORE      = array(138, '因为安全原因，您此次验证码发送失败，请休息一段时间再试。',       'USER_SMS_IP_TOO_MORE');
+    public static $USER_SMS_TEL_TOO_MORE     = array(139, '因为安全原因，您此次验证码发送失败，请休息一段时间再试。',       'USER_SMS_TEL_TOO_MORE');
 
 
     //如需更多错误码，请在以下延伸，建议使用四位数以上数字作为您的错误码。

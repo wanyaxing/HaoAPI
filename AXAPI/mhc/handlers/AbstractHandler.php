@@ -436,7 +436,7 @@ class AbstractHandler {
                                         ,AXAPI_PROJECT_NAME
                                         ,static::getTabelName()
                                         ,is_array($pField)?implode(',',$pField):$pField
-                                        ,W2Array::sortAndBuildQuery($pWhere)
+                                        ,md5(http_build_query($pWhere))
                                         ,$pOrder
                                         ,$pPageIndex
                                         ,$pPageSize
