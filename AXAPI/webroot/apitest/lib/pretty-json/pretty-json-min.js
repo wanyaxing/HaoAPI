@@ -30,7 +30,7 @@ PrettyJSON.util = {
 }
 
 PrettyJSON.tpl.Node = '' + '<span class="node-container">' + '<span class="node-top node-bracket" />' + '<span class="node-content-wrapper">' + '<ul class="node-body" />' + '</span>' + '<span class="node-down node-bracket" />' + '</span>';
-PrettyJSON.tpl.Leaf = '' + '<span class="leaf-container">' + '<span class="<%= type %>" ondblclick="selectPrettySpan(this,event);"> <%=data%></span><span><%= coma %></span>' + '</span>';//asinw edit
+PrettyJSON.tpl.Leaf = '' + '<span class="leaf-container">' + '<span class="<%= type %>" ondblclick="selectPrettySpan(this,event);"><%=data%></span><span><%= coma %></span>' + '</span>';//asinw edit
 PrettyJSON.view.Node = Backbone.View.extend({
     tagName: 'span',
     data: null,
