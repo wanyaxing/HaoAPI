@@ -57,6 +57,12 @@ define('W2LOG_PATH' , AXAPI_ROOT_PATH . '/logs/');         /** 日志存储目�
 // define('W2PUSH_API_KEY_IOS'       , '2100023226814');
 // define('W2PUSH_SECRET_KEY_IOS'    , 'b632046c0cewfwe985eabe00');
 
+// 环信 easemob.com
+// define('W2EASEMOB_CLIENT_ID'       , 'mqcvw979K9lnXNOPVNHHSEDETv');
+// define('W2EASEMOB_CLIENT_SECRET'   , 'Q3NEuLTn9qhkf2zjREL8aDyuFB4GV66');
+// define('W2EASEMOB_ORG_NAME'        , '4Ogw8tkXC');
+// define('W2EASEMOB_APP_NAME'        , 'VaLbts3c');
+
 /** 七牛配置 */
 // define('W2QINIU_QINIU_BUCKET'   , 'test');
 // define('W2QINIU_QINIU_DOMAIN'   , '7u2sdg.test.z0.glb.clouddn.com');
