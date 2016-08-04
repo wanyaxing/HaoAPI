@@ -524,7 +524,7 @@ $_modelString .= '
 ';
 if (IS_SPECIAL_TABLE == 'user')
 {
-    $_modelString .= '        if (array_key_exists(\'password\', $pData))//axing edit
+    $_modelString .= '        if (is_array($pData) && array_key_exists(\'password\', $pData))//axing edit
         {
             $_o->setPassword($pData[\'password\'],false);//从数组（来自数据库）转化成UserModel,其密码就是加密后字符串，所以，不要再次加密。
         }';
