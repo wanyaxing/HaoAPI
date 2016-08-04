@@ -151,6 +151,6 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
     }
 
     //记录接口日志
-    file_put_log($_REQUEST,'access');
+    file_put_log(Utility::json_encode_unicode($_REQUEST) . ' ' . (is_object($results)?$results->errorCode:0),'access');
 
     exit;
