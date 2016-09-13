@@ -112,6 +112,7 @@
 <script type="text/javascript" src="lib/pretty-json/pretty-json-min.js" ></script>
 <script type="text/javascript" src="js/apitest.js?v=160318" ></script>
 <?php
+// 基础文件引入
   if (file_exists('apitest-config.js'))
   {
     printf('<script type="text/javascript" src="%s" ></script>','apitest-config.js');
@@ -124,16 +125,39 @@
   {
     print('<script type="text/javascript">alert("错误，无法引入apitest_config.js文件，请检查。（初始化apitest时，需要将apitest_config-example.js改为apitest_config.js哦。");</script>');
   }
+// 第一版，引入同目录的conf
   foreach(  (array)glob(__dir__ . "/apitest-config.*.js" ) as $_jobFile )
   {
     print("\n");
     printf('<script type="text/javascript" src="%s" ></script>',basename($_jobFile));
   }
+// 第二版，引入conf目录的配置文件
   foreach(  (array)glob(__dir__ . "/conf/apitest_config.*.js" ) as $_jobFile )
   {
     print("\n");
     printf('<script type="text/javascript" src="conf/%s" ></script>',basename($_jobFile));
   }
+// 第三版，使用conf/include_from_mhc.php来引入mhc目录中的配置文件
+//
+  if (file_exists(__dir__.'/conf/include_from_mhc.php'))
+  {
+    $_mhcRootDir = __dir__.'/'.'../../mhc';
+    if (is_dir($_mhcRootDir))
+    {
+      foreach(  (array)glob($_mhcRootDir . "/*" ) as $_mhcDir )
+      {
+        if (is_dir($_mhcDir))
+        {
+          foreach(  (array)glob($_mhcDir . "/apitest_config.*.js" ) as $_jobFile )
+          {
+            print("\n");
+            printf('<script type="text/javascript" src="conf/include_from_mhc.php?dir=%s&conf=%s" ></script>',basename($_mhcDir),basename($_jobFile));
+          }
+        }
+      }
+    }
+  }
+// 第1.5版，支持json配置
   $configJsonFileList = array();
   foreach(  (array)glob(__dir__ . "/conf/apitest_config.*.json" ) as $_jobFile )
   {
@@ -143,6 +167,7 @@
   {
     printf('<script type="text/javascript">var configJsonFileList = %s ;</script>', json_encode($configJsonFileList));
   }
+//
 ?>
 
 </html>

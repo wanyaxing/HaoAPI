@@ -84,12 +84,6 @@ else
 {
     print('即将开始更新对应文件：'."\n");
 }
-// chmod($_phpPath . 'results/',0664);
-// chmod($_javaPath . 'results/',0664);
-// chmod($_iosPath . 'results/',0664);
-// chmod($_phpPath . 'connects/',0664);
-// chmod($_javaPath . 'connects/',0664);
-// chmod($_iosPath . 'connects/',0664);
 
 umask(0002);
 
@@ -174,7 +168,6 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     }
     $resultFileContent .= "\n\n" . '}';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Result.php',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Result.php'."\n");
     // print($resultFileContent);
     //--------------------------     java           --------------------------------
@@ -222,7 +215,6 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     }
     $resultFileContent .= "\n\n" . '}';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Result.java',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Result.java'."\n");
     // print($resultFileContent);
 
@@ -269,7 +261,6 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     }
     $resultFileContent .= "\n\n" . '@end';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Result.m',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Result.m'."\n");
     // print($resultFileContent);
 
@@ -310,7 +301,6 @@ foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
     }
     $resultFileContent .= "\n\n" . '@end';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Result.h',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Result.h'."\n");
     // print($resultFileContent);
 
@@ -523,7 +513,6 @@ function createConnectFromConfig($_jobFile)
     }
     $resultFileContent .= "\n\n" . '}';
     file_put_contents($_resultFileDir.$modelName.'Connect.php',$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Connect.php',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Connect.php'."\n");
     // print($resultFileContent);
 
@@ -659,7 +648,6 @@ function createConnectFromConfig($_jobFile)
 
     $resultFileContent .= "\n\n" . '}';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Connect.java',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Connect.java'."\n");
     // print($resultFileContent);
 
@@ -760,7 +748,6 @@ function createConnectFromConfig($_jobFile)
 
     $resultFileContent .= "\n\n" . '@end';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Connect.m',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Connect.m'."\n");
     // print($resultFileContent);
 
@@ -819,7 +806,6 @@ function createConnectFromConfig($_jobFile)
 
     $resultFileContent .= "\n\n" . '@end';
     file_put_contents($resultFilePath,$resultFileContent);
-    chmod($_resultFileDir.$modelName.'Connect.h',0664);
     print('已更新：'.$_resultFileDir.$modelName.'Connect.h'."\n");
     // print($resultFileContent);
 

@@ -168,10 +168,15 @@ $_modelName         = W2String::camelCaseWithUcFirst($_tableName).'Model';
 $_controllerName    = W2String::camelCaseWithUcFirst($_tableName).'Controller';
 $_apitestConfigName = 'apitest_config.'.W2String::camelCaseWithUcFirst($_tableName);
 
-$_handlerFile       = AXAPI_ROOT_PATH.'/mhc/handlers/'.$_handlerName.'.php';
-$_modelFile         = AXAPI_ROOT_PATH.'/mhc/models/'.$_modelName.'.php';
-$_controllerFile    = AXAPI_ROOT_PATH.'/mhc/controllers/'.$_controllerName.'.php';
-$_apitestConfigFile = AXAPI_ROOT_PATH.'/webroot/apitest/conf/'.$_apitestConfigName.'.js';
+$_mhcDir            = AXAPI_ROOT_PATH.'/mhc/'.W2String::camelCaseWithUcFirst($_tableName);
+if (!is_dir($_mhcDir))
+{
+    mkdir($_mhcDir);
+}
+$_handlerFile       = $_mhcDir.'/'.$_handlerName.'.php';
+$_modelFile         = $_mhcDir.'/'.$_modelName.'.php';
+$_controllerFile    = $_mhcDir.'/'.$_controllerName.'.php';
+$_apitestConfigFile = $_mhcDir.'/'.$_apitestConfigName.'.js';
 
 $filesExists = array();
 if(file_exists($_handlerFile))
@@ -247,7 +252,7 @@ foreach ($_filedList as $_fieldRow) {
         print('警告：您不可以在mysql使用以下字符作为字段：'.$_fieldRow['Field']."\n");
         exit;
     }
-    if ($_tableIdName === null && $_fieldRow['Key']=='PRI' && $_fieldRow['Extra']=='auto_increment')
+    if ($_tableIdName === null && $_fieldRow['Key']=='PRI')// && $_fieldRow['Extra']=='auto_increment'
     {
         $_tableIdName = $_fieldRow['Field'];
     }

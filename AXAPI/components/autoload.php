@@ -4,16 +4,20 @@ if(!function_exists('___autoloadHaoApiClassByWanYaXing')) {
 
     function ___autoloadHaoApiClassByWanYaXing($p_className) {
         $_dir = '';
+
         if (strpos($p_className,'Handler')!==false)
         {
+            $classNameV3 = str_replace('Handler', '', $p_className).'/'.$p_className;
             $_dir = AXAPI_ROOT_PATH.'/mhc/handlers';
         }
         else if (strpos($p_className,'Model')!==false)
         {
+            $classNameV3 = str_replace('Model', '', $p_className).'/'.$p_className;
             $_dir = AXAPI_ROOT_PATH.'/mhc/models';
         }
         else if (strpos($p_className,'Controller')!==false)
         {
+            $classNameV3 = str_replace('Controller', '', $p_className).'/'.$p_className;
             $_dir = AXAPI_ROOT_PATH.'/mhc/controllers';
         }
         else if (strpos($p_className,'W2')!==false)
@@ -26,11 +30,23 @@ if(!function_exists('___autoloadHaoApiClassByWanYaXing')) {
         }
         if ($_dir!='')
         {
+            if (isset($classNameV3))
+            {
+                $classNameV3 = preg_replace_callback('/([A-Za-z])/us', function($matches){
+                                                        return '['.strtolower($matches[1]).strtoupper($matches[1]).']';
+                                                    }, $classNameV3);
+                foreach (glob(AXAPI_ROOT_PATH.'/mhc/'.$classNameV3.'.php') as $_file) {
+                    include $_file;
+                    return true;
+                    break;
+                }
+            }
             $p_className = strtolower($p_className).'.php';
             foreach (glob($_dir.'/*.php') as $_file) {
                 if (strtolower(basename($_file)) == $p_className)
                 {
                     include $_file;
+                    return true;
                     break;
                 }
             }
