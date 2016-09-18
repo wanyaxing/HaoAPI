@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v160918 return number of single executeSql
 // v160129 where with qutoedKeys
 // v151014 	(is_string($p_value) || is_int($p_value)))
 // v150923 优化t1逻辑
@@ -200,12 +201,12 @@ class DBTool
      * 执行sql语句或sql数组语句
      * @param array sql语句 或 sql数组语句
      * @param string sql 编码类型
-     * @return array 执行结果
+     * @return array 执行结果 sql影响的行数。
      */
 	public static function executeSql($p_sqls, $p_encode="utf8"){
 	    $_sqls = (is_array($p_sqls)) ? $p_sqls : array($p_sqls);
-	    $_data = array();
-	    if (count($_sqls)>0 ) {
+        if (count($_sqls)>0 ) {
+    	    $_data = array();
 	        $_mysqli = self::getCoon();
 
 	        foreach ($_sqls as $_sql) {
@@ -220,8 +221,9 @@ class DBTool
 	            throw new Exception($_mysqli->error,E_ERROR);
 	        }
 		    self::debug('executeSql END');
-	    }
-	    return $_data;
+    	    return is_array($p_sqls)?$_data:$_data[0];
+        }
+        return false;
 	}
 
     /**
