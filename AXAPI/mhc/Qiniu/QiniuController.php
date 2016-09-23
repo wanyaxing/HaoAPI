@@ -117,10 +117,21 @@ class QiniuController{
         return Utility::getArrayForResults(RUNTIME_CODE_OK,'',$previewUrls);
 	}
 
+    /** 直接抓取网络资源到七牛（同步，所以不要用来抓取太大的文件哦） */
+    public static function actionFetchUrlToQiniu()
+    {
+
+        $previewUrl = W2Qiniu::fetchUrlToQiniu(W2HttpRequest::getRequestString('url',false),W2HttpRequest::getRequestString('filename'));
+        if (!is_string($previewUrl))
+        {
+            return HaoResult::init(ERROR_CODE::$UNKNOWN_ERROR,$previewUrl);
+        }
+        return HaoResult::init(ERROR_CODE::$OK,$previewUrl);
+    }
     public static function actionTest()
     {
-        $result = W2Web::loadStringByUrl('http://api-haoye.appzd.net/apitest/apitest.php','post',$_POST,array("Test:\r\n",'Test2:2'));
-        echo $result;
+        $result = W2Qiniu::fetchUrlToQiniu('http://mobile-bailihui.haoxitech.com/images/design/non_payment.png');
+        var_dump($result);
         exit;
     }
 

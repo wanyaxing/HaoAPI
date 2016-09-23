@@ -45,6 +45,18 @@ apiList.push({
         ]
       });
 
+apiList.push({
+        'title':'七牛:直接抓取网络资源到七牛'
+        ,'desc':'同步，所以不要用来抓取太大的文件。'
+        ,'time':''
+        ,'action':'/qiniu/fetch_url_to_qiniu'
+        ,'method':'post'
+        ,'request':[
+            { 'key':'url'                     ,'type':'string'     ,'required': true ,'test-value':'http://www.baidu.com/img/bd_logo1.png'              ,'title':'目标资源文件网址' ,'desc':'' }
+           ,{ 'key':'filename'                ,'type':'string'     ,'required': false ,'test-value':''              ,'title':'保存到文件名，可以不传' ,'desc':'' }
+        ]
+      });
+
 // apiList.push({
 //         'title':'七牛:压缩七牛文件成包'
 //         ,'desc':''
