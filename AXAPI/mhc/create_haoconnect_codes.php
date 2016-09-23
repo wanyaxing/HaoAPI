@@ -114,8 +114,22 @@ umask(0002);
 
 
 // ===================== Models => Results  ====================================
-$_modelsPath = AXAPI_ROOT_PATH.'/mhc/models/';
-foreach(  (array)glob($_modelsPath . "*Model.php" ) as $_jobFile )
+$modelFileList = (array)glob(AXAPI_ROOT_PATH.'/mhc/models/' . '*Model.php' );
+$confFileList = array();
+
+foreach ((array)glob(AXAPI_ROOT_PATH.'/mhc/*' ) as $_dirFile) {
+    if (is_dir($_dirFile))
+    {
+        foreach ((array)glob($_dirFile . '/*Model.php') as $_jobFile) {
+            $modelFileList[] = $_jobFile;
+        }
+        foreach ((array)glob($_dirFile . '/apitest_config.*.js') as $_jobFile) {
+            $confFileList[] = $_jobFile;
+        }
+    }
+}
+
+foreach(  $modelFileList as $_jobFile )
 {
     $fileInfo = pathinfo($_jobFile);
     $modelName = str_replace('Model.php','',$fileInfo['basename']);
@@ -315,6 +329,11 @@ foreach(  (array)glob($_apitestConfigPath . "apitest_config.*.js" ) as $_jobFile
 }
 $_apitestConfigPath = AXAPI_ROOT_PATH.'/webroot/apitest/';
 foreach(  (array)glob($_apitestConfigPath . "apitest-config.*.js" ) as $_jobFile )
+{
+    createConnectFromConfig($_jobFile);
+}
+
+foreach( $confFileList as $_jobFile )
 {
     createConnectFromConfig($_jobFile);
 }

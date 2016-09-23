@@ -467,8 +467,32 @@ class Utility
 	public static function getDescriptionsInModel($modelName)
 	{
 	    $keyList = array();
-		$_modelFilePath = AXAPI_ROOT_PATH.'/mhc/models/'.W2String::camelCaseWithUcFirst($modelName).'Model.php';
-		if (file_exists($_modelFilePath))
+        $p_className = $modelName.'Model';
+         $classNameV3 = str_replace('Model', '', $p_className).'/'.$p_className;
+         $_dir = AXAPI_ROOT_PATH.'/mhc/models';
+        if (isset($classNameV3))
+        {
+            $classNameV3 = preg_replace_callback('/([A-Za-z])/us', function($matches){
+                                                    return '['.strtolower($matches[1]).strtoupper($matches[1]).']';
+                                                }, $classNameV3);
+            foreach (glob(AXAPI_ROOT_PATH.'/mhc/'.$classNameV3.'.php') as $_file) {
+                $_modelFilePath = $_file;
+                break;
+            }
+        }
+        if (!isset($_modelFilePath))
+        {
+            $p_className = strtolower($p_className).'.php';
+            foreach (glob($_dir.'/*.php') as $_file) {
+                if (strtolower(basename($_file)) == $p_className)
+                {
+                    $_modelFilePath =  $_file;
+                    break;
+                }
+            }
+        }
+
+		if (isset($_modelFilePath) && file_exists($_modelFilePath))
 		{
 		    $content = file_get_contents($_modelFilePath);
 		    preg_match_all('/(\/\*[^\/]*?\*\/|\/\/.*|)\s+public function get(.*?)\(/',$content,$matches,PREG_SET_ORDER);
