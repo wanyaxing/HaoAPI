@@ -299,13 +299,13 @@ class Utility
     	$tmpArr = array();
     	if (is_array($array))
     	{
-    		$isList = W2Array::isList($array);
+            $isList = W2Array::isList($array);
     		foreach ($array as $_key => $_value) {
     			$_tmp =  static::getTmpArr(
 			    						$_value
 			    						,$key!=''
 					    					?$key
-					    						.($isList
+					    						.( ( $isList || is_array($_value) )
 					    						 	?'['.$_key.']'
 					    						 	:'[]'
 					    						 )
