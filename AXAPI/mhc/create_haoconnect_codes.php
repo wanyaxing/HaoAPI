@@ -437,7 +437,7 @@ function createConnectFromConfig($_jobFile)
         }
         else
         {
-            $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
+            $isDoSomethingForResult = ($modelName=='User' && ($funcName=='Login'||$funcName=='UnionLogin'))
                                         || ($modelName=='User' && $funcName=='LogOut')
                                         ;
             $resultFileContent .= "\n"."\n".$descLine;
@@ -446,7 +446,7 @@ function createConnectFromConfig($_jobFile)
                             ."\n".'        '.($isDoSomethingForResult?'$result =':'return').' '.(strpos($apiObj['action'],'http')===0?'HaoHttpClient::loadContent':'static::request').'(\''.$apiObj['action'].'\',$params,'.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').');';
             if ($isDoSomethingForResult)
             {
-                if ($modelName=='User' && $funcName=='Login')
+                if ($modelName=='User' && ($funcName=='Login'||$funcName=='UnionLogin'))
                 {
                     $resultFileContent .= "\n".'        if ($result->isResultsOK())'
                                          ."\n".'        {'
@@ -601,7 +601,7 @@ function createConnectFromConfig($_jobFile)
         }
         else
         {
-            $isDoSomethingForResult = ($modelName=='User' && $funcName=='Login')
+            $isDoSomethingForResult = ($modelName=='User' && ($funcName=='Login'||$funcName=='UnionLogin'))
                                         || ($modelName=='User' && $funcName=='LogOut')
                                         ;
             $resultFileContent .= "\n"."\n".$descLine;
@@ -610,7 +610,7 @@ function createConnectFromConfig($_jobFile)
                             ."\n".'        return request("'.$apiObj['action'].'", params, '.(strtoupper($apiObj['method'])=='POST'?'METHOD_POST':'METHOD_GET').', ';
             if ($isDoSomethingForResult)
             {
-                if ($modelName=='User' && $funcName=='Login')
+                if ($modelName=='User' && ($funcName=='Login'||$funcName=='UnionLogin'))
                 {
                     $resultFileContent .= 'new HaoResultHttpResponseHandler() {'
                                     ."\n".'            @Override'
