@@ -137,7 +137,7 @@ class AxapiController extends AbstractController{
                     // $result[] = UserHandler::loadModelFirstInList(array(),'rand()');
                     break;
                 case 2:
-                    $result[] = SmsVerifyHandler::loadModelFirstInList(array(),'rand()');
+                    // $result[] = SmsVerifyHandler::loadModelFirstInList(array(),'rand()');
                     break;
                 case 3:
                     // $result[] = UnionLoginHandler::loadModelFirstInList(array(),'rand()');
@@ -217,7 +217,7 @@ class AxapiController extends AbstractController{
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
 
-    /** 获取一个验证码图像 */
+    /** 校验验证码图像 */
     public static function actionCheckCaptcha()
     {
         $captchaCode  = W2HttpRequest::getRequestString('captcha_code',false,'',1);
