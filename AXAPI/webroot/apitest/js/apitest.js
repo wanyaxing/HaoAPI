@@ -325,7 +325,7 @@ function reFormGroup(_formType, _formRequest)
     }
     else if (_formRequest['type'] == 'text')
     {
-        _inputs.eq(1).replaceWith('<textarea ' + (_formType == 'field' ? ' name="' + _formRequest['key'] + '"': '') + (_formRequest['key'].indexOf('[]') > 0 ? ' multiple="multiple"': '') + '/>')
+        _inputs.eq(1).replaceWith('<textarea  name="' + _formRequest['key'] + '">'+_formRequest['test-value']+'</textarea>');
     }
     else if (_formRequest['type'] == 'md5')
     {
