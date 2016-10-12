@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v161012 sql 分析，支持select的order
 // v160918 return number of single executeSql
 // v160129 where with qutoedKeys
 // v151014 	(is_string($p_value) || is_int($p_value)))
@@ -304,6 +305,7 @@ class DBTool
      */
 	public static function getKeyInfoOfSql($sql)
     {
+        $result = array();
         $conditions = array();
         // AX_DEBUG('SQL：'.json_encode($sql));
         $_tList = array();
@@ -368,6 +370,30 @@ class DBTool
         }
         else
         {
+            if ($action == 'select')
+            {
+                preg_match_all('/order\s+by\s+(\S*\.|)(\S+)\s*/is', $sql , $matches ,PREG_SET_ORDER);
+                foreach ($matches as $match) {
+                    $_t     = trim($match[1],'()\'` .');
+                    $_key   = trim($match[2],'()\'` ');
+                    if (!is_null($_t))
+                    {
+                        if (!isset($_tList[$_t]))
+                        {
+                            preg_match('/(\S+)\s+'.$_t.'\s+/',$sql,$tMatch);
+                            $_tList[$_t] = trim($tMatch[1],'\'`');
+                        }
+                    }
+                    $_tableName = $_tList[$_t];
+                    $result['order']    = array(
+                                'table' =>$_tableName
+                                ,'action'=> $action
+                                ,'key'  =>$_key
+                            );
+                }
+            }
+
+
             if ( $action == 'update')
             {//update 语句，忽略查询字段。
                 $sql = preg_replace('/\swhere\s.*/i','',$sql);
@@ -418,13 +444,17 @@ class DBTool
                             );
                 }
             }
+
         }
 
-        return array(
-                 'tables'=>$_tList
-                ,'action'=>$action
-                ,'conditions'=>$conditions
-            );
+
+        $result['tables'] = $_tList;
+        $result['action'] = $action;
+        $result['conditions'] = $conditions;
+
+
+
+        return $result;
     }
 
 }

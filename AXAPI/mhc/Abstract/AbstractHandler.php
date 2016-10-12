@@ -806,6 +806,26 @@ class AbstractHandler {
                 W2Cache::resetCacheKeyPool($w2CacheKeyPool);
                 AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
             }
+            if (is_null($w2CacheKey))
+            {
+                $w2CacheOrderPool = sprintf('hao_%s_pool_list_%s_orderkey_%s'
+                    ,AXAPI_PROJECT_NAME
+                    ,$info['table']
+                    ,$info['key']
+                    );
+                W2Cache::resetCacheKeyPool($w2CacheOrderPool);
+                AX_DEBUG('更新缓存排序池：'.$w2CacheOrderPool);
+            }
+        }
+        if ($sqlInfo['action'] == 'select' && isset($sqlInfo['order']) && !is_null($w2CacheKey))
+        {
+            $w2CacheOrderPool = sprintf('hao_%s_pool_list_%s_orderkey_%s'
+                ,AXAPI_PROJECT_NAME
+                ,$sqlInfo['order']['table']
+                ,$sqlInfo['order']['key']
+                );
+            W2Cache::addToCacheKeyPool($w2CacheOrderPool,$w2CacheKey);
+            AX_DEBUG('追加到缓存排序池：'.$w2CacheOrderPool);
         }
     }
 
