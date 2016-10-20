@@ -645,10 +645,7 @@ class AbstractHandler {
             static::updateCacheKeyPoolOfSql($_dbModel->sqlOfInsert($_updateData));//更新缓存池
             if (static::getTabelIdName()!=null)
             {
-                $newWhere = $_dbModel->init()
-                            ->where($_updateData)->order(sprintf('%s desc',static::getTabelIdName()))
-                            ->field(static::getTabelIdName())
-                            ->selectSingle();
+                $newWhere =  array(static::getTabelIdName() => $_dbModel->getLastInsertId());
             }
             else
             {
@@ -675,7 +672,14 @@ class AbstractHandler {
             static::updateCacheKeyPoolOfSql($_dbModel->sqlOfUpdate($_updateData));//更新缓存池
         }
 
-        return static::loadModelFirstInList($newWhere);
+        if (count(array_keys($newWhere))>0)
+        {
+            return static::loadModelFirstInList($newWhere);
+        }
+        else
+        {
+            return null;
+        }
     }
 
 
