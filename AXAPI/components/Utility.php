@@ -444,7 +444,7 @@ class Utility
 		}
 		else
 		{
-			return HaoResult::init(ERROR_CODE::$SIGNATURE_WRONG);
+			return HaoResult::init(ERROR_CODE::$SIGNATURE_WRONG,(AXAPI_DEPLOY_STATUS==1?$isAuthed:''));
 		}
 
     }
