@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v161020 支持getLastInsertId
 // v161012 sql 分析，支持select的order
 // v160918 return number of single executeSql
 // v160129 where with qutoedKeys
@@ -455,6 +456,13 @@ class DBTool
 
 
         return $result;
+    }
+
+    /** 取得上一次插入数据的id */
+    public static function getLastInsertId()
+    {
+        $_mysqli = self::getCoon();
+        return $_mysqli->insert_id;
     }
 
 }

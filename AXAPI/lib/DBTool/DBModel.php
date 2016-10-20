@@ -6,7 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
-// v160219 分页参数错误。
+// v161020 支持getLastInsertId
 // v160129 insert with qutoedKeys
 // v151231 selectValues 如果查询的是多字段，则等同于select了。
 // v151231 else if ($this->whereToStr() == null)
@@ -951,5 +951,12 @@ class DBModel{
 		{
 			return $this->delete(true);
 		}
+
+
+	    /** 取得上一次插入数据的id */
+	    public static function getLastInsertId()
+	    {
+	        return DBTool::getLastInsertId();
+	    }
 
 }
