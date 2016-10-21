@@ -642,7 +642,7 @@ class AbstractHandler {
         if ($pModel->isNewModel())
         {/** 新数据 */
             $_dbModel -> insert($_updateData);
-            static::updateCacheKeyPoolOfSql($_dbModel->sqlOfInsert($_updateData));//更新缓存池
+            static::updateCacheKeyPoolOfInsertValues($_dbModel,$_updateData);//更新缓存池
             if (static::getTabelIdName()!=null)
             {
                 $newWhere =  array(static::getTabelIdName() => $_dbModel->getLastInsertId());
@@ -669,7 +669,7 @@ class AbstractHandler {
                           ->update($_updateData);
                 $newWhere = static::filterTableDataKeysInArray($pModel->properiesValue(),true);
             }
-            static::updateCacheKeyPoolOfSql($_dbModel->sqlOfUpdate($_updateData));//更新缓存池
+            static::updateCacheKeyPoolOfUpdateValues($_dbModel,$_updateData);//更新缓存池
         }
 
         if (count(array_keys($newWhere))>0)
@@ -693,7 +693,7 @@ class AbstractHandler {
         $_dbModel = static::newDBModel();
         $_dbModel->insert($pValues);
 
-        static::updateCacheKeyPoolOfSql($_dbModel->sqlOfInsert($pValues));//更新缓存池
+        static::updateCacheKeyPoolOfInsertValues($_dbModel,$pValues);//更新缓存池
     }
 
     /**
@@ -710,7 +710,7 @@ class AbstractHandler {
         {
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
         }
-        static::updateCacheKeyPoolOfSql($_dbModel->sqlOfUpdate($pValues,$pWhere));//更新缓存池
+        static::updateCacheKeyPoolOfUpdateValues($_dbModel,$pValues,$pWhere);//更新缓存池
         return $result ;
     }
 
@@ -764,6 +764,32 @@ class AbstractHandler {
     public static function executeSql($sql)
     {
         return DBTool::executeSql($sql);
+    }
+
+    public static function updateCacheKeyPoolOfInsertValues($_dbModel,$values,$w2CacheKey=null)
+    {
+        $tmp = array();
+        foreach ($values as $key => $value) {
+            if ((is_int($value) || (is_string($value) && strlen($value)<10 ) ))
+            {
+                $tmp[$key] = $value;
+            }
+        }
+        $sql = $_dbModel->sqlOfInsert($tmp);
+        return static::updateCacheKeyPoolOfSql($sql,$w2CacheKey);
+    }
+
+    public static function updateCacheKeyPoolOfUpdateValues($_dbModel,$values,$w2CacheKey=null)
+    {
+        $tmp = array();
+        foreach ($values as $key => $value) {
+            if ((is_int($value) || (is_string($value) && strlen($value)<10 ) ))
+            {
+                $tmp[$key] = $value;
+            }
+        }
+        $sql = $_dbModel->sqlOfUpdate($tmp);
+        return static::updateCacheKeyPoolOfSql($sql,$w2CacheKey);
     }
 
     /**
