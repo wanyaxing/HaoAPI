@@ -650,13 +650,18 @@ class AbstractHandler {
                 {
                     $newWhere =  array(static::getTabelIdName() => $lastInsertId);
                 }
+                else if (array_key_exists(static::getTabelIdName(),$_updateData))
+                {
+                    $newWhere = array(static::getTabelIdName() => $_updateData[static::getTabelIdName()]);
+                }
                 else
                 {
                     $newWhere = $_dbModel->init()
                                 ->where($_updateData)->order(sprintf('%s desc',static::getTabelIdName()))
                                 ->field(static::getTabelIdName())
                                 ->selectSingle();
-                }            }
+                }
+            }
             else
             {
                 $newWhere = $_updateData;
