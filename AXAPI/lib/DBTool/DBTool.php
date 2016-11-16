@@ -6,6 +6,7 @@
  * @since 1.0
  * @version 1.0
  */
+// v161116 支持queryValues queryValue
 // v161020 支持getLastInsertId
 // v161012 sql 分析，支持select的order
 // v160918 return number of single executeSql
@@ -295,6 +296,45 @@ class DBTool
 	    }
 	    return array();
 	}
+
+    //主要用于只查询单个值的sql，取出值重组成数组。如果查询多个值，则没有变化。
+    public static function queryValues($sql)
+    {
+        $_data = static::queryData($sql);
+        $_values = array();
+        if (is_array($_data))
+        {
+            if (count($_data)>0 && count($_data[0]) == 1)
+            {
+                foreach ($_data as $_d) {
+                    foreach ($_d as $key => $value) {
+                        $_values[] = $value;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                return $_data;
+            }
+        }
+        return $_values;
+    }
+
+
+    //主要用于只查询单个值的sql，取出第一个结果的值。
+    public static function queryValue($sql)
+    {
+        $_values = static::queryValues($sql);
+        if (is_array($_values) && count($_values)>0)
+        {
+            return $_values[0];
+        }
+        else
+        {
+            return null;
+        }
+    }
 
 	/**
      * 分析sql，取得其中涉及到的字段及值
