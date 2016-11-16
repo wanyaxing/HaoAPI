@@ -645,8 +645,18 @@ class AbstractHandler {
             static::updateCacheKeyPoolOfInsertValues($_dbModel,$_updateData);//更新缓存池
             if (static::getTabelIdName()!=null)
             {
-                $newWhere =  array(static::getTabelIdName() => $_dbModel->getLastInsertId());
-            }
+                $lastInsertId = $_dbModel->getLastInsertId();
+                if ($lastInsertId != null)
+                {
+                    $newWhere =  array(static::getTabelIdName() => $lastInsertId);
+                }
+                else
+                {
+                    $newWhere = $_dbModel->init()
+                                ->where($_updateData)->order(sprintf('%s desc',static::getTabelIdName()))
+                                ->field(static::getTabelIdName())
+                                ->selectSingle();
+                }            }
             else
             {
                 $newWhere = $_updateData;
