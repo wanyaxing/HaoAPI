@@ -27,11 +27,9 @@ class AbstractModel {
         $_o ->setModelType(str_replace('Model', '', $p_cls));
         if (is_array($p_data)) {
             foreach ($p_data as $_k => $_v) {
-                $_m = 'set'. (W2String::camelCaseWithUcFirst($_k));
-                if (method_exists($_o,$_m)) {
-                    call_user_func(array($_o, $_m), $_v);
-                // } else {
-                //     W2Log::log('%s undefined property %s', $p_cls, $_k);
+                if (property_exists($_o,$_k))
+                {
+                    $_o->$_k = $_v;
                 }
             }
         } else if(is_string($p_data) || is_int($p_data)){
@@ -202,7 +200,11 @@ class AbstractModel {
      */
     public function properyOriginal($property)
     {
-        return (isset($this->snapshot[$property]))?$this->snapshot[$property]:null;
+        if (property_exists($this,$property))
+        {
+            return (isset($this->snapshot[$property]))?$this->snapshot[$property]:null;
+        }
+        return null;
     }
 
     /**
@@ -212,7 +214,11 @@ class AbstractModel {
      */
     public function properyValue($property)
     {
-        return ($this->$property===null && isset($this->snapshot[$property]))?($this->snapshot[$property]):($this->$property);
+        if (property_exists($this,$property))
+        {
+            return ($this->$property===null && isset($this->snapshot[$property]))?($this->snapshot[$property]):($this->$property);
+        }
+        return null;
     }
 
     /**
