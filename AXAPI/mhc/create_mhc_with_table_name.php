@@ -124,7 +124,7 @@ class CMysql2PHP{
 
     public static function getMethodString($_fieldRow,$pAllowBlank=true)
     {
-        $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($pAllowBlank?'':',false').')';
+        $methodString = 'W2HttpRequest::getRequestStringSpecial(\'%s\''.($pAllowBlank?'':',false').')';
         switch (static::getPhpProp($_fieldRow))
         {
             case 'integer':
@@ -134,7 +134,6 @@ class CMysql2PHP{
                 $methodString = 'W2HttpRequest::getRequestFloat(\'%s\')';
                 break;
             case 'string':
-            case 'text':
                 if ($_fieldRow['Field']=='telephone')
                 {
                     $methodString = 'W2HttpRequest::getRequestTelephone(\'%s\')';
@@ -146,8 +145,12 @@ class CMysql2PHP{
                 else
                 {
                     $lenMax = static::getTypeLength($_fieldRow['Type']);
-                    $methodString = 'W2HttpRequest::getRequestString(\'%s\''.($pAllowBlank?',true':',false').',null,0,'.($lenMax>0?$lenMax:'10000').')';
+                    $methodString = 'W2HttpRequest::getRequestStringSpecial(\'%s\''.($pAllowBlank?',true':',false').',null,0,'.($lenMax>0?$lenMax:'10000').')';
                 }
+                break;
+            case 'text':
+                $lenMax = static::getTypeLength($_fieldRow['Type']);
+                $methodString = 'W2HttpRequest::getRequestStringRich(\'%s\''.($pAllowBlank?',true':',false').',null,0,'.($lenMax>0?$lenMax:'10000').')';
                 break;
             case 'datetime':
                 $methodString = 'W2HttpRequest::getRequestDateTime(\'%s\')';
@@ -1114,7 +1117,7 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
     {
 
         $pTelephone      = W2HttpRequest::getRequestTelephone(\'telephone\',false);
-        $pVerifyCode     =    W2HttpRequest::getRequestString(\'verify_code\',false);
+        $pVerifyCode     =    W2HttpRequest::getRequestStringSpecial(\'verify_code\',false);
 
         $_smsVerifyModel = SmsVerifyHandler::loadModelFirstInList(array(\'telephone\'=>$pTelephone,\'useFor\'=>$_useFor),\'id desc\',1,1);
 
@@ -1341,7 +1344,7 @@ $_controllerString .= '
         $pWhere = array();
         '.($_tableIdName!=''?str_pad('$pWhere[\''.$_tableIdName.' in (%s)\'] ',40,' ',STR_PAD_RIGHT).' = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
 ':'').$_controllerStringList.'
-'.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestString(\'keyword\');
+'.($_controllerKeySearchList!=''?'        $keyWord                                 = W2HttpRequest::getRequestStringSpecial(\'keyword\');
         if ($keyWord!=null)
         {
             $keyWhere = array();
@@ -1388,7 +1391,7 @@ $_controllerString .= '
                 break;
         }
 
-        $_order = W2HttpRequest::getRequestString(\'order\',false,\'\');
+        $_order = W2HttpRequest::getRequestStringSpecial(\'order\',false,\'\');
         switch ( strtolower($_order) )
         {
 '.$_controllerStringAddOrder.'
@@ -1465,7 +1468,7 @@ $_controllerString .= '
             return HaoResult::init(ERROR_CODE::$NOT_USER);
         }
 
-        $oldpassword              = W2HttpRequest::getRequestString(\'oldpassword\');
+        $oldpassword              = W2HttpRequest::getRequestStringSpecial(\'oldpassword\');
 
         if (is_null($oldpassword))
         {
@@ -1483,7 +1486,7 @@ $_controllerString .= '
         }
 
         //修改密码
-        $newPassword = W2HttpRequest::getRequestString(\'newpassword\');
+        $newPassword = W2HttpRequest::getRequestStringSpecial(\'newpassword\');
         if (!is_null($newPassword) && $newPassword == $oldpassword)
         {
             return HaoResult::init(ERROR_CODE::$USER_WRONG_OLD_PWD);
@@ -1526,7 +1529,7 @@ $_controllerString .= '
         }
 
         $pWhere = array();
-        $pWhere[\'telephone\']                    = W2HttpRequest::getRequestString(\'telephone\',false);
+        $pWhere[\'telephone\']                    = W2HttpRequest::getRequestStringSpecial(\'telephone\',false);
         $pWhere[]                               = \'status <> \'.STATUS_DISABLED;
 
         $tmpModel = UserHandler::loadModelFirstInList($pWhere);
@@ -1536,7 +1539,7 @@ $_controllerString .= '
             return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
         }
 
-        $tmpModel    ->         setPassword(W2HttpRequest::getRequestString(\'newpassword\'));//修改密码
+        $tmpModel    ->         setPassword(W2HttpRequest::getRequestStringSpecial(\'newpassword\'));//修改密码
         $tmpModel    ->         setLastPasswordTime(date(\'Y-m-d H:i:s\'));//修改密码的同时，更新密码修改时间。
 
         return static::save($tmpModel);
@@ -1619,9 +1622,9 @@ $_controllerString .= '
     public static function actionLogin()
     {
         $pWhere = array();
-        $pWhere[\'password\']                     = Utility::getEncodedPwd(W2HttpRequest::getRequestString(\'password\',false));
+        $pWhere[\'password\']                     = Utility::getEncodedPwd(W2HttpRequest::getRequestStringSpecial(\'password\',false));
         $pWhere[]                                 = \'status <> \'.STATUS_DISABLED;
-        $account                                  = W2HttpRequest::getRequestString(\'account\',false);
+        $account                                  = W2HttpRequest::getRequestStringSpecial(\'account\',false);
         if (W2String::isTelephone($account) )
         {
             $pWhere[\'telephone\']                    = $account;
@@ -1648,8 +1651,8 @@ $_controllerString .= '
     //联合登录
     public static function actionUnionLogin()
     {
-        $unionToken                    = W2HttpRequest::getRequestString(\'union_token\');
-        $unionType                     = W2HttpRequest::getRequestString(\'union_type\');
+        $unionToken                    = W2HttpRequest::getRequestStringSpecial(\'union_token\');
+        $unionType                     = W2HttpRequest::getRequestStringSpecial(\'union_type\');
 
         if (is_null($unionToken) || is_null($unionType)  )
         {
@@ -1686,8 +1689,8 @@ $_controllerString .= '
         // {
 
         //     $userModel = $results->getResults();
-        //     $userModel  ->         setRealname(W2HttpRequest::getRequestString(\'realname\',true,null,0,20));         //姓名
-        //     $userModel  ->           setAvatar(W2HttpRequest::getRequestString(\'avatar\',true,null,0,200));          //头像
+        //     $userModel  ->         setRealname(W2HttpRequest::getRequestStringSpecial(\'realname\',true,null,0,20));         //姓名
+        //     $userModel  ->           setAvatar(W2HttpRequest::getRequestStringSpecial(\'avatar\',true,null,0,200));          //头像
         //     if (count($userModel->propertiesModified())>0)
         //     {
         //         $savedModel = UserHandler::saveModel($userModel);
@@ -1701,8 +1704,8 @@ $_controllerString .= '
     //登录用户可以关联联合登录账号
     public static function actionSetUnionLogin()
     {
-        $unionToken                    = W2HttpRequest::getRequestString(\'union_token\');
-        $unionType                     = W2HttpRequest::getRequestString(\'union_type\');
+        $unionToken                    = W2HttpRequest::getRequestStringSpecial(\'union_token\');
+        $unionType                     = W2HttpRequest::getRequestStringSpecial(\'union_type\');
 
         if (is_null($unionToken) || is_null($unionType)  )
         {
@@ -1772,7 +1775,7 @@ $_controllerString .= '
         $pWhere[\'id in (%s)\']                   = W2HttpRequest::getRequestArrayString(\'ids\',false,true);
         $pWhere[\'id\']                           = W2HttpRequest::getRequestInt(\'id\');
         $pWhere[\'telephone\']                    = W2HttpRequest::getRequestTelephone(\'telephone\',false);//用户手机号
-        $pWhere[\'username\']                     = W2HttpRequest::getRequestString(\'username\',false);    //用户名
+        $pWhere[\'username\']                     = W2HttpRequest::getRequestStringSpecial(\'username\',false);    //用户名
         $pWhere[\'email\']                        = W2HttpRequest::getRequestEmail(\'email\',false);        //用户邮箱
 
         if (count(array_filter(array_values($pWhere)))>0)
