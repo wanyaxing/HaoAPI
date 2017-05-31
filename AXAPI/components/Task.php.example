@@ -1,0 +1,16 @@
+<?php
+/**
+ * 继承W2Task的类之后，所有的protected权限下的静态方法都会被异步调用。
+ * 开发者可以在此添加更多的static方法。
+ * 注意：在方法中，尽量避免使用全局变量，特殊类型的参数（只有可被serialize的变量才可使用作为参数）
+ */
+
+class Task extends W2Task
+{
+    /*（注意，此处不需要任何特殊操作，因为此类本身已经实现了异步处理，到达方法此处时，已经进入异步后的流程中了） */
+    protected static function sayHello()
+    {
+        return func_get_args();
+    }
+
+}
