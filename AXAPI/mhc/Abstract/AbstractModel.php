@@ -24,7 +24,6 @@ class AbstractModel {
      */
     protected static function instanceModel($p_cls, $p_data) {
         $_o = new $p_cls();
-        $_o ->setModelType(str_replace('Model', '', $p_cls));
         if (is_array($p_data)) {
             foreach ($p_data as $_k => $_v) {
                 if (property_exists($_o,$_k))
@@ -255,7 +254,6 @@ class AbstractModel {
     // ======================== variable ========================
 
     public $id;
-    public $modelType;
 
     // ======================== proterty ========================
 
@@ -268,11 +266,7 @@ class AbstractModel {
     }
 
     public function getModelType() {
-        return $this->modelType;
-    }
-
-    public function setModelType($p_modelType) {
-        $this->modelType = $p_modelType;
+        return str_replace('Model', '', get_class($this));
     }
 
     // ======================== construct/destruct ========================
