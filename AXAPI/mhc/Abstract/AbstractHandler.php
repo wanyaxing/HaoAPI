@@ -909,20 +909,20 @@ class AbstractHandler {
      * @param  object $pModel 对应的model 实例
      * @return boolean          [description]
      */
-    public static function removeModel($pModel) {
+    public static function deleteModel($pModel) {
         if (!isset($pModel) || get_class($pModel)!= static::getModelName() || $pModel->getId()==0)
         {
            throw new Exception('此处需要传入'.static::getModelName().'类型的对象');
         }
-        return static::removeModelById($pModel->getId());
+        return static::deleteModelById($pModel->getId());
     }
 
     /**
      * 根据主键值删除单条记录
      * @return  integer $pId 对应的modelID主键
      */
-    public static function removeModelById($pId=null) {
-        return static::removeModelListByIds($pId);
+    public static function deleteModelById($pId=null) {
+        return static::deleteModelListByIds($pId);
     }
 
     /**
@@ -930,7 +930,7 @@ class AbstractHandler {
      * @param  array $pIds 数组id主键,或逗号隔开的id字符串
      * @return array        对应的model 实例数组
      */
-    public static function removeModelListByIds($pIds=null) {
+    public static function deleteModelListByIds($pIds=null) {
         if (!isset($pIds) || $pIds==0)
         {
             return false;//参数错误
