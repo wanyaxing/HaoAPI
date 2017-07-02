@@ -274,7 +274,7 @@ class AbstractController {
         {
             if (in_array(static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'delete',$detailModel),['admin','self']))
             {
-                return HaoResult::init(ERROR_CODE::$OK,$handler::deleteModel($detailModel));
+                return HaoResult::init(ERROR_CODE::$OK,$detailModel,$handler::deleteModel($detailModel));
             }
             return HaoResult::init(ERROR_CODE::$NO_AUTH);
         }
