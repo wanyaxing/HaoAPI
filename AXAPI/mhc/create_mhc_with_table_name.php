@@ -1103,7 +1103,7 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
         if ($result->isResultsOK())
         {
             $pMsg = \'验证码:\'.$_verifyCode.\' 退订回N【HaoFrame】\';
-            $result->setErrorStr( \'短信已发送成功成功，请注意查收。\' );
+            $result->setErrorStr( \'短信已发送成功，请注意查收。\' );
             // $result[\'extraInfo\'][\'smsResult\'] = W2SMS::sendMessage($telephone,$pMsg);
             // $result[\'extraInfo\'][\'smsResult\'] = W2SMS::sendVerifyCodeWithUcpaas($telephone,$_verifyCode);//使用融云发送验证码
             $result->setErrorStr( $pMsg );//此处默认直接展示了验证码，实际开发过程中，请更改此处逻辑。
