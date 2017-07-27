@@ -69,6 +69,7 @@ $noAllowKeyInMysql = array('add','all','alter','analyze','and','as','asc','asens
 $noAllowKeyInMysql[] = 'asString';
 $noAllowKeyInMysql[] = 'asInt';
 $noAllowKeyInMysql[] = 'asArray';
+$noAllowKeyInMysql[] = 'type';
 
 class CMysql2PHP{
     public static $columnTypes=array(
