@@ -187,7 +187,7 @@ class AbstractModel {
      * @param  string  $property 属性
      * @return boolean           是否改动过
      */
-    public function isProperyModified($property)
+    public function isPropertyModified($property)
     {
         return array_key_exists($property,$this->propertiesModified());
     }
@@ -197,7 +197,7 @@ class AbstractModel {
      * @param  string  $property 属性
      * @return string            值
      */
-    public function properyOriginal($property)
+    public function propertyOriginal($property)
     {
         if (property_exists($this,$property))
         {
@@ -211,7 +211,7 @@ class AbstractModel {
      * @param  string  $property 属性
      * @return string            值
      */
-    public function properyValue($property)
+    public function propertyValue($property)
     {
         if (property_exists($this,$property))
         {

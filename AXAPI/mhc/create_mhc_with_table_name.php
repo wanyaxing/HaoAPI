@@ -1177,7 +1177,7 @@ else
 ';
     if(array_key_exists('userID',$_tableDataKeys))
     {
-        $_controllerString .= "\n".'                if ($auth == \'normal\' || $tmpModel->properyValue(\'userID\')===null)
+        $_controllerString .= "\n".'                if ($auth == \'normal\' || $tmpModel->propertyValue(\'userID\')===null)
                 {
                     $tmpModel  ->       setUserID(Utility::getCurrentUserID());//普通用户创建的数据，默认作者为自己。
                 }';
@@ -1284,40 +1284,40 @@ $_controllerString .='
     if (IS_SPECIAL_TABLE == 'user')
     {
         $_controllerString .= "\n"
-.'        if ($tmpModel->isProperyModified(\'username\') && $tmpModel->properyValue(\'username\')!==\'\' )
+.'        if ($tmpModel->isPropertyModified(\'username\') && $tmpModel->propertyValue(\'username\')!==\'\' )
         {
-            if (W2String::isTelephone($tmpModel->properyValue(\'username\')))
+            if (W2String::isTelephone($tmpModel->propertyValue(\'username\')))
             {
                 return HaoResult::init(ERROR_CODE::$USER_UNAME_NO_PHONE);
             }
-            if (W2String::isEmail($tmpModel->properyValue(\'username\')))
+            if (W2String::isEmail($tmpModel->propertyValue(\'username\')))
             {
                 return HaoResult::init(ERROR_CODE::$USER_UNAME_NO_EMAIL);
             }
-            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'username\'=>$tmpModel->properyValue(\'username\') ) );
-            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
+            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'username\'=>$tmpModel->propertyValue(\'username\') ) );
+            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->propertyValue(\'id\'))
             {
                 return HaoResult::init(ERROR_CODE::$USER_DUP_USERNAME);
             }
         }
-        if ($tmpModel->isProperyModified(\'telephone\') && $tmpModel->properyValue(\'telephone\')!==\'\' )
+        if ($tmpModel->isPropertyModified(\'telephone\') && $tmpModel->propertyValue(\'telephone\')!==\'\' )
         {
-            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'telephone\'=>$tmpModel->properyValue(\'telephone\') ) );
-            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
+            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'telephone\'=>$tmpModel->propertyValue(\'telephone\') ) );
+            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->propertyValue(\'id\'))
             {
                 return HaoResult::init(ERROR_CODE::$USER_DUP_TELEPHONE);
             }
         }
-        if ($tmpModel->isProperyModified(\'email\') && $tmpModel->properyValue(\'email\')!==\'\' )
+        if ($tmpModel->isPropertyModified(\'email\') && $tmpModel->propertyValue(\'email\')!==\'\' )
         {
-            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'email\'=>$tmpModel->properyValue(\'email\') ) );
-            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->properyValue(\'id\'))
+            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'email\'=>$tmpModel->propertyValue(\'email\') ) );
+            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->propertyValue(\'id\'))
             {
                 return HaoResult::init(ERROR_CODE::$USER_DUP_EMAIL);
             }
         }
         //修改密码自动记录其修改时间，第一次创建密码时不记录。
-        if ($tmpModel->isProperyModified(\'password\') && $tmpModel->properyOriginal(\'password\')!=null)
+        if ($tmpModel->isPropertyModified(\'password\') && $tmpModel->propertyOriginal(\'password\')!=null)
         {
             $tmpModel->setLastPasswordTime(date(\'Y-m-d H:i:s\'));
         }

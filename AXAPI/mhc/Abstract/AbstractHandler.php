@@ -618,7 +618,7 @@ class AbstractHandler {
                 //     AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
                 // }
 
-                $_valueOriginal = $pModel->properyOriginal($_key);
+                $_valueOriginal = $pModel->propertyOriginal($_key);
                 if ((is_int($_valueOriginal) || (is_string($_valueOriginal) && strlen($_valueOriginal)<10 ) ))
                 {
                     if ($_valueOriginal!==null)

@@ -246,7 +246,7 @@ class AbstractController {
             return HaoResult::init(ERROR_CODE::$NO_CHANGE_FOUND);
         }
 
-        if (method_exists($tmpModel,'setCreateTime') &&  $tmpModel->properyValue('createTime')==null )
+        if (method_exists($tmpModel,'setCreateTime') &&  $tmpModel->propertyValue('createTime')==null )
         {
             $tmpModel ->setCreateTime( date('Y-m-d H:i:s'));
         }
