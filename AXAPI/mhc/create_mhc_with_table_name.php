@@ -1103,11 +1103,16 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
         $result = static::save($tmpModel,$isAdd=true);
         if ($result->isResultsOK())
         {
-            $pMsg = \'验证码:\'.$_verifyCode.\' 退订回N【HaoFrame】\';
-            $result->setErrorStr( \'短信已发送成功，请注意查收。\' );
-            // $result[\'extraInfo\'][\'smsResult\'] = W2SMS::sendMessage($telephone,$pMsg);
-            // $result[\'extraInfo\'][\'smsResult\'] = W2SMS::sendVerifyCodeWithUcpaas($telephone,$_verifyCode);//使用融云发送验证码
-            $result->setErrorStr( $pMsg );//此处默认直接展示了验证码，实际开发过程中，请更改此处逻辑。
+            $pMsg = \'验证码:\' . $_verifyCode . \' 退订回N\';
+            if (AXAPI_DEPLOY_STATUS==2)
+            {
+                $result->setErrorStr(\'短信已发送成功，请注意查收。\');
+                W2SMS::sendMessage($telephone, $pMsg);
+            }
+            else
+            {
+                $result->setErrorStr($pMsg.\' 注：这是测试开发环境，没有发送真实短信，且此环境中的所有数据仅供测试开发使用。\');
+            }
         }
         return $result;
     }
