@@ -263,8 +263,6 @@ class ERROR_CODE
     public static $USER_WRONG_OLD_PWD   = array(112, '当前密码错误，您不可以执行此操作。',       'USER_WRONG_OLD_PWD');
     public static $USER_PLS_NEW_PWD     = array(113, '您必须指定一个新的密码。',       'USER_PLS_NEW_PWD');
     public static $USER_DUP_USERNAME    = array(114, '该用户名已存在。',       'USER_DUP_USERNAME');
-    public static $USER_DUP_TELEPHONE   = array(114, '该手机号已存在。',       'USER_DUP_TELEPHONE');
-    public static $USER_DUP_EMAIL       = array(114, '该邮箱已存在。',       'USER_DUP_EMAIL');
     public static $USER_LOGIN_FAIL      = array(115, '登录失败，账号或密码错误。',       'USER_LOGIN_FAIL');
     public static $USER_BEEN_DISABLED   = array(116, '该账号已被禁用。',       'USER_BEEN_DISABLED');
     public static $USER_PLS_ACCOUNT     = array(117, '请输入登录账号',       'USER_PLS_ACCOUNT');
@@ -289,6 +287,8 @@ class ERROR_CODE
     public static $USER_LOGIN_USER_TOO_MORE  = array(137, '因为安全原因，您此次登录失败，请休息一段时间再登录吧。',       'USER_LOGIN_USER_TOO_MORE');
     public static $USER_SMS_IP_TOO_MORE      = array(138, '因为安全原因，您此次验证码发送失败，请休息一段时间再试。',       'USER_SMS_IP_TOO_MORE');
     public static $USER_SMS_TEL_TOO_MORE     = array(139, '因为安全原因，您此次验证码发送失败，请休息一段时间再试。',       'USER_SMS_TEL_TOO_MORE');
+    public static $USER_DUP_TELEPHONE        = array(140, '该手机号已存在。',       'USER_DUP_TELEPHONE');
+    public static $USER_DUP_EMAIL            = array(141, '该邮箱已存在。',       'USER_DUP_EMAIL');
 
 
     //如需更多错误码，请在以下延伸，建议使用四位数以上数字作为您的错误码。
