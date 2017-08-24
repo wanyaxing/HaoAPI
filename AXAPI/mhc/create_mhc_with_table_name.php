@@ -945,7 +945,7 @@ if (IS_SPECIAL_TABLE=='smsVerify')
         ,\'method\':\'post\'
         ,\'request\':[
            { \'key\':\'telephone\'             ,\'type\':\'string\'     ,\'required\': true ,\'test-value\':\'10000000000\'                         ,\'title\':\'\' ,\'desc\':\'\' }
-           ,{ \'key\':\'usefor\'             ,\'type\':\'int\'     ,\'required\': true,\'test-value\':\'2\'                         ,\'title\':\'验证码用途\' ,\'desc\':\'1：注册用 2：登陆用 3：修改密码或修改手机号码用\' }
+           ,{ \'key\':\'usefor\'             ,\'type\':\'int\'     ,\'required\': true,\'test-value\':\'2\'                         ,\'title\':\'验证码用途\' ,\'desc\':\'1：注册用 2：登陆用 3：修改密码 4:修改手机号码\' }
         ]
       });
 
