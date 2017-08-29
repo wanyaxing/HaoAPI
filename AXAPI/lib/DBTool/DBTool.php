@@ -413,7 +413,7 @@ class DBTool
         {
             if ($action == 'select')
             {
-                preg_match_all('/order\s+by\s+(\S*\.|)(\S+)\s*/is', $sql , $matches ,PREG_SET_ORDER);
+                preg_match_all('/order\s+by\s+([a-zA-Z0-9]+?\.|)(\S+)\s*/is', $sql , $matches ,PREG_SET_ORDER);
                 foreach ($matches as $match) {
                     $_t     = trim($match[1],'()\'` .');
                     $_key   = trim($match[2],'()\'` ');
