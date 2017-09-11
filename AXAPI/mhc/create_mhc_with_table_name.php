@@ -1422,7 +1422,7 @@ $_controllerString .= '
         //详情
         public static function actionDetail()
         {
-            return static::detail();
+            return parent::actionDetail();
         }
     ';
 }

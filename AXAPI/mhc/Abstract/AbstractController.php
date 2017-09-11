@@ -226,6 +226,18 @@ class AbstractController {
 
     }
 
+
+    public static function actionDetail()
+    {
+        $_REQUEST['page']=1;
+        $_REQUEST['size']=1;
+        $tmpResult =  static::actionList();
+        if (is_array($tmpResult->results) && isset($tmpResult->results[0]))
+        {
+            $tmpResult->results = $tmpResult->results[0];
+        }
+        return $tmpResult;
+    }
     /**
      * 保存
      * @param  AbstractModel  $tmpModel 元素被修改的Model对象
