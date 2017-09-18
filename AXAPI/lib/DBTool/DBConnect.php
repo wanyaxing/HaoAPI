@@ -13,7 +13,7 @@
 		//连接数据库
 		public function __construct()
 		{
-			$this->conn = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE,defined('DB_PORT')?strlen(DB_PORT):'3306');
+			$this->conn = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE,defined('DB_PORT')?DB_PORT:'3306');
 			if (!is_object($this->conn))
 			{
 				// var_export($this->conn);exit;
