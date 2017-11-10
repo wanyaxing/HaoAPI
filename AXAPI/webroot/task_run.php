@@ -1,7 +1,7 @@
 <?php
 ob_start();
 //这里一定要输出内容给1.php,虽然什么都行,没有内容会失灵的
-echo '{"code":0, "msg":"nothing show here."}';
+echo '{"code":0, "msg":"task is running."}';
 $size = ob_get_length();
 header("Content-Length: $size");
 header("Connection: Close");
@@ -17,6 +17,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
 
 
 sleep(1);//延时测试
+set_time_limit(0);
 
 //加载配置文件
 require_once(__dir__.'/../config.php');
@@ -49,7 +50,25 @@ function file_put_log($p_content='',$p_type='access')
                                 )
                         ,FILE_APPEND);
 }
+ /**
+ * 主要用于捕捉致命错误，每次页面处理完之后执行检查
+ * @return [type] [description]
+ */
+function catch_fatal_error()
+{
+  // Getting Last Error
+   $last_error =  error_get_last();
 
+    // Check if Last error is of type FATAL
+    if(isset($last_error['type']))
+    {
+        //记录错误日志
+        file_put_log($_REQUEST,'task-error');
+        file_put_log($last_error,'task-error');
+        exit;
+    }
+}
+register_shutdown_function('catch_fatal_error');
 
 if (isset($_POST['data']))
 {
@@ -61,6 +80,7 @@ if (isset($_POST['data']))
         list($class,$method,$args) = unserialize($data);
     } catch (Exception $e) {
         $result = $e->getMessage();
+        file_put_log($result,'task-error');
     }
 }
 file_put_log(json_encode($_REQUEST),'task');
