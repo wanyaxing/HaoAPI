@@ -619,7 +619,7 @@ function apiKeyBarInit()
         console.log('按名称排序');
         _keyTypeArray.sort(function compare(a, b) {
             // return a['keyPY'].localeCompare(b['keyPY']);
-            return a['keyType'].localeCompare(b['keyType']);
+            return (a['keyPY']+a['keyType']).localeCompare(b['keyPY']+b['keyType'],'zh');
         });
     }
     else
