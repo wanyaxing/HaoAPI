@@ -77,10 +77,17 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
             {
                 //记录错误日志
                 file_put_log($_REQUEST,'error');
+                // file_put_log(debug_backtrace(),'error');
                 file_put_log($last_error,'error');
 
                 //返回错误信息
                 @ob_end_clean();//要清空缓冲区， 从而删除PHPs " 致命的错误" 消息。
+                if (defined('IS_AX_DEBUG') )
+                {
+                    print("\n\n\n");
+                    var_dump($last_error);
+                    print("\n\n\n");
+                }
                 $results = HaoResult::init(array(RUNTIME_CODE_ERROR_UNKNOWN,$errorMsg,$errorMsg),null,defined('IS_AX_DEBUG')?array('errorContent'=>'Error on line '.$last_error['line'].' in '.$last_error['file'].': '.$last_error['message'].''):null);
                 echo Utility::json_encode_unicode($results->properties());
                 exit;
@@ -140,8 +147,11 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
 
     if ($_SERVER['REQUEST_METHOD'] == 'GET')
     {
-        header('Cache-Control:public');
-        header('Etag:'.W2Cache::etagOfRequest());
+        if (!defined('IS_AX_DEBUG'))
+        {
+            header('Cache-Control:public');
+            header('Etag:'.W2Cache::etagOfRequest());
+        }
     }
 
     //打印接口返回的数据
