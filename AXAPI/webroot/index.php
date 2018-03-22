@@ -27,11 +27,6 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
      */
     function file_put_log($p_content='',$p_type='access')
     {
-        try {
-            $currentUserId = Utility::getCurrentUserID();
-        } catch (Exception $e) {
-            $currentUserId = 0;
-        }
         file_put_contents(sprintf('%s/%s-%s.log'
                             ,AXAPI_ROOT_PATH.'/logs/'
                             ,$p_type
@@ -40,8 +35,8 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
                                         ,W2Time::microtimetostr(AX_TIMER_START)
                                         ,number_format(microtime (true) - AX_TIMER_START, 5, '.', '')
                                         ,Utility::getCurrentIP()
-                                        ,Utility::getCurrentUserID()
-                                        ,count($_POST)>0?'POST':'GET'
+                                        ,Utility::$_CURRENTUSERID
+                                        ,$_SERVER['REQUEST_METHOD']
                                         ,$GLOBALS['apiController'], $GLOBALS['apiAction']
                                         ,is_string($p_content)?$p_content:Utility::json_encode_unicode($p_content)
                                     )
@@ -110,6 +105,19 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
     $results = Utility::getAuthForApiRequest();
     if ( $results->isResultsOK())
     {
+        if ($_SERVER['REQUEST_METHOD'] == 'GET')
+        {
+            if (isset($_SERVER['HTTP_IF_NONE_MATCH']))//这里用etag的header标识来进行客户端的缓存控制。
+            {
+                $etag = $_SERVER['HTTP_IF_NONE_MATCH'];
+                if (W2Cache::isEtagCanBeUsed($etag))
+                {
+                    header('Etag:'.$etag,true,304);
+                    file_put_log(' (-304) '.$etag.' ' . Utility::json_encode_unicode($_REQUEST),'access');
+                    exit;
+                }
+            }
+        }
         //调用对应接口方法
         try {
 
@@ -130,6 +138,12 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         }
     }
 
+    if ($_SERVER['REQUEST_METHOD'] == 'GET')
+    {
+        header('Cache-Control:public');
+        header('Etag:'.W2Cache::etagOfRequest());
+    }
+
     //打印接口返回的数据
     if (is_object($results) && get_class($results) == 'HaoResult' )
     {
@@ -139,18 +153,19 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         }
         HaoResult::$findPaths   = W2HttpRequest::getRequestArray('find_paths');
         HaoResult::$searchPaths = W2HttpRequest::getRequestArray('search_paths');
-        echo Utility::json_encode_unicode($results->properties());
+        $content = Utility::json_encode_unicode($results->properties());
     }
     else if (is_string($results))
     {
-        echo $results;
+        $content = $results;
     }
     else
     {
-        echo Utility::json_encode_unicode($results);
+        $content = Utility::json_encode_unicode($results);
     }
 
+    echo $content;
     //记录接口日志
-    file_put_log(Utility::json_encode_unicode($_REQUEST) . ' ' . (is_object($results)?$results->errorCode:0),'access');
+    file_put_log(' ('.(is_object($results)?$results->errorCode:0) . ') ' . strlen($content) . ' ' . Utility::json_encode_unicode($_REQUEST),'access');
 
     exit;
