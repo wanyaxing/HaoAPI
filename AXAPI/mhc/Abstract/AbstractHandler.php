@@ -29,6 +29,13 @@ class AbstractHandler {
     public static $tableIdName = null;
 
     /**
+     * 数据中对应作者id的字段，主要用于判断接口操作者是否是数据所有人。
+     * @var string
+     */
+
+    public static $tableUserIDName = 'userID';
+
+    /**
      * 对应表的常用字段数组
      * @var array
      */
@@ -430,7 +437,8 @@ class AbstractHandler {
             $pField = static::getTableDataKeys(true);
         }
 
-        if ( static::isUseCache() )
+        // 如果可yoga缓存，且当前用户不为忽略缓存的特殊用户
+        if ( static::isUseCache() && !static::isCurrentUserIgnoreCache() )
         {
             $w2CacheKey = sprintf('hao_%s_list_%s_field_%s_where_%s_order_%s_page_%d_size_%d_countthis_%s'
                                         ,AXAPI_PROJECT_NAME
@@ -446,7 +454,7 @@ class AbstractHandler {
             $w2CacheKey_fieldValues = $w2CacheKey.'_list';
             if ($_SERVER['REQUEST_METHOD'] == 'GET')
             {//只有GET请求才会使用缓存。为安全计，POST请求就耗点性能吧。
-                if ( !isset($pWhere['userID']) || $pWhere['userID'] != Utility::getCurrentUserID() )
+                if ( !isset($pWhere['userID']) || $pWhere['userID'] != Utility::$_CURRENTUSERID )
                 {//查询与自己无关的数据，使用缓存。如果用户检索自己相关的数据时，不用缓存
                     if (
                             strpos($w2CacheKey,'rand()')!==false
@@ -507,7 +515,6 @@ class AbstractHandler {
                     W2Cache::setObj($w2CacheKey_countThis,$pCountThis);
                 }
 
-                static::updateCacheKeyPoolOfSql($_dbModel->sqlOfselect(),$w2CacheKey_fieldValues);//追加到缓存池
             }
         }
         else
@@ -561,6 +568,7 @@ class AbstractHandler {
      */
     public static function loadModelList($pWhere=array(),$pOrder=null,$pPageIndex=1,$pPageSize=DEFAULT_PAGE_SIZE,&$pCountThis=-1)
     {
+
         $_fieldValues = static::selectFields(static::getTabelIdName(),$pWhere,$pOrder,$pPageIndex,$pPageSize,$pCountThis);
 
         if ( static::getTabelIdName() == null )
@@ -598,42 +606,6 @@ class AbstractHandler {
             {
                 continue;
             }
-            /** 更新缓存池 */
-            if ( in_array($_key, static::getTableDataKeys() )  )
-            {
-                // if ($_key!='id' && $_key!=static::getTabelIdName() )
-                // {
-                    $_updateData[$_key] = $_value;
-                // }
-
-                // if ((is_int($_value) || (is_string($_value) && strlen($_value)<10 ) ))
-                // {
-                //     $w2CacheKeyPool = sprintf('hao_%s_pool_list_%s_key_%s_value_%s'
-                //                         ,AXAPI_PROJECT_NAME
-                //                         ,static::getTabelName()
-                //                         ,$_key
-                //                         ,$_value
-                //                         );
-                //     W2Cache::resetCacheKeyPool($w2CacheKeyPool);
-                //     AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
-                // }
-
-                $_valueOriginal = $pModel->propertyOriginal($_key);
-                if ((is_int($_valueOriginal) || (is_string($_valueOriginal) && strlen($_valueOriginal)<10 ) ))
-                {
-                    if ($_valueOriginal!==null)
-                    {
-                        $w2CacheKeyPool = sprintf('hao_%s_pool_list_%s_key_%s_value_%s'
-                                            ,AXAPI_PROJECT_NAME
-                                            ,static::getTabelName()
-                                            ,$_key
-                                            ,$_valueOriginal
-                                            );
-                        W2Cache::resetCacheKeyPool($w2CacheKeyPool);
-                        AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
-                    }
-                }
-            }
         }
 
         AX_DEBUG($_updateData);
@@ -642,7 +614,6 @@ class AbstractHandler {
         if ($pModel->isNewModel())
         {/** 新数据 */
             $_dbModel -> insert($_updateData);
-            static::updateCacheKeyPoolOfInsertValues($_dbModel,$_updateData);//更新缓存池
             if (static::getTabelIdName()!=null)
             {
                 $lastInsertId = $_dbModel->getLastInsertId();
@@ -684,9 +655,9 @@ class AbstractHandler {
                           ->update($_updateData);
                 $newWhere = static::filterTableDataKeysInArray($pModel->properiesValue(),true);
             }
-            static::updateCacheKeyPoolOfUpdateValues($_dbModel,$_updateData);//更新缓存池
         }
 
+        static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         if (count(array_keys($newWhere))>0)
         {
             return static::loadModelFirstInList($newWhere);
@@ -707,8 +678,7 @@ class AbstractHandler {
     {
         $_dbModel = static::newDBModel();
         $_dbModel->insert($pValues);
-
-        static::updateCacheKeyPoolOfInsertValues($_dbModel,$pValues);//更新缓存池
+        static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
     }
 
     /**
@@ -725,7 +695,7 @@ class AbstractHandler {
         {
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
         }
-        static::updateCacheKeyPoolOfUpdateValues($_dbModel,$pValues,$pWhere);//更新缓存池
+        static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         return $result ;
     }
 
@@ -740,10 +710,9 @@ class AbstractHandler {
         $result = $_dbModel->delete($pWhere);
         if (array_key_exists(static::getTabelIdName(),$pWhere))
         {
-
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()],null,true);//更新缓存
         }
-        static::updateCacheKeyPoolOfSql($_dbModel->sqlOfDelete($pWhere));//更新缓存池
+        static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         return $result ;
     }
 
@@ -756,7 +725,7 @@ class AbstractHandler {
         {
             if ($_SERVER['REQUEST_METHOD'] == 'GET')
             {//只有GET请求才会使用缓存。为安全计，POST请求就耗点性能吧。
-                if ( !( Utility::getCurrentUserID()>0 && preg_match('/userID.{0,10}'.Utility::getCurrentUserID().'/',$sql) ) )
+                if ( !( Utility::$_CURRENTUSERID>0 && preg_match('/userID.{0,10}'.Utility::$_CURRENTUSERID.'/',$sql) ) )
                 {
                     AX_DEBUG('读取缓存成功：'.$w2CacheKey);
                     return W2Cache::getObj($w2CacheKey);
@@ -770,107 +739,28 @@ class AbstractHandler {
         AX_DEBUG('更新缓存：'.$w2CacheKey);
         W2Cache::setObj($w2CacheKey,$data);
 
-        static::updateCacheKeyPoolOfSql($sql,$w2CacheKey);//追加到缓存池
-
         return $data;
     }
 
     /** 执行sql语句     */
     public static function executeSql($sql)
     {
+        static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         return DBTool::executeSql($sql);
     }
 
-    public static function updateCacheKeyPoolOfInsertValues($_dbModel,$values,$w2CacheKey=null)
+    /*判断用户是否未可忽略缓存用户*/
+    public static function isCurrentUserIgnoreCache()
     {
-        $tmp = array();
-        foreach ($values as $key => $value) {
-            if ((is_int($value) || (is_string($value) && strlen($value)<10 ) ))
-            {
-                $tmp[$key] = $value;
-            }
-        }
-        $sql = $_dbModel->sqlOfInsert($tmp);
-        return static::updateCacheKeyPoolOfSql($sql,$w2CacheKey);
+        return Utility::$_CURRENTUSERID>0 && W2Cache::decr('igCacheUser_'.Utility::$_CURRENTUSERID.'_'.static::getTabelName());
     }
-
-    public static function updateCacheKeyPoolOfUpdateValues($_dbModel,$values,$w2CacheKey=null)
+    /*指定用户在未来一段时间内查询数据时忽略缓存，通常是因为该用户刚刚提交了某个表的数据，给你设定忽略缓存便于其查询到最新的数据。*/
+    public static function setCurrentUserIgnoreCache()
     {
-        $tmp = array();
-        foreach ($values as $key => $value) {
-            if ((is_int($value) || (is_string($value) && strlen($value)<10 ) ))
-            {
-                $tmp[$key] = $value;
-            }
-        }
-        $sql = $_dbModel->sqlOfUpdate($tmp);
-        return static::updateCacheKeyPoolOfSql($sql,$w2CacheKey);
-    }
-
-    /**
-     * 分析sql,将缓存key存入对应的池子
-     * @param [type] $sql        [description]
-     * @param [type] $w2CacheKey [description]
-     */
-    public static function updateCacheKeyPoolOfSql($sql,$w2CacheKey=null)
-    {
-        $sqlInfo = DBTool::getKeyInfoOfSql($sql);
-        AX_DEBUG($sqlInfo);
-        if ( (!is_null($w2CacheKey) && count($sqlInfo['conditions'])==0) || (is_null($w2CacheKey) && ($sqlInfo['action']=='insert' || $sqlInfo['action']=='delete')))
-        {//当重置缓存池时,如果是insert或delete操作，则同时重置无筛选的池子 ； 当更新缓存池时，如果没有任何筛选（这种情况不常见，一般是没有status字段的表的接口才会碰到），则添加一个默认方案（无筛选池子））
-            foreach ($sqlInfo['tables'] as $_t => $tableName)
-            {
-                $sqlInfo['conditions'][] = array(
-                                    'table' =>$tableName
-                                    ,'action'=> ''
-                                    ,'key'  =>''
-                                    ,'eq'   =>''
-                                    ,'value'=>''
-                                );
-            }
-        }
-        foreach ($sqlInfo['conditions'] as $info)
+        if (Utility::$_CURRENTUSERID>0)
         {
-            if (is_string($info['value']) && strlen($info['value'])>10 )
-            {
-                continue;
-            }
-            $w2CacheKeyPool = sprintf('hao_%s_pool_list_%s_key_%s_value_%s'
-                ,AXAPI_PROJECT_NAME
-                ,$info['table']
-                ,$info['key']
-                ,$info['value']
-                );
-            if (!is_null($w2CacheKey))
-            {
-                W2Cache::addToCacheKeyPool($w2CacheKeyPool,$w2CacheKey);
-                AX_DEBUG('追加到缓存池：'.$w2CacheKeyPool);
-            }
-            else
-            {
-                W2Cache::resetCacheKeyPool($w2CacheKeyPool);
-                AX_DEBUG('更新缓存池：'.$w2CacheKeyPool);
-            }
-            if (is_null($w2CacheKey))
-            {
-                $w2CacheOrderPool = sprintf('hao_%s_pool_list_%s_orderkey_%s'
-                    ,AXAPI_PROJECT_NAME
-                    ,$info['table']
-                    ,$info['key']
-                    );
-                W2Cache::resetCacheKeyPool($w2CacheOrderPool);
-                AX_DEBUG('更新缓存排序池：'.$w2CacheOrderPool);
-            }
-        }
-        if ($sqlInfo['action'] == 'select' && isset($sqlInfo['order']) && !is_null($w2CacheKey))
-        {
-            $w2CacheOrderPool = sprintf('hao_%s_pool_list_%s_orderkey_%s'
-                ,AXAPI_PROJECT_NAME
-                ,$sqlInfo['order']['table']
-                ,$sqlInfo['order']['key']
-                );
-            W2Cache::addToCacheKeyPool($w2CacheOrderPool,$w2CacheKey);
-            AX_DEBUG('追加到缓存排序池：'.$w2CacheOrderPool);
+            // 5分钟内增加100次忽略缓存的查询
+            W2Cache::incr('igCacheUser_'.Utility::$_CURRENTUSERID.'_'.static::getTabelName(),300);
         }
     }
 
