@@ -760,7 +760,7 @@ class AbstractHandler {
         if (Utility::$_CURRENTUSERID>0)
         {
             // 5分钟内增加100次忽略缓存的查询
-            W2Cache::incr('igCacheUser_'.Utility::$_CURRENTUSERID.'_'.static::getTabelName(),300);
+            W2Cache::incr('igCacheUser_'.Utility::$_CURRENTUSERID.'_'.static::getTabelName(),1,300);
         }
     }
 
