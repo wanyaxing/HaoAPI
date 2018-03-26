@@ -606,6 +606,10 @@ class AbstractHandler {
             {
                 continue;
             }
+            if ( in_array($_key, static::getTableDataKeys() )  )
+            {
+                $_updateData[$_key] = $_value;
+            }
         }
 
         AX_DEBUG($_updateData);
