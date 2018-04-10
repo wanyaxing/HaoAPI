@@ -664,6 +664,14 @@ class AbstractHandler {
         static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         if (count(array_keys($newWhere))>0)
         {
+            if (array_key_exists('isValid',$_updateData))
+            {
+                $newWhere['isValid'] = null;
+            }
+            if (array_key_exists(static::$tableUserIDName,$_updateData))
+            {
+                static::setTargetUserIgnoreCache($_updateData[static::$tableUserIDName]);
+            }
             return static::loadModelFirstInList($newWhere);
         }
         else
@@ -682,6 +690,10 @@ class AbstractHandler {
     {
         $_dbModel = static::newDBModel();
         $_dbModel->insert($pValues);
+        if (array_key_exists(static::$tableUserIDName,$pValues))
+        {
+            static::setTargetUserIgnoreCache($pValues[static::$tableUserIDName]);
+        }
         static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
     }
 
@@ -699,6 +711,10 @@ class AbstractHandler {
         {
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()]);//更新缓存
         }
+        if (array_key_exists(static::$tableUserIDName,$pWhere))
+        {
+            static::setTargetUserIgnoreCache($pWhere[static::$tableUserIDName]);
+        }
         static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         return $result ;
     }
@@ -715,6 +731,10 @@ class AbstractHandler {
         if (array_key_exists(static::getTabelIdName(),$pWhere))
         {
             static::resetW2CacheByModelId($pWhere[static::getTabelIdName()],null,true);//更新缓存
+        }
+        if (array_key_exists(static::$tableUserIDName,$pWhere))
+        {
+            static::setTargetUserIgnoreCache($pWhere[static::$tableUserIDName]);
         }
         static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         return $result ;
@@ -761,12 +781,17 @@ class AbstractHandler {
     /*指定用户在未来一段时间内查询数据时忽略缓存，通常是因为该用户刚刚提交了某个表的数据，给你设定忽略缓存便于其查询到最新的数据。*/
     public static function setCurrentUserIgnoreCache()
     {
-        if (Utility::$_CURRENTUSERID>0)
+        static::setTargetUserIgnoreCache(Utility::$_CURRENTUSERID);
+    }
+    public static function setTargetUserIgnoreCache($userId=null)
+    {
+        if ($userId>0)
         {
             // 5分钟内增加100次忽略缓存的查询
-            W2Cache::incr('igCacheUser_'.Utility::$_CURRENTUSERID.'_'.static::getTabelName(),100,300);
+            W2Cache::incr('igCacheUser_'.$userId.'_'.static::getTabelName(),100,300);
         }
     }
+
 
     /**
      * 更新缓存W2Cache
@@ -807,6 +832,10 @@ class AbstractHandler {
         if (!isset($pModel) || get_class($pModel)!= static::getModelName() || $pModel->getId()==0)
         {
            throw new Exception('此处需要传入'.static::getModelName().'类型的对象');
+        }
+        if ($pModel->properyValue(static::$tableUserIDName))
+        {
+            static::setTargetUserIgnoreCache($pModel->properyValue(static::$tableUserIDName));
         }
         return static::deleteModelById($pModel->getId());
     }
