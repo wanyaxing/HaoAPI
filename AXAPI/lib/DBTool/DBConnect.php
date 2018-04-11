@@ -10,28 +10,30 @@
 	{
 		private $conn = NULL;
 
-		//连接数据库
-		public function __construct()
-		{
-			$this->conn = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE,defined('DB_PORT')?DB_PORT:'3306');
-			if (!is_object($this->conn))
-			{
-				// var_export($this->conn);exit;
-				throw new Exception($this->conn, 1);
-
-			}
-			$this->conn->set_charset(defined('DB_CHARSET')?DB_CHARSET:'utf8');
-		}
-
 		public function getCoon()
 		{
+			if (is_null($this->conn))
+			{
+				$this->conn = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE,defined('DB_PORT')?DB_PORT:'3306');
+				if (!is_object($this->conn))
+				{
+					// var_export($this->conn);exit;
+					throw new Exception($this->conn, 1);
+
+				}
+				$this->conn->set_charset(defined('DB_CHARSET')?DB_CHARSET:'utf8');
+			}
 			return $this->conn ;
 		}
 
 		//关闭数据库
 		public function close()
 		{
-			mysqli_close($this->conn);
+			if (!is_null($this->conn))
+			{
+				mysqli_close($this->conn);
+			}
+			$this->conn = null;
 		}
 
 		// 析构函数，关闭数据库
