@@ -31,7 +31,7 @@ class Utility
 	 * 静态变量，存储当前用户ID
 	 * @var array
 	 */
-	protected static $_CURRENTUSERID = false;
+	public static $_CURRENTUSERID = false;
 
 	/**
 	 * 将用户和登陆时间组成加密字符
