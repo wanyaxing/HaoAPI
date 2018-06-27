@@ -185,4 +185,35 @@ class QiniuController{
 
         return Utility::getArrayForResults(RUNTIME_CODE_OK,'',array($HTTP_IF_MODIFIED_SINCE,$HTTP_IF_NONE_MATCH,W2Cache::getCache('xxx',300)));
     }
+
+
+    /** 根据七牛地址获得下载授权 */
+    public static function actionGetPrivateUrl()
+    {
+        $url = W2HttpRequest::getRequestURL('url');
+        $privateUrl = W2Qiniu::getPrivateUrl($url);
+        return HaoResult::init(ERROR_CODE::$OK,$privateUrl);
+    }
+
+    /** 根据文件名获得下载授权 */
+    public static function actionGetPrivateUrlOfKey()
+    {
+        $key = W2HttpRequest::getRequestString('key');
+        if (W2String::startsWith($key,'http') && strpos($key,W2QINIU_QINIU_DOMAIN)==false)
+        {//非本项目的七牛地址，直接用
+            return HaoResult::init(ERROR_CODE::$OK,$key);
+        }
+        $key = preg_replace('/^http[^\?]+\//','',$key);
+        if (strpos($key,'?')!==false)
+        {
+            list($key,$param) = explode('?', $key);
+        }
+        $baseUrl = W2Qiniu::getBaseUrl($key);
+        if (isset($param))
+        {
+            $baseUrl .= '?'.$param;
+        }
+        $privateUrl = W2Qiniu::getPrivateUrl($baseUrl);
+        return HaoResult::init(ERROR_CODE::$OK,$privateUrl);
+    }
 }
