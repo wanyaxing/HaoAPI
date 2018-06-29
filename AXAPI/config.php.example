@@ -234,7 +234,7 @@ class ERROR_CODE
     public static $OK                   = array(0,  '',            '');
     public static $UNKNOWN_ERROR        = array(1,  '未知错误',            'unknow error');
     public static $DB_ERROR             = array(2,  '数据库错误',          'database error');
-    public static $PARAM_ERROR          = array(3,  '请求参数错误',        'param error');
+    public static $PARAM_ERROR          = array(3,  '请完善信息并确认格式正确',        'param error');
     public static $DATA_EMPTY           = array(4,  '数据不存在',          'nothing here');
     public static $NO_AUTH              = array(5,  '没有权限操作',        'no promise here');
     public static $NOT_USER             = array(6,  '没有登录，不可操作。',  'no login no promise');
@@ -289,6 +289,14 @@ class ERROR_CODE
     public static $USER_SMS_TEL_TOO_MORE     = array(139, '因为安全原因，您此次验证码发送失败，请休息一段时间再试。',       'USER_SMS_TEL_TOO_MORE');
     public static $USER_DUP_TELEPHONE        = array(140, '该手机号已存在。',       'USER_DUP_TELEPHONE');
     public static $USER_DUP_EMAIL            = array(141, '该邮箱已存在。',       'USER_DUP_EMAIL');
+    public static $CURRENT_USER_HAS_VALUED   = array(142, '当前用户已设定登录账号，不可更改到其他登录账号。', 'CURRENT_USER_HAS_VALUED');
+    public static $PHONE_PWD_EXISTS          = array(152, '该手机号码已注册，请前往【登录】或通过【忘记密码】找回密码。', 'PHONE_PWD_EXISTS');
+    public static $PHONE_QQ_EXISTS           = array(153, '该手机号码已经绑定QQ账号，请直接用QQ联合登录。', 'PHONE_QQ_EXISTS');
+    public static $PHONE_WEIBO_EXISTS        = array(154, '该手机号码已经绑定微博账号，请直接用微博联合登录。', 'PHONE_WEIBO_EXISTS');
+    public static $PHONE_WEIXIN_EXISTS       = array(155, '该手机号码已经绑定微信账号，请直接用微信联合登录。', 'PHONE_WEIXIN_EXISTS');
+    public static $PHONE_DD_EXISTS           = array(156, '该手机号码已经绑定钉钉账号，请在钉钉工作台应用中使用。', 'PHONE_DD_EXISTS');
+    public static $PHONE_BEEN_BINDED         = array(157, '该手机号码已经绑定到其他账号，是否更改绑定到当前账号？', 'PHONE_BEEN_BINDED');
+    public static $PHONE_IS_SAME             = array(158, '您已绑定了该手机号，无需重复绑定', 'PHONE_IS_SAME');
 
 
     //如需更多错误码，请在以下延伸，建议使用四位数以上数字作为您的错误码。
