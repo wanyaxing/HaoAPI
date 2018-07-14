@@ -326,4 +326,22 @@ class AbstractController {
         }
         return HaoResult::init(ERROR_CODE::$OK,$result);
     }
+
+
+    /** 删除数据 */
+    public static function actionUnValid()
+    {
+        $handler = static::$handlerlName;
+        $detailModel = $handler::loadModelById(W2HttpRequest::getRequestInt('id'));
+        if (is_object($detailModel) && $detailModel->propertyValue('isValid')==1)
+        {
+            if (in_array(static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'delete',$detailModel),['admin','self']))
+            {
+                $detailModel->setIsValid(0);
+                return static::save($detailModel);
+            }
+            return HaoResult::init(ERROR_CODE::$NO_AUTH);
+        }
+        return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
+    }
 }

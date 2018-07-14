@@ -426,6 +426,11 @@ class AbstractHandler {
      */
     public static function selectFields($pField=null,$pWhere=array(),$pOrder=null,$pPageIndex=1,$pPageSize=DEFAULT_PAGE_SIZE,&$pCountThis=-1)
     {
+        if (in_array('isValid',static::$tableDataKeys) && !array_key_exists('isValid',$pWhere))
+        {
+            $pWhere['isValid'] = 1;
+        }
+
         $_fieldValues = null;
 
         if ($pField === null)
@@ -664,7 +669,7 @@ class AbstractHandler {
         static::setCurrentUserIgnoreCache();//设置当前用户为忽略缓存用户
         if (count(array_keys($newWhere))>0)
         {
-            if (array_key_exists('isValid',$_updateData))
+            if (in_array('isValid',static::$tableDataKeys))
             {
                 $newWhere['isValid'] = null;
             }
