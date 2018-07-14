@@ -861,6 +861,19 @@ apiList.push({
         ]
       });
 
+apiList.push({
+        \'title\':\'用户:第三方登录的用户通过登录其他账号进行绑定。\'
+        ,\'desc\':\'限未设定登录账号的用户\'
+        ,\'time\':\''.date('Y-m-d H:i:s').'\'
+        ,\'action\':\'/user/bind_login\'
+        ,\'method\':\'post\'
+        ,\'request\':[
+           { \'key\':\'account\'               ,\'type\':\'string\'     ,\'required\':true ,\'test-value\':\'13774298448\'                     ,\'title\':\'支持手机号、用户名、邮箱登录\' ,\'desc\':\'\' }
+          ,{ \'key\':\'password\'              ,\'type\':\'md5\'     ,\'required\':true ,\'test-value\':\'123456\'                         ,\'title\':\'密码\' ,\'desc\':\'\' }
+       ]
+      });
+
+
 
 apiList.push({
         \'title\':\'用户:登录\'
@@ -1044,6 +1057,26 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
             case SMS_USEFOR::REGISTER:
                 if (is_object($_userModel))
                 {
+                    if ($_userModel->getPassword()!=null)
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_PWD_EXISTS);
+                    }
+                    else if (UnionLoginHandler::count([\'userID\'=>$_userModel->getId(),\'unionType\'=>2])>0)
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_QQ_EXISTS);
+                    }
+                    else if (UnionLoginHandler::count([\'userID\'=>$_userModel->getId(),\'unionType\'=>3])>0)
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_WEIBO_EXISTS);
+                    }
+                    else if (UnionLoginHandler::count([\'userID\'=>$_userModel->getId(),\'unionType\'=>4])>0)
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_WEIXIN_EXISTS);
+                    }
+                    else if (UnionLoginHandler::count([\'userID\'=>$_userModel->getId(),\'unionType\'=>5])>0)
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_DD_EXISTS);
+                    }
                     return HaoResult::init(ERROR_CODE::$SMS_PHONE_EXISTS);
                 }
                 break;
@@ -1064,6 +1097,27 @@ if (IS_SPECIAL_TABLE == 'smsVerify')
                 }
                 break;
 
+            case SMS_USEFOR::RESTTEL:
+                if (is_object($_userModel))
+                {
+                    if (W2HttpRequest::getRequestBool(\'is_bind_confirm\'))
+                    {
+
+                    }
+                    else if ($_userModel->getId() == Utility::getCurrentUserID())
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_IS_SAME);
+                    }
+                    else if ($_userModel->getCompanyID() == Utility::getCurrentCompanyID())
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_BEEN_BINDED_IN_SAME_COMPANY);
+                    }
+                    else
+                    {
+                        return HaoResult::init(ERROR_CODE::$PHONE_BEEN_BINDED);
+                    }
+                }
+                break;
             default:
                 return HaoResult::init(ERROR_CODE::$SMS_PLS_USEFOR);
                 break;
@@ -1307,10 +1361,19 @@ $_controllerString .='
         }
         if ($tmpModel->isPropertyModified(\'telephone\') && $tmpModel->propertyValue(\'telephone\')!==\'\' )
         {
-            $existsTargetModel = UserHandler::loadModelFirstInList( array(\'telephone\'=>$tmpModel->propertyValue(\'telephone\') ) );
-            if (is_object( $existsTargetModel ) &&  $existsTargetModel->getId() != $tmpModel->propertyValue(\'id\'))
+            $existsUserModel = UserHandler::loadModelFirstInList( array(\'telephone\'=>$tmpModel->propertyValue(\'telephone\') ) );
+            if (is_object( $existsUserModel ) &&  $existsUserModel->getId() != $tmpModel->propertyValue(\'id\'))
             {
-                return HaoResult::init(ERROR_CODE::$USER_DUP_TELEPHONE);
+                $isBindConfirm = W2HttpRequest::getRequestBool(\'is_bind_confirm\');
+                if ($isBindConfirm)
+                {
+                    $existsUserModel->setTelephone(\'null\');
+                    UserHandler::saveModel($existsUserModel);
+                }
+                else
+                {
+                    return HaoResult::init(ERROR_CODE::$USER_DUP_TELEPHONE);
+                }
             }
         }
         if ($tmpModel->isPropertyModified(\'email\') && $tmpModel->propertyValue(\'email\')!==\'\' )
