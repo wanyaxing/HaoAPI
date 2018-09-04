@@ -763,6 +763,14 @@ foreach ($_tableDataKeys as $_tableKey=>$_fieldRow) {
                                       .'//默认列表页只筛选STATUS_NORMAL状态的数据';
         $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'*限管理员可用\' }';
     }
+    else if ($_fieldRow['Field']=='isValid')
+    {
+        $_controllerStringList .= "\n".'        '
+                                      .str_pad('$pWhere[\''.$_fieldRow['Field'].'\']',40,' ',STR_PAD_RIGHT)
+                                      .str_pad(' = W2HttpRequest::getRequestInt(\'is_valid\',1,true,0,1);',70,' ',STR_PAD_RIGHT)
+                                      .(!is_null($_fieldRow['Comment'])?'//'.$_fieldRow['Comment']:'');
+        $_apitestConfigRequestList[] = '{'.str_pad(' \'key\':\''.W2String::under_score($_fieldRow['Field']).'\'',30,' ',STR_PAD_RIGHT).' '.str_pad(',\'type\':\''.CMysql2PHP::getPhpProp($_fieldRow).'\'',20,' ',STR_PAD_RIGHT).' ,\'required\':false ,\'time\':\'\' '.str_pad(',\'test-value\':\''.(($_fieldRow['Field']=='userID')?'0':'').'\'',40,' ',STR_PAD_RIGHT).' ,\'title\':\''.(!is_null($_fieldRow['Comment'])?$_fieldRow['Comment']:$_fieldRow['Field']).'\' ,\'desc\':\'\' }';
+    }
     // else if ($_fieldRow['Field']=='userID')
     // {
     //     //默认不支持用户筛选，只能筛选登录用户自己的数据;
