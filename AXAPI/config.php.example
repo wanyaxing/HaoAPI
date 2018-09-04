@@ -305,3 +305,7 @@ class ERROR_CODE
 
 }
 
+
+/** 建议：可以引入常量文件（该文件通常在svn中多个项目间做软连接） */
+// include AXAPI_ROOT_PATH . '/constant.php';
+
