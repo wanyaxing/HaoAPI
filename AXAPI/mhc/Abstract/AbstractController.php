@@ -236,6 +236,10 @@ class AbstractController {
         {
             $tmpResult->results = $tmpResult->results[0];
         }
+        else
+        {
+            return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
+        }
         return $tmpResult;
     }
     /**
@@ -343,5 +347,38 @@ class AbstractController {
             return HaoResult::init(ERROR_CODE::$NO_AUTH);
         }
         return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
+    }
+
+
+    /*重新排序*/
+    public static function actionResetRankValueOfItem()
+    {
+        if (static::getAuthIfUserCanDoIt(Utility::getCurrentUserID(),'axapi',null) != 'admin')
+        {
+            return HaoResult::init(ERROR_CODE::$NO_AUTH);
+        }
+
+        $handler = static::$handlerlName;
+
+        if (!in_array('rankValue',$handler::getTableDataKeys()))
+        {
+            return HaoResult::init(ERROR_CODE::$UNKNOWN_API_ACTION);
+        }
+
+        $itemID = W2HttpRequest::getRequestInt('item_id');
+        $itemModel = $handler::loadModelById($itemID);
+        if (!is_object($itemModel))
+        {
+            return HaoResult::init(ERROR_CODE::$DATA_EMPTY);
+        }
+        // return HaoResult::init(ERROR_CODE::$DATA_EMPTY);//debug
+        $prevItemID = W2HttpRequest::getRequestInt('prev_item_id');//上一个（其rankValue值应该更大）
+        $nextItemID = W2HttpRequest::getRequestInt('next_item_id');//下一个（其rankValue值应该较小）
+
+        // return HaoResult::init(ERROR_CODE::$OK,W2Math::getMiddleBetweenNumbers($prevItemID,$nextItemID));//debug
+        $newRankValue = $handler::getRankValueBetweenItems($prevItemID,$nextItemID);
+        $itemModel->setRankValue($newRankValue);
+
+        return static::save($itemModel);
     }
 }
