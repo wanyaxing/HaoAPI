@@ -35,7 +35,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
                                         ,W2Time::microtimetostr(AX_TIMER_START)
                                         ,number_format(microtime (true) - AX_TIMER_START, 5, '.', '')
                                         ,Utility::getCurrentIP()
-                                        ,Utility::$_CURRENTUSERID
+                                        ,Utility::getHeaderValue('Userid')
                                         ,$_SERVER['REQUEST_METHOD']
                                         ,$GLOBALS['apiController'], $GLOBALS['apiAction']
                                         ,is_string($p_content)?$p_content:Utility::json_encode_unicode($p_content)
@@ -117,7 +117,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
             if (isset($_SERVER['HTTP_IF_NONE_MATCH']))//这里用etag的header标识来进行客户端的缓存控制。
             {
                 $etag = $_SERVER['HTTP_IF_NONE_MATCH'];
-                if (W2Cache::isEtagCanBeUsed($etag,Utility::$_CURRENTUSERID))
+                if (W2Cache::isEtagCanBeUsed($etag,Utility::getHeaderValue('Userid')))
                 {
                     header('Etag:'.$etag,true,304);
                     file_put_log(' (-304) '.$etag.' ' . Utility::json_encode_unicode($_REQUEST),'access');
@@ -150,7 +150,7 @@ define("AX_TIMER_START", microtime (true));//记录请求开始时间
         if (!defined('IS_AX_DEBUG'))
         {
             header('Cache-Control:public');
-            header('Etag:'.W2Cache::etagOfRequest(Utility::$_CURRENTUSERID));
+            header('Etag:'.W2Cache::etagOfRequest(Utility::getHeaderValue('Userid')));
         }
     }
 
