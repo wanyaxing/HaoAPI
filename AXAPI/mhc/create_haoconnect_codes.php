@@ -350,7 +350,7 @@ function createConnectFromConfig($_jobFile)
 
     if ($modelName=='Abstract')
     {
-        continue;
+        return false;
     }
 
     $apiList = array();
